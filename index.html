@@ -505,7 +505,7 @@ async function upImg(blob,name){if(SES.expires_at*1000<Date.now()+60000)await re
  if(!r.ok)throw new Error("O envio de uma foto falhou ("+r.status+").");return SB+"/storage/v1/object/public/images/"+name}
 async function pMarket(){
  const ord=MK.ord==="asc"?"price_cents.asc":MK.ord==="desc"?"price_cents.desc":"created_at.desc";
- MKR=await api(`/rest/v1/listings?status=eq.ativo&price_cents=lte.${MK.max*100}&select=id,seller_id,title,ovr,coins,price_cents,description,image_urls,created_at,profiles(nick,avatar_url)&order=${ord}&limit=60`);
+ MKR=await api(`/rest/v1/listings?status=eq.ativo&price_cents=lte.${MK.max*100}&select=id,seller_id,title,ovr,coins,price_cents,description,image_urls,created_at,profiles!seller_id(nick,avatar_url)&order=${ord}&limit=60`);
  let fav=new Set(),box="";
  if(ME){try{fav=new Set((await api("/rest/v1/favorites?select=listing_id")).map(x=>x.listing_id))}catch(e){}
   try{
@@ -609,7 +609,7 @@ async function mkHtml(){
  let q="";const sv=(MK.q||"").replace(/[^\p{L}\p{N} ._-]/gu,"").trim();if(sv)q+="&title=ilike.*"+encodeURIComponent(sv)+"*";
  q+=MK.mine&&ME?`&seller_id=eq.${ME.id}&status=neq.removido`:"&status=eq.ativo";
  const ord=MK.ord==="asc"?"price_cents.asc":MK.ord==="desc"?"price_cents.desc":"created_at.desc";
- const rows=await api(`/rest/v1/listings?price_cents=lte.${MK.max*100}${q}&select=id,seller_id,title,ovr,coins,platform,acct_level,price_cents,image_urls,status,created_at,profiles(nick,avatar_url)&order=${ord}&limit=60`);
+ const rows=await api(`/rest/v1/listings?price_cents=lte.${MK.max*100}${q}&select=id,seller_id,title,ovr,coins,platform,acct_level,price_cents,image_urls,status,created_at,profiles!seller_id(nick,avatar_url)&order=${ord}&limit=60`);
  let fav=new Set();if(ME){try{fav=new Set((await api("/rest/v1/favorites?select=listing_id")).map(x=>x.listing_id))}catch(e){}}
  if(!rows.length)return `<div class="card empty"><div class="logo" aria-hidden="true"></div><h3>Nada por aqui ainda</h3><p class="sub">${MK.mine?"Você ainda não publicou nada.":"Nenhum anúncio com esses filtros. Volte logo: novas contas aparecem toda hora!"}</p></div>`;
  return `<div class="mkgrid">${rows.map(l=>{const im=l.image_urls.filter(imgOk),isNew=Date.now()-new Date(l.created_at)<MKNEW;
@@ -639,7 +639,7 @@ document.addEventListener("input",e=>{if(e.target.id==="mxs"){const v=$("#mxv");
 async function pListing(id){
  const back='<a href="#marketplace" class="sub" style="display:inline-block;margin:4px 0 10px">← Marketplace</a>';
  if(!UUID.test(id))return back+'<div class="card">Anúncio não encontrado.</div>';
- const l=(await api(`/rest/v1/listings?id=eq.${id}&select=id,seller_id,title,ovr,coins,acct_level,platform,highlights,price_cents,description,image_urls,status,created_at,profiles(nick,avatar_url)`))[0];
+ const l=(await api(`/rest/v1/listings?id=eq.${id}&select=id,seller_id,title,ovr,coins,acct_level,platform,highlights,price_cents,description,image_urls,status,created_at,profiles!seller_id(nick,avatar_url)`))[0];
  if(!l)return back+'<div class="card">Anúncio não encontrado ou removido.</div>';
  MKL=l;const im=l.image_urls.filter(imgOk);MKIMGS=im;
  let fav=false,intr=false,ic=null;const mine=ME&&ME.id===l.seller_id;
