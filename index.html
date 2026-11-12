@@ -1852,33 +1852,33 @@ function cgMoment(min,force){const pos=force||(()=>{let r=Math.random();for(cons
   goleiro:{ic:"🧤",tx:"Chute forte vindo! Escolha o lado para pular.",ch:[["Pular na esquerda",""],["Ficar no meio",""],["Pular na direita",""]]}}[pos];
  return {k:pos,m:min,...T,stage:T.timing?"pick":"pick",sel:null}}
 const cgRate=d=>{M.rating=cgClamp(M.rating+d,3,10)};
-function cgResolve(q){const my0=M.my,op0=M.op,cgSay=k=>{M.cur.say=k};const c=M.cur,a=cgEff(c.k==="goleiro"?"defesa":c.k),opT=M.opp.tier;let r={t:"",c:"ok"};const L=t=>{r.t=t};
- if(c.k==="chute"){const z=c.sel,over=c.pos>c.center,col=z%3,row=Math.floor(z/3),acc=cgClamp((q>=.7?.9+.07*(q-.7)/.3:.2+q)+(a-60)/600,.1,.98);
-  let ps=.5+(opT-2)*.05-(a-60)/200+(col!==1?-.07:row===1?.03:0);ps=cgClamp(ps,.08,.6);c.on=cgChance(acc);const sv=c.on&&cgChance(ps);c.pg=Math.round(acc*(1-ps)*100);
-  if(!c.on)c.kz=cgRand(0,5);else if(sv)c.kz=cgChance(.6)?z:(col===1?(row?z-3:z+3):(z+(col===0?1:-1)));else c.kz=col===0?2+3*cgRand(0,1):col===2?3*cgRand(0,1):cgPick([0,2,3,5]);
+function cgResolve(q){const my0=M.my,op0=M.op,cgSay=k=>{M.cur.say=k};const c=M.cur,a=cgEff(c.k==="goleiro"?"defesa":c.k),opT=M.opp.tier,fb=cgForm().pts/100;let r={t:"",c:"ok"};const L=t=>{r.t=t};
+ if(c.k==="chute"){const z=c.sel,over=c.pos>c.center,col=z%3,row=Math.floor(z/3),acc=cgClamp((q>=.7?.9+.07*(q-.7)/.3:.2+q)+(a-60)/600+fb*.5,.1,.98);
+  let ps=.5+(opT-2)*.05-(a-60)/200-fb*.8+(col!==1?-.07:row===1?.03:0);ps=cgClamp(ps,.08,.6);c.on=cgChance(acc);const sv=c.on&&cgChance(ps);c.pg=Math.round(acc*(1-ps)*100);
+  if(!c.on)c.kz=cgRand(0,5);else if(sv)c.kz=z;else c.kz=col===0?2+3*cgRand(0,1):col===2?3*cgRand(0,1):cgPick([0,2,3,5]);
   if(!c.on){cgRate(-.2);r.c="bad";L(over&&q<.5?"Chutou forte demais e a bola foi por cima.":"Pra fora. A pontaria falhou.")}
-  else if(sv){cgRate(-.05);r.c="bad";L(c.kz===z?"O goleiro adivinhou o canto e defendeu!":"O goleiro alcançou e defendeu!");cgSay("save")}
+  else if(sv){cgRate(-.05);r.c="bad";L(cgPick(["O goleiro adivinhou o canto e defendeu!","O goleiro foi no canto certo e espalmou!"]));cgSay("save")}
   else{M.my++;M.goals++;cgRate(1);L("GOL! Que chute!");r.c="gol";cgXp("chute",6);cgSay("gol")}}
- else if(c.k==="passe"){const i=c.sel,pc=[.92,.72,.5][i],ac=[.12,.3,.5][i],p=cgClamp(pc*(.55+.6*q)+(a-60)/220,.1,.97);
+ else if(c.k==="passe"){const i=c.sel,pc=[.92,.72,.5][i],ac=[.12,.3,.5][i],p=cgClamp(pc*(.55+.6*q)+(a-60)/220+fb*.6,.1,.97);
   if(cgChance(p)){cgRate([.15,.4,.7][i]);cgXp("passe",6);if(cgChance(ac*(1+(a-60)/200))){M.my++;M.ast++;cgRate(.9);L("ASSISTÊNCIA! Gol do seu time!");r.c="gol";cgSay("ast")}else L("Passe certo e a jogada continua.")}
   else{cgRate([-.2,-.35,-.4][i]);r.c="bad";if(cgChance(.1*(i+1))){M.op++;L("Passe errado... e o adversário faz o gol no contra-ataque.")}else L("Passe errado, bola perdida.")}}
- else if(c.k==="drible"){const i=c.sel,k=i===2?"ritmo":"drible",ae=cgEff(k),p=cgClamp([.74,.54,.62][i]+(ae-60)/180,.1,.95);
+ else if(c.k==="drible"){const i=c.sel,k=i===2?"ritmo":"drible",ae=cgEff(k),p=cgClamp([.74,.54,.62][i]+(ae-60)/180+fb*.6,.1,.95);
   if(cgChance(p)){cgRate([.3,.6,.4][i]);cgXp(k,6);L("Passou do marcador!");if(!c.chain&&!["GOL","ZAG","LE","LD"].includes(G.pos)&&cgChance(.3)){r.chain=true;L("Passou do marcador e a bola sobrou para finalizar!")}}
   else{cgRate(-.3);r.c="bad";if(cgChance(.12)){M.op++;L("Perdeu a bola e o adversário fez o gol.")}else L("O marcador desarmou.")}}
- else if(c.k==="defesa"){const p=cgClamp(.15+(a-40)/160+.55*q,.1,.95);
+ else if(c.k==="defesa"){const p=cgClamp(.15+(a-40)/160+.55*q+fb*.6,.1,.95);
   if(cgChance(p)){cgRate(.5);cgXp("defesa",6);L("Desarme limpo! Perigo afastado.")}else{cgRate(-.3);r.c="bad";if(cgChance(.3)){M.op++;c.conc=true;L("Chegou atrasado e saiu o gol deles.")}else L("Chegou atrasado, mas a defesa se salvou.")}}
- else if(c.k==="goleiro"){const side=cgRand(0,2),ok=side===c.sel;c.side=side;const p=ok?cgClamp(.7+(a-50)/200,.5,.92):cgClamp(.16+(a-50)/300,.05,.45);
+ else if(c.k==="goleiro"){const side=cgRand(0,2),ok=side===c.sel;c.side=side;const p=ok?cgClamp(.7+(a-50)/200+fb*.5,.5,.92):cgClamp(.16+(a-50)/300+fb*.5,.05,.45);
   if(cgChance(p)){cgRate(.8);cgXp("defesa",7);L("DEFESAÇA!");r.c="gol";cgSay("save")}else{cgRate(-.5);M.op++;r.c="bad";L("Não deu. É gol deles.")}}
  c.res=r;c.q=q;c.logE={m:c.m,t:(c.ic||"")+" "+r.t,c:r.c};if(r.chain)c.next=true;
  if(cgAnimOn()){c.an=cgSpec(c,r);c.stage="anim";c.pre={my:my0,op:op0}}else{c.stage="res";M.log.push(c.logE);if(c.say)cgSay0(c.say)}}
 const cgAnimOn=()=>motionOk()&&!document.hidden&&!!document.getElementById("cr");
 const cgSay0=k=>mascotSay(cgPick(CGMA[k]||CGMA.gol),3800);
 const CGM={
- mpick:i=>{const c=M&&M.cur;if(!c||c.stage!=="pick")return;c.sel=+i;if(!c.ch[c.sel])return;if(c.timing){c.stage="time";c.green=c.ch[c.sel][2];c.center=.25+Math.random()*.5;c.pos=0;c.dir=1;crDraw();cgMeter()}else{cgResolve(0);crDraw()}},
+ mpick:i=>{const c=M&&M.cur;if(!c||c.stage!=="pick")return;c.sel=+i;if(!c.ch[c.sel])return;if(c.timing){c.stage="time";c.green=c.ch[c.sel][2]*cgClamp(1+(G.ovr-55)/160+cgForm().pts/200,.75,1.35);c.center=.25+Math.random()*.5;c.pos=0;c.dir=1;crDraw();cgMeter()}else{cgResolve(0);crDraw()}},
  mstop:()=>{const c=M&&M.cur;if(!c||c.stage!=="time")return;clearInterval(M.tm);const d=Math.abs(c.pos-c.center),hg=c.green/2,q=d<=hg?1-.3*d/hg:cgClamp(.7-(d-hg)/(c.green*1.2)*.7,0,.7);c.q=q;cgResolve(q);crDraw()},
  mnext:()=>{const c=M&&M.cur;if(c&&c.next){M.cur=cgMoment(c.m,"chute");M.cur.chain=true;crDraw();return}cgAdvance();crDraw()},
  mend:()=>{cgLeave()},mreveal:()=>{const c=M&&M.cur;if(!c||c.stage!=="anim")return;cancelAnimationFrame(c.raf);c.stage="res";M.log.push(c.logE);if(c.say)cgSay0(c.say);crDraw()}};
-function cgMeter(){clearInterval(M.tm);const c=M.cur,sp=.018+Math.random()*.01;M.tm=setInterval(()=>{if(!c||c.stage!=="time"){clearInterval(M.tm);return}c.pos+=sp*c.dir;if(c.pos>=1){c.pos=1;c.dir=-1}if(c.pos<=0){c.pos=0;c.dir=1}const m=$("#cgm");if(m)m.style.left=(c.pos*100)+"%";else clearInterval(M.tm)},16)}
+function cgMeter(){clearInterval(M.tm);const c=M.cur,sp=(.018+Math.random()*.01)*cgClamp(1.12-(G.ovr-50)/250,.85,1.2);M.tm=setInterval(()=>{if(!c||c.stage!=="time"){clearInterval(M.tm);return}c.pos+=sp*c.dir;if(c.pos>=1){c.pos=1;c.dir=-1}if(c.pos<=0){c.pos=0;c.dir=1}const m=$("#cgm");if(m)m.style.left=(c.pos*100)+"%";else clearInterval(M.tm)},16)}
 function cgFinish(){const my=M.my,op=M.op,res=my>op?"w":my<op?"l":"d";let rt=M.rating;if(res==="w")rt+=.3;if(res==="l")rt-=.2;rt=+cgClamp(rt,3,10).toFixed(1);
  G.energy=Math.max(0,G.energy-30);M.rt=rt;M.res=res;M.phase="end";const s=G.sg;s.g++;s.go+=M.goals;s.as+=M.ast;s.rs+=rt;s.pts+=res==="w"?3:res==="d"?1:0;s[res]++;
  G.st.games++;G.st.goals+=M.goals;G.st.assists+=M.ast;G.st.ratS+=rt;
@@ -2018,6 +2018,21 @@ Object.assign(CGA,{
  newc:()=>{if(G&&!G.done&&!confirm("Aposentar "+G.name+" agora e começar uma nova carreira? O jogador entra no Hall da Fama."))return;cgEndReset(G?cgHofNow():(CGX.hof||[]))},
  abandon:()=>{if(!G)return;if(!confirm("Abandonar a carreira de "+G.name+"? Tudo será apagado e ele NÃO vai para o Hall da Fama. Não dá para desfazer."))return;cgEndReset((G.hof||[]).slice())},
  reset:()=>CGA.abandon()});
+</script>
+<script>
+/* ----- Forma: decisões fora de campo, torcida e técnico mexem nas chances ----- */
+function cgForm(){const P=[];const add=(i,l,v)=>P.push({i,l,v:Math.round(v*10)/10});
+ add("😀","Moral",(G.moral-50)/50*5);
+ add("📣","Torcida"+(M&&M.home?" (em casa)":""),(G.fans-50)/50*4*(M&&M.home?1.5:1));
+ add("🧑‍🏫","Confiança do técnico",(G.coach-50)/50*5);
+ add("⚡","Energia",cgClamp((G.energy-60)/40*5,-8,5));
+ add("⭐","Fama",(G.fama-20)/80*2);
+ if(M&&M.opS!=null)add("🆚","Nível contra o adversário",cgClamp((G.ovr-M.opS)/100,-.2,.2)*50);
+ return{pts:cgClamp(P.reduce((a,x)=>a+x.v,0),-18,18),parts:P}}
+const cgFmt=v=>(v>=0?"+":"")+v.toFixed(1).replace(".0","")+"%";
+function cgFormHtml(){const f=cgForm();return `<details class="card cgform"><summary><b>📈 Forma para o jogo: <span style="color:${f.pts>=0?"#2fd16f":"#ff6b6b"}">${cgFmt(f.pts)}</span></b> <span class="sub">(mexe nas chances dos lances)</span></summary>${f.parts.map(x=>`<p class="sub">${x.i} ${esc(x.l)}: <b style="color:${x.v>=0?"#2fd16f":"#ff6b6b"}">${cgFmt(x.v)}</b></p>`).join("")}<p class="sub">Treinar, descansar, eventos, vida fora de campo e vitórias mudam moral, torcida, técnico e energia.</p></details>`}
+{const _m=cgMatch;cgMatch=function(){const h=_m();return h.replace(/(<div class="card cgh">[\s\S]*?<\/p>)(<\/div>)/,"$1"+cgFormHtml().replace(/\$/g,"$$$$")+"$2")}}
+{const _h=cgHub;cgHub=function(){const h=_h();return G&&!G.pend.report?h+cgFormHtml():h}}
 </script>
 </body>
 </html>
