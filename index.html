@@ -63,7 +63,7 @@ a.card:hover{transform:translateY(-3px);border-color:var(--y)}
 nav a.on{background:rgba(255,223,0,.14);border-color:rgba(255,223,0,.45);color:var(--y)}
 .btn.p{background:linear-gradient(180deg,#00b347,#008a35);box-shadow:0 6px 18px rgba(0,151,57,.4)}
 dialog{background:rgba(9,28,17,.92);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
-main>*{animation:rise .45s ease both}@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+main:not(.q)>*{animation:rise .45s ease both}@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 /* mascote: mais presença e movimento próprio */
 .hero{padding:30px 8px 22px}
 .hero h1{font-size:2rem;text-shadow:0 4px 18px rgba(0,0,0,.5)}
@@ -75,7 +75,7 @@ header .logo{animation:sway 5s ease-in-out infinite}
 @keyframes wave{0%,72%,100%{rotate:0deg}78%{rotate:-9deg}84%{rotate:8deg}90%{rotate:-6deg}95%{rotate:3deg}}
 @keyframes sway{0%,100%{rotate:-3deg}50%{rotate:3deg}}
 @keyframes jump{0%{transform:translateY(0) scale(1,1)}25%{transform:translateY(0) scale(1.12,.88)}55%{transform:translateY(-34px) scale(.95,1.08) rotate(-8deg)}80%{transform:translateY(0) scale(1.08,.92)}100%{transform:none}}
-main>h2::before{content:"";display:inline-block;width:46px;height:60px;margin-right:10px;vertical-align:middle;background:var(--mas) center/contain no-repeat;filter:drop-shadow(0 6px 8px rgba(0,0,0,.5));transform-origin:50% 90%;animation:sway 4.5s ease-in-out infinite}
+main>h2::before{content:"";display:inline-block;width:46px;height:60px;margin-right:10px;vertical-align:middle;background:var(--mas) center/contain no-repeat;filter:drop-shadow(0 6px 8px rgba(0,0,0,.5));transform-origin:50% 90%}
 .mb{width:78px;height:100px;animation:idle 3.4s ease-in-out infinite}
 .mb:has(.bn.on){animation:idle 3.4s ease-in-out infinite,nudge 2.4s ease-in-out infinite}
 @keyframes nudge{0%,70%,100%{rotate:0deg}76%{rotate:-10deg}82%{rotate:9deg}88%{rotate:-7deg}94%{rotate:4deg}}
@@ -85,6 +85,11 @@ main>h2::before{content:"";display:inline-block;width:46px;height:60px;margin-ri
 #alerta.on{display:block}#alerta button{margin-left:8px;min-height:34px;padding:4px 12px;background:#fff;color:#c1121f;border:0}
 @keyframes redp{0%,100%{background:#c1121f}50%{background:#7a0a12}}
 .sm{padding:6px 10px;border-radius:10px;margin:4px 0;max-width:88%}.sm.u{background:rgba(0,151,57,.25);margin-left:auto}.sm.a{background:rgba(255,223,0,.14)}
+.atalhos{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:8px 0 18px}
+.atalho{text-align:center;padding:16px 8px;margin:0;display:grid;gap:2px;justify-items:center}.atalho .e{font-size:2.2rem;transition:transform .25s}.atalho:hover .e{transform:scale(1.2) rotate(-8deg)}
+a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.av{display:inline-grid;place-items:center;border-radius:50%;object-fit:cover;background:#1c4a2b;color:var(--y);font-weight:700;vertical-align:middle;margin-right:6px;flex:none;border:1px solid rgba(255,255,255,.25)}
+#user{display:flex;gap:6px;align-items:center}#user>.btn:first-child{max-width:52vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;translate:none!important;rotate:none!important}}
 </style>
 </head>
@@ -133,9 +138,10 @@ async function api(path,o){o=o||{};const auth=o.auth!==false;
  if(!r.ok)throw Object.assign(new Error(msgOf(j,r.status)),{status:r.status});return j}
 const setSes=j=>store({access_token:j.access_token,refresh_token:j.refresh_token,expires_at:j.expires_at||Math.floor(Date.now()/1000)+(j.expires_in||3600),uid:(j.user&&j.user.id)||(SES&&SES.uid)});
 async function refresh(){if(!SES)return;try{setSes(await api("/auth/v1/token?grant_type=refresh_token",{method:"POST",body:{refresh_token:SES.refresh_token},auth:false}))}catch(e){store(null);ME=null}}
-async function loadMe(){ME=null;if(!SES)return;try{const r=await api("/rest/v1/profiles?id=eq."+SES.uid+"&select=id,nick,role,is_owner");ME=r&&r[0]||null;if(!ME)store(null)}catch(e){}}
+async function loadMe(){ME=null;if(!SES)return;try{const r=await api("/rest/v1/profiles?id=eq."+SES.uid+"&select=id,nick,role,is_owner,avatar_url");ME=r&&r[0]||null;if(!ME)store(null)}catch(e){}}
 
 /* ---------- interface ---------- */
+const DISCORD="https://discord.gg/efootballbrasil";
 const NAV=[["inicio","Início","🏠"],["noticias","Notícias","📰"],["formacoes","Formações","📋"],["forum","Fórum","💬"],["fichas","Fichas","🃏"],["batalha","Batalha","⚔️"],["marketplace","Marketplace","🛒"]];
 const dlg=h=>{$("#dc").innerHTML=h;const d=$("#dg");if(!d.open)d.showModal()},closeDlg=()=>{const d=$("#dg");if(d.open)d.close()};
 const fail=m=>{const e=$("#fe");if(e&&$("#dg").open)e.textContent=m;else toast(m)};
@@ -146,10 +152,10 @@ const wait=()=>'<div class="card sub">A carregar…</div>';
 async function render(q){
  const nav=NAV.slice();if(isA())nav.push(["admin","Administração","🛡️"]);
  $("#nav").innerHTML=nav.map(n=>`<a href="#${n[0]}" class="${CUR===n[0]||(CUR.startsWith("t-")&&n[0]==="forum")?"on":""}"><span class="ni" aria-hidden="true">${n[2]}</span> ${n[1]}</a>`).join("");
- $("#user").innerHTML=ME?`<span class="sub">@${esc(ME.nick)}${isCeo()?" · CEO":isA()?" · admin":""}</span> <button class="btn sm" data-a="out">Sair</button>`:'<button class="btn sm p" data-a="auth">Entrar</button>';
+ $("#user").innerHTML=ME?`<button class="btn sm" data-a="perfil" aria-label="Meu perfil">${av(ME,24)}${esc(ME.nick)}${isCeo()?" · CEO":isA()?" · admin":""}</button> <button class="btn sm" data-a="out">Sair</button>`:'<button class="btn sm p" data-a="auth">Entrar</button>';
  const p=$("#pg");if(!q)p.innerHTML=wait();const mine=++render.n;let h;
  try{h=await page()}catch(e){h=`<div class="card">${esc(e.message)}</div>`}
- if(mine===render.n){const bm=$("#bm"),v=bm&&bm.value,fo=bm&&document.activeElement===bm,bc=$("#bc"),at=bc&&bc.scrollTop,bot=bc&&bc.scrollHeight-bc.scrollTop-bc.clientHeight<40;p.innerHTML=h;const n2=$("#bm");if(n2&&v){n2.value=v;if(fo)n2.focus()}const c2=$("#bc");if(c2)c2.scrollTop=(!q||bot)?c2.scrollHeight:at}if(!q&&typeof bg==="function")bg()}
+ if(mine===render.n){const bm=$("#bm"),v=bm&&bm.value,fo=bm&&document.activeElement===bm,bc=$("#bc"),at=bc&&bc.scrollTop,bot=bc&&bc.scrollHeight-bc.scrollTop-bc.clientHeight<40;p.classList.toggle("q",!!q);p.innerHTML=h;const n2=$("#bm");if(n2&&v){n2.value=v;if(fo)n2.focus()}const c2=$("#bc");if(c2)c2.scrollTop=(!q||bot)?c2.scrollHeight:at}if(!q&&typeof bg==="function")bg()}
 render.n=0;
 const SOON={marketplace:["🛒 Marketplace","Em breve. Antes de abrir, precisamos concluir a verificação de vendedores e o sistema de pagamento."]};
 async function page(){
@@ -163,26 +169,28 @@ async function page(){
  if(CUR.startsWith("b-"))return pMatchById(CUR.slice(2));
  if(CUR==="admin")return isA()?pAdmin():'<div class="card">Sem permissão.</div>';
  const s=SOON[CUR];return s?`<div class="card"><h2>${s[0]}</h2><p>${s[1]}</p></div>`:'<div class="card">Página não encontrada.</div>'}
+const ATAL=[["noticias","📰","Notícias","Novidades do eFootball"],["formacoes","📋","Formações","Táticas da comunidade"],["forum","💬","Fórum","Converse e tire dúvidas"],["fichas","🃏","Fichas","Jogadores da comunidade"],["batalha","⚔️","Batalha","Fila 1v1, 2v2 e 3v3"],["marketplace","🛒","Marketplace","Em breve"]];
 async function pHome(){let n=[];try{n=await api("/rest/v1/content?kind=eq.noticia&select=id,title,created_at&order=created_at.desc&limit=3")}catch(e){}
- return `<div class="hero"><div class="logo" style="width:90px;height:116px;margin:auto"></div><h1>Bem-vindo ao eFootball Brasil</h1><p>Notícias, formações e uma comunidade brasileira para quem joga eFootball.</p><div class="row" style="justify-content:center"><a class="btn p" href="#forum">Ir ao fórum</a>${ME?"":'<button class="btn" data-a="auth" data-id="reg">Criar conta</button>'}</div></div>`+
+ return `<div class="hero"><div class="logo" style="width:90px;height:116px;margin:auto"></div><h1>Bem-vindo ao eFootball Brasil</h1><p>Notícias, formações e uma comunidade brasileira para quem joga eFootball.</p><div class="row" style="justify-content:center"><a class="btn p" href="${DISCORD}" target="_blank" rel="noopener noreferrer">🎧 Entrar na comunidade</a><a class="btn" href="#forum">Ir ao fórum</a>${ME?"":'<button class="btn" data-a="auth" data-id="reg">Criar conta</button>'}</div></div>`+
+ `<div class="atalhos">${ATAL.concat(isA()?[["admin","🛡️","Administração","Gerir o site"]]:[]).map(a=>`<a class="card atalho" href="#${a[0]}"><span class="e" aria-hidden="true">${a[1]}</span><b>${a[2]}</b><span class="sub">${a[3]}</span></a>`).join("")}</div>`+
  (n.length?`<h3>Últimas notícias</h3>`+n.map(x=>`<a class="card" href="#noticias"><b>${esc(x.title)}</b><div class="sub">${when(x.created_at)}</div></a>`).join(""):"")}
 async function pContent(kind){const T=kind==="noticia"?"Notícias":"Formações";
- const rows=await api(`/rest/v1/content?kind=eq.${kind}&select=id,category,title,body,created_at,profiles(nick)&order=created_at.desc&limit=50`);
+ const rows=await api(`/rest/v1/content?kind=eq.${kind}&select=id,category,title,body,created_at,profiles(nick,avatar_url)&order=created_at.desc&limit=50`);
  return `<div class="row between"><h2>${T}</h2>${isA()?`<button class="btn p" data-a="cnew" data-id="${kind}">+ Publicar</button>`:""}</div>`+
  (rows.length?rows.map(r=>`<article class="card"><span class="tag">${esc(r.category)}</span><h3>${esc(r.title)}</h3><p class="body">${esc(r.body)}</p><div class="sub">${when(r.created_at)} · ${esc(r.profiles&&r.profiles.nick||"equipe")}${isA()?` · <a href="#" data-a="cdel" data-id="${esc(r.id)}">apagar</a>`:""}</div></article>`).join(""):'<div class="card sub">Ainda não há publicações.</div>')}
 async function pForum(){
- const rows=await api("/rest/v1/threads?select=id,title,category,created_at,profiles(nick),replies(count)&order=created_at.desc&limit=50");
+ const rows=await api("/rest/v1/threads?select=id,title,category,created_at,profiles(nick,avatar_url),replies(count)&order=created_at.desc&limit=50");
  return `<div class="row between"><h2>Fórum</h2><button class="btn p" data-a="tnew">Novo tópico</button></div>`+
- (rows.length?rows.map(t=>`<a class="card" href="#t-${esc(t.id)}"><span class="tag">${esc(t.category)}</span> <b>${esc(t.title)}</b><div class="sub">@${esc(t.profiles&&t.profiles.nick||"?")} · ${when(t.created_at)} · ${t.replies&&t.replies[0]?t.replies[0].count:0} respostas</div></a>`).join(""):'<div class="card sub">Nenhum tópico ainda. Seja o primeiro!</div>')}
+ (rows.length?rows.map(t=>`<a class="card" href="#t-${esc(t.id)}"><span class="tag">${esc(t.category)}</span> <b>${esc(t.title)}</b><div class="sub">${av(t,20)}${esc(t.profiles&&t.profiles.nick||"?")} · ${when(t.created_at)} · ${t.replies&&t.replies[0]?t.replies[0].count:0} respostas</div></a>`).join(""):'<div class="card sub">Nenhum tópico ainda. Seja o primeiro!</div>')}
 async function pThread(id){if(!UUID.test(id))return '<div class="card">Tópico não encontrado.</div>';
- const t=(await api(`/rest/v1/threads?id=eq.${id}&select=id,title,body,category,created_at,author,profiles(nick)`))[0];if(!t)return '<div class="card">Tópico não encontrado.</div>';
- const rs=await api(`/rest/v1/replies?thread_id=eq.${id}&select=id,body,created_at,author,profiles(nick)&order=created_at.asc`);
+ const t=(await api(`/rest/v1/threads?id=eq.${id}&select=id,title,body,category,created_at,author,profiles(nick,avatar_url)`))[0];if(!t)return '<div class="card">Tópico não encontrado.</div>';
+ const rs=await api(`/rest/v1/replies?thread_id=eq.${id}&select=id,body,created_at,author,profiles(nick,avatar_url)&order=created_at.asc`);
  const del=(who,a,i)=>ME&&(isA()||ME.id===who)?` · <a href="#" data-a="${a}" data-id="${esc(i)}">apagar</a>`:"";
- return `<a href="#forum" class="sub">← Voltar ao fórum</a><article class="card"><span class="tag">${esc(t.category)}</span><h3>${esc(t.title)}</h3><p class="body">${esc(t.body)}</p><div class="sub">@${esc(t.profiles&&t.profiles.nick||"?")} · ${when(t.created_at)}${del(t.author,"tdel",t.id)}</div></article><h3>${rs.length} resposta(s)</h3>`+
- rs.map(r=>`<div class="card"><p class="body">${esc(r.body)}</p><div class="sub">@${esc(r.profiles&&r.profiles.nick||"?")} · ${when(r.created_at)}${del(r.author,"rdel",r.id)}</div></div>`).join("")+
+ return `<a href="#forum" class="sub">← Voltar ao fórum</a><article class="card"><span class="tag">${esc(t.category)}</span><h3>${esc(t.title)}</h3><p class="body">${esc(t.body)}</p><div class="sub">${av(t,20)}${esc(t.profiles&&t.profiles.nick||"?")} · ${when(t.created_at)}${del(t.author,"tdel",t.id)}</div></article><h3>${rs.length} resposta(s)</h3>`+
+ rs.map(r=>`<div class="card"><p class="body">${esc(r.body)}</p><div class="sub">${av(r,20)}${esc(r.profiles&&r.profiles.nick||"?")} · ${when(r.created_at)}${del(r.author,"rdel",r.id)}</div></div>`).join("")+
  (ME?`<div class="card">${`<label class="f">Sua resposta<textarea id="rb" maxlength="1500"></textarea></label>`}<div class="err" id="fe2"></div><button class="btn p" data-a="rsend" data-id="${id}">Responder</button></div>`:'<div class="card sub">Entre na sua conta para responder.</div>')}
 async function pAdmin(){const ad=await api("/rest/v1/profiles?role=eq.admin&select=id,nick,is_owner&order=nick.asc");
- return `<h2>Administração</h2><div class="card"><h3>Administradores</h3>${isCeo()?`<div class="row" style="flex-wrap:nowrap"><label class="f" style="flex:1;margin:0"><input id="an" placeholder="Nickname exato da pessoa" maxlength="20" aria-label="Nickname do novo administrador"></label><button class="btn p" data-a="aadd">Adicionar</button></div><div class="err" id="fe2"></div>`:'<p class="sub">Só o CEO adiciona ou remove administradores.</p>'}${ad.map(u=>`<div class="row between" style="padding:8px 0;border-top:1px solid var(--line)"><span>@${esc(u.nick)} ${u.is_owner?'<span class="tag">CEO</span>':""}</span>${isCeo()&&!u.is_owner?`<button class="btn d sm" data-a="arem" data-id="${esc(u.id)}" data-n="${esc(u.nick)}">Remover</button>`:""}</div>`).join("")}</div>
+ return `<h2>Administração</h2><div class="card"><h3>Administradores</h3>${isCeo()?`<div class="row" style="flex-wrap:nowrap"><label class="f" style="flex:1;margin:0"><input id="an" placeholder="Nickname exato da pessoa" maxlength="20" aria-label="Nickname do novo administrador"></label><button class="btn p" data-a="aadd">Adicionar</button></div><div class="err" id="fe2"></div>`:'<p class="sub">Só o CEO adiciona ou remove administradores.</p>'}${ad.map(u=>`<div class="row between" style="padding:8px 0;border-top:1px solid var(--line)"><span>${av(u,24)}${esc(u.nick)} ${u.is_owner?'<span class="tag">CEO</span>':""}</span>${isCeo()&&!u.is_owner?`<button class="btn d sm" data-a="arem" data-id="${esc(u.id)}" data-n="${esc(u.nick)}">Remover</button>`:""}</div>`).join("")}</div>
  <div class="card"><h3>Conteúdo</h3><p class="sub">Publique notícias e formações nas próprias páginas, pelo botão “+ Publicar”.</p></div>`}
 
 /* ---------- contas ---------- */
@@ -192,7 +200,7 @@ const regF=()=>fld("r_n","Nome completo",'maxlength="80" autocomplete="name"')+f
  '<label class="ck"><input type="checkbox" id="ck_t"><span>Li e aceito os <a href="#" data-a="doc" data-id="termos">Termos de Uso</a>.</span></label><label class="ck"><input type="checkbox" id="ck_p"><span>Li a <a href="#" data-a="doc" data-id="priv">Política de Privacidade</a>.</span></label><label class="ck"><input type="checkbox" id="ck_m"><span>Quero receber novidades por e-mail (opcional).</span></label><div class="err" id="fe"></div><button class="btn p" data-a="rg">Criar conta</button>';
 function authDlg(m){dlg(`<h3>${m==="reg"?"Criar conta":"Entrar"}</h3><div class="tabs"><button class="btn tab ${m==="reg"?"":"on"}" data-a="auth" data-id="login">Entrar</button><button class="btn tab ${m==="reg"?"on":""}" data-a="auth" data-id="reg">Criar conta</button></div>`+(m==="reg"?regF():loginF()))}
 const codeF=(title,txt,btn,act,extra)=>dlg(`<h3>${title}</h3><p class="sub">${txt}</p>${fld("v_c","Código de 6 dígitos",'inputmode="numeric" maxlength="8" autocomplete="one-time-code"')}${extra||""}<div class="err" id="fe"></div><div class="row"><button class="btn p" data-a="${act}">${btn}</button><button class="btn" data-a="close">Cancelar</button></div>`);
-async function enter(j){setSes(j);await loadMe();closeDlg();toast(ME?"Bem-vindo, @"+ME.nick+"!":"Sessão iniciada.");render()}
+async function enter(j){setSes(j);await loadMe();closeDlg();toast(ME?"Bem-vindo, "+ME.nick+"!":"Sessão iniciada.");render()}
 
 /* ---------- ações ---------- */
 const A={
@@ -234,30 +242,33 @@ const A={
  aadd:async()=>{if(!isCeo())return;const q=val("an");if(!/^[A-Za-z0-9_.]{3,20}$/.test(q))return($("#fe2").textContent="Digite o nickname exato.");
   const r=await api("/rest/v1/profiles?nick=ilike."+encodeURIComponent(q)+"&select=id,nick,role&limit=5"),u=r.find(x=>x.nick.toLowerCase()===q.toLowerCase());
   if(!u)return($("#fe2").textContent="Não há conta com esse nickname. A pessoa precisa criar conta primeiro.");if(u.role==="admin")return($("#fe2").textContent="Essa pessoa já é administradora.");
-  await api("/rest/v1/rpc/admin_set_role",{method:"POST",body:{p_user:u.id,p_role:"admin"}});toast("@"+u.nick+" agora é administrador.");render()},
- arem:(id,el)=>{if(!isCeo())return;dlg(`<h3>Remover administrador?</h3><p class="sub">@${esc(el.dataset.n)} perde o acesso à administração. A conta continua existindo.</p><div class="row"><button class="btn d" data-a="arem2" data-id="${esc(id)}">Remover</button><button class="btn" data-a="close">Cancelar</button></div>`)},
+  await api("/rest/v1/rpc/admin_set_role",{method:"POST",body:{p_user:u.id,p_role:"admin"}});toast(u.nick+" agora é administrador.");render()},
+ arem:(id,el)=>{if(!isCeo())return;dlg(`<h3>Remover administrador?</h3><p class="sub">${esc(el.dataset.n)} perde o acesso à administração. A conta continua existindo.</p><div class="row"><button class="btn d" data-a="arem2" data-id="${esc(id)}">Remover</button><button class="btn" data-a="close">Cancelar</button></div>`)},
  arem2:async id=>{if(!isCeo()||!UUID.test(id))return;await api("/rest/v1/rpc/admin_set_role",{method:"POST",body:{p_user:id,p_role:"membro"}});closeDlg();toast("Administrador removido.");render()}
 };
 /* ---------- Fichas, Batalha e balão do mascote (etapa 2) ---------- */
 const rpc=(f,b)=>api("/rest/v1/rpc/"+f,{method:"POST",body:b||{}});
 const POS=["GOL","ZAG","LE","LD","VOL","MC","MEI","PE","PD","SA","CA"],MODES={"1v1":2,"2v2":4,"3v3":6},TIER=e=>e<1000?"Bronze":e<1100?"Prata":e<1200?"Ouro":"Elite";
 let LB="1v1",POLLING=false,ACT=null,LASTB=null;
+const avUrl=u=>typeof u==="string"&&u.startsWith(SB+"/storage/v1/object/public/images/")?u:"";
+const av=(x,z)=>{z=z||26;const p=x&&(x.profiles||x)||{},u=avUrl(p.avatar_url),st=`width:${z}px;height:${z}px;font-size:${Math.round(z*.5)}px`;
+ return u?`<img class="av" src="${esc(u)}" alt="" loading="lazy" style="${st}">`:`<span class="av" aria-hidden="true" style="${st}">${esc(String(p.nick||"?").charAt(0).toUpperCase())}</span>`};
 const nk=x=>esc(x&&x.profiles&&x.profiles.nick||"?");
 async function pFichas(){
- const rows=await api("/rest/v1/player_cards?select=id,nome,pos,ovr,estilo,fortes,descricao,author,created_at,profiles(nick),card_likes(count)&order=created_at.desc&limit=60");
+ const rows=await api("/rest/v1/player_cards?select=id,nome,pos,ovr,estilo,fortes,descricao,author,created_at,profiles(nick,avatar_url),card_likes(count)&order=created_at.desc&limit=60");
  let liked=new Set();if(ME){try{liked=new Set((await api("/rest/v1/card_likes?user_id=eq."+ME.id+"&select=card_id")).map(x=>x.card_id))}catch(e){}}
- return `<div class="row between"><h2>🃏 Fichas</h2><button class="btn p" data-a="fnew">Nova ficha</button></div>`+(rows.length?`<div class="grid">`+rows.map(c=>`<article class="card"><div class="row between"><span class="tag">${esc(c.pos)}</span><b>${esc(c.ovr)} OVR</b></div><h3>${esc(c.nome)}</h3><p class="sub">${esc(c.estilo||"")}${c.fortes?" · "+esc(c.fortes):""}</p>${c.descricao?`<p class="body">${esc(c.descricao)}</p>`:""}<div class="row between"><span class="sub">@${nk(c)}</span><span><button class="btn sm" data-a="flike" data-id="${esc(c.id)}">${liked.has(c.id)?"♥":"♡"} ${c.card_likes&&c.card_likes[0]?c.card_likes[0].count:0}</button>${ME&&(isA()||ME.id===c.author)?` <a href="#" data-a="fdel" data-id="${esc(c.id)}">apagar</a>`:""}</span></div></article>`).join("")+`</div>`:'<div class="card sub">Nenhuma ficha ainda.</div>')}
+ return `<div class="row between"><h2>🃏 Fichas</h2><button class="btn p" data-a="fnew">Nova ficha</button></div>`+(rows.length?`<div class="grid">`+rows.map(c=>`<article class="card"><div class="row between"><span class="tag">${esc(c.pos)}</span><b>${esc(c.ovr)} OVR</b></div><h3>${esc(c.nome)}</h3><p class="sub">${esc(c.estilo||"")}${c.fortes?" · "+esc(c.fortes):""}</p>${c.descricao?`<p class="body">${esc(c.descricao)}</p>`:""}<div class="row between"><span class="sub">${av(c,22)}${nk(c)}</span><span><button class="btn sm" data-a="flike" data-id="${esc(c.id)}">${liked.has(c.id)?"♥":"♡"} ${c.card_likes&&c.card_likes[0]?c.card_likes[0].count:0}</button>${ME&&(isA()||ME.id===c.author)?` <a href="#" data-a="fdel" data-id="${esc(c.id)}">apagar</a>`:""}</span></div></article>`).join("")+`</div>`:'<div class="card sub">Nenhuma ficha ainda.</div>')}
 async function ratingBox(){const r=await api("/rest/v1/ratings?user_id=eq."+ME.id+"&select=mode,elo,wins,losses");return r.length?`<div class="card"><b>Seu ranking</b>${r.map(x=>`<div class="row between"><span>${esc(x.mode)}</span><span>${x.elo} ELO · ${TIER(x.elo)} · ${x.wins}V ${x.losses}D</span></div>`).join("")}</div>`:""}
-async function lbHtml(){const r=await api(`/rest/v1/ratings?mode=eq.${LB}&select=elo,wins,losses,profiles(nick)&order=elo.desc&limit=10`);
- return `<div class="card"><h3>🏆 Ranking</h3><div class="tabs">${Object.keys(MODES).map(m=>`<button class="btn tab ${m===LB?"on":""}" data-a="lbm" data-id="${m}">${m}</button>`).join("")}</div>`+(r.length?r.map((x,i)=>`<div class="row between" style="padding:4px 0"><span>${i+1}. @${nk(x)} <span class="tag">${TIER(x.elo)}</span></span><span class="sub">${x.elo} ELO · ${x.wins}V ${x.losses}D</span></div>`).join(""):'<p class="sub">Ainda sem jogadores no ranking.</p>')+`</div>`}
+async function lbHtml(){const r=await api(`/rest/v1/ratings?mode=eq.${LB}&select=elo,wins,losses,profiles(nick,avatar_url)&order=elo.desc&limit=10`);
+ return `<div class="card"><h3>🏆 Ranking</h3><div class="tabs">${Object.keys(MODES).map(m=>`<button class="btn tab ${m===LB?"on":""}" data-a="lbm" data-id="${m}">${m}</button>`).join("")}</div>`+(r.length?r.map((x,i)=>`<div class="row between" style="padding:4px 0"><span>${i+1}. ${av(x,26)}${nk(x)} <span class="tag">${TIER(x.elo)}</span></span><span class="sub">${x.elo} ELO · ${x.wins}V ${x.losses}D</span></div>`).join(""):'<p class="sub">Ainda sem jogadores no ranking.</p>')+`</div>`}
 const myBattleQ="/rest/v1/battle_players?user_id=eq.%ID%&battles.status=in.(ready,play,dispute)&select=team,is_captain,accepted,battles!inner(id,mode,status,host_id,vc_name,ready_deadline,winner)";
 async function myBattle(){if(!ME)return null;const r=await api(myBattleQ.replace("%ID%",ME.id));return r&&r[0]?r[0].battles:null}
 async function pBatalha(){
  let h=`<h2>⚔️ Batalha</h2><div class="warn">Sem apostas: aqui o foco é ranking e achar com quem jogar. O jogador sorteado cria a sala no eFootball e envia o código no chat da partida.</div>`;
  if(ME){const b=await myBattle();if(b){LASTB=b.id;return h+await pMatchBody(b.id)}if(LASTB)return h+await pMatchBody(LASTB);
   const q=(await api("/rest/v1/queue_entries?user_id=eq."+ME.id+"&select=mode,joined_at"))[0];
-  if(q){rpc("tick_queue",{p_mode:q.mode}).catch(()=>{});const all=await api("/rest/v1/queue_entries?mode=eq."+q.mode+"&select=user_id,elo,profiles(nick)&order=joined_at.asc");
-   return h+`<div class="card"><h3>Na fila ${esc(q.mode)} · ${all.length}/${MODES[q.mode]}</h3>${all.map(x=>`<div class="row between" style="padding:4px 0"><span>@${nk(x)}${ME.id===x.user_id?" (você)":""}</span><span class="sub">${x.elo} ELO</span></div>`).join("")}<p class="sub">Procurando jogadores de nível parecido. A faixa de ELO aumenta com o tempo.</p><button class="btn" data-a="bleave">Sair da fila</button></div>`+await lbHtml()}
+  if(q){rpc("tick_queue",{p_mode:q.mode}).catch(()=>{});const all=await api("/rest/v1/queue_entries?mode=eq."+q.mode+"&select=user_id,elo,profiles(nick,avatar_url)&order=joined_at.asc");
+   return h+`<div class="card"><h3>Na fila ${esc(q.mode)} · ${all.length}/${MODES[q.mode]}</h3>${all.map(x=>`<div class="row between" style="padding:4px 0"><span>${av(x,24)}${nk(x)}${ME.id===x.user_id?" (você)":""}</span><span class="sub">${x.elo} ELO</span></div>`).join("")}<p class="sub">Procurando jogadores de nível parecido. A faixa de ELO aumenta com o tempo.</p><button class="btn" data-a="bleave">Sair da fila</button></div>`+await lbHtml()}
   h+=await ratingBox()}
  const qs=await api("/rest/v1/queue_entries?select=mode"),cnt=m=>qs.filter(x=>x.mode===m).length;
  h+=`<div class="grid">`+Object.keys(MODES).map(m=>`<div class="card"><h3>${m}</h3><p class="sub">${MODES[m]} jogadores${m==="1v1"?" · duelo direto":" · capitães por equipe"}<br>${cnt(m)} na fila agora</p><button class="btn p" data-a="bjoin" data-id="${m}">Entrar na fila</button></div>`).join("")+`</div>`;
@@ -265,17 +276,17 @@ async function pBatalha(){
 const seen=(id,ms)=>{if(ms.length&&(CUR==="batalha"||CUR==="b-"+id))try{localStorage.setItem("efb_seen_"+id,String(ms[ms.length-1].id))}catch(e){}};
 async function pMatchBody(id){
  const b=(await api(`/rest/v1/battles?id=eq.${id}&select=id,mode,status,host_id,vc_name,ready_deadline,winner`))[0];if(!b)return '<div class="card">Partida não encontrada.</div>';
- const ps=await api(`/rest/v1/battle_players?battle_id=eq.${id}&select=user_id,team,is_captain,accepted,elo_before,elo_delta,profiles(nick)`);
- const ms=await api(`/rest/v1/battle_messages?battle_id=eq.${id}&select=id,user_id,body,created_at,profiles(nick)&order=id.asc&limit=150`);seen(id,ms);
- const mine=ME&&ps.find(p=>p.user_id===ME.id),team=t=>ps.filter(p=>p.team===t).map(p=>`<div class="row between" style="padding:3px 0"><span>@${nk(p)} ${p.is_captain?"👑":""}${p.user_id===b.host_id?"🏠":""}${b.status==="ready"?(p.accepted?" ✅":" ⏳"):""}</span><span class="sub">${p.elo_delta!=null?(p.elo_delta>0?"+":"")+p.elo_delta+" · ":""}${esc(p.elo_before)}</span></div>`).join("");
+ const ps=await api(`/rest/v1/battle_players?battle_id=eq.${id}&select=user_id,team,is_captain,accepted,elo_before,elo_delta,profiles(nick,avatar_url)`);
+ const ms=await api(`/rest/v1/battle_messages?battle_id=eq.${id}&select=id,user_id,body,created_at,profiles(nick,avatar_url)&order=id.asc&limit=150`);seen(id,ms);
+ const mine=ME&&ps.find(p=>p.user_id===ME.id),team=t=>ps.filter(p=>p.team===t).map(p=>`<div class="row between" style="padding:3px 0"><span>${av(p,24)}${nk(p)} ${p.is_captain?"👑":""}${p.user_id===b.host_id?"🏠":""}${b.status==="ready"?(p.accepted?" ✅":" ⏳"):""}</span><span class="sub">${p.elo_delta!=null?(p.elo_delta>0?"+":"")+p.elo_delta+" · ":""}${esc(p.elo_before)}</span></div>`).join("");
  const ST={ready:"Aguardando aceite",play:"Em andamento",dispute:"Em disputa",done:"Encerrada",cancelled:"Cancelada"},open=["ready","play","dispute"].includes(b.status);let act="";
  if(b.status==="ready"&&mine)act=mine.accepted?'<p class="sub">Você aceitou. Aguardando os outros jogadores…</p>':`<div class="row"><button class="btn p" data-a="bacc" data-id="${id}">Aceitar partida</button><button class="btn" data-a="bdec" data-id="${id}">Recusar</button></div><p class="sub">Aceite até ${new Date(b.ready_deadline).toLocaleTimeString("pt-BR")}.</p>`;
  if(b.status==="play"&&mine)act=(mine.is_captain?`<p class="sub">Você é capitão: informe quem venceu. O outro capitão confirma.</p><div class="row"><button class="btn p" data-a="bres" data-id="${id}" data-w="${mine.team}">Minha equipe venceu</button><button class="btn" data-a="bres" data-id="${id}" data-w="${mine.team==="A"?"B":"A"}">Minha equipe perdeu</button></div>`:'<p class="sub">Só os capitães informam o resultado.</p>')+`<div class="row" style="margin-top:8px"><button class="btn d sm" data-a="bquit" data-id="${id}">Abandonar (conta como derrota)</button></div>`;
  if(b.status==="dispute")act='<div class="warn">Os capitães informaram resultados diferentes. Um administrador vai analisar a conversa.</div>';
  if(isA()&&["play","dispute"].includes(b.status))act+=`<div class="card"><b>Decisão do administrador</b><div class="row" style="margin-top:6px"><button class="btn sm" data-a="bres2" data-id="${id}" data-w="A">Equipe A venceu</button><button class="btn sm" data-a="bres2" data-id="${id}" data-w="B">Equipe B venceu</button><button class="btn sm d" data-a="bres2" data-id="${id}" data-w="">Anular</button></div></div>`;
  if(b.status==="done")act=`<div class="card"><b>Vitória da equipe ${esc(b.winner)}</b><div class="sub">O ELO foi atualizado.</div></div>`;
- const mm=ms.map(m=>m.user_id?`<div style="margin:5px 0"><b>${nk(m)}:</b> ${esc(m.body)}</div>`:`<div class="sub" style="text-align:center;margin:6px 0">${esc(m.body)}</div>`).join("");
- return `<div class="card"><div class="row between"><h3>Partida ${esc(b.mode)}</h3><span class="tag">${ST[b.status]||esc(b.status)}</span></div><div class="grid"><div><b>Equipe A</b>${team("A")}</div><div><b>Equipe B</b>${team("B")}</div></div>${b.vc_name?`<div class="warn">🔊 Entrem no canal de voz do Discord: <b>${esc(b.vc_name)}</b></div>`:""}${mine&&b.host_id===ME.id&&open?'<div class="warn"><b>Você foi sorteado para criar a sala</b> no eFootball. Envie o código no chat.</div>':""}</div>${act}<div class="card"><h3>Chat da partida</h3><div id="bc" style="height:220px;overflow:auto">${mm||'<p class="sub">Sem mensagens.</p>'}</div>${open&&mine?`<div class="row" style="flex-wrap:nowrap;margin-top:8px"><label class="f" style="flex:1;margin:0"><input id="bm" maxlength="500" placeholder="Mensagem ou código da sala…" autocomplete="off"></label><button class="btn p" data-a="bsend" data-id="${id}">Enviar</button></div>`:""}</div>${b.status==="done"||b.status==="cancelled"?'<button class="btn p" data-a="bback">Voltar à fila</button>':""}`}
+ const mm=ms.map(m=>m.user_id?`<div style="margin:5px 0"><b>${av(m,18)}${nk(m)}:</b> ${esc(m.body)}</div>`:`<div class="sub" style="text-align:center;margin:6px 0">${esc(m.body)}</div>`).join("");
+ return `<div class="card"><div class="row between"><h3>Partida ${esc(b.mode)}</h3><span class="tag">${ST[b.status]||esc(b.status)}</span></div><div class="grid"><div><b>Equipe A</b>${team("A")}</div><div><b>Equipe B</b>${team("B")}</div></div>${b.vc_name?`<div class="warn">🔊 Entrem no canal de voz do Discord: <b>${esc(b.vc_name)}</b><div style="margin-top:6px"><a class="btn sm p" href="${DISCORD}" target="_blank" rel="noopener noreferrer">🔊 Abrir o Discord</a></div></div>`:""}${mine&&b.host_id===ME.id&&open?'<div class="warn"><b>Você foi sorteado para criar a sala</b> no eFootball. Envie o código no chat.</div>':""}</div>${act}<div class="card"><h3>Chat da partida</h3><div id="bc" style="height:220px;overflow:auto">${mm||'<p class="sub">Sem mensagens.</p>'}</div>${open&&mine?`<div class="row" style="flex-wrap:nowrap;margin-top:8px"><label class="f" style="flex:1;margin:0"><input id="bm" maxlength="500" placeholder="Mensagem ou código da sala…" autocomplete="off"></label><button class="btn p" data-a="bsend" data-id="${id}">Enviar</button></div>`:""}</div>${b.status==="done"||b.status==="cancelled"?'<button class="btn p" data-a="bback">Voltar à fila</button>':""}`}
 async function pMatchById(id){return UUID.test(id)?`<a href="#batalha" class="sub">← Batalha</a>`+await pMatchBody(id):'<div class="card">Partida não encontrada.</div>'}
 /* balão do mascote: avisa partida para aceitar e mensagens novas */
 const setBadge=n=>{const e=$("#bn");if(e){e.textContent=n>99?"99+":n;e.classList.toggle("on",n>0)}};
@@ -344,7 +355,7 @@ setInterval(health,20000);
 /* suporte */
 const SUP={o:false,t:null,list:false};let SUPL=[];
 const supSeen=id=>{try{localStorage.setItem("efb_sup_seen",String(id))}catch(e){}};
-async function supThreads(){const th=await api("/rest/v1/support_threads?select=id,status,updated_at,profiles(nick)&status=neq.resolved&order=updated_at.desc&limit=50");if(!th.length)return[];
+async function supThreads(){const th=await api("/rest/v1/support_threads?select=id,status,updated_at,profiles(nick,avatar_url)&status=neq.resolved&order=updated_at.desc&limit=50");if(!th.length)return[];
  const ms=await api("/rest/v1/support_messages?select=thread_id,role,id&order=id.desc&limit=300"),last={};ms.forEach(m=>{if(!(m.thread_id in last))last[m.thread_id]=m});
  return th.map(t=>({...t,wait:!!last[t.id]&&last[t.id].role==="user"}))}
 async function supCount(){
@@ -353,7 +364,7 @@ async function supCount(){
  if(SUP.o){if(ms[0])supSeen(ms[0].id);supRefresh();return 0}
  return ms.filter(m=>m.role==="admin"&&m.id>s).length}
 async function supRefresh(){if(!SUP.o)return;
- if(SUP.list){const e=$("#sl");if(!e)return;e.innerHTML=SUPL.length?SUPL.map(t=>`<div class="card" data-a="sthread" data-id="${esc(t.id)}" style="cursor:pointer"><div class="row between"><b>@${esc(t.profiles&&t.profiles.nick||"?")}</b>${t.wait?'<span class="tag">aguardando resposta</span>':'<span class="sub">respondido</span>'}</div><div class="sub">${when(t.updated_at)}</div></div>`).join(""):'<div class="card sub">Nenhuma conversa em aberto.</div>';return}
+ if(SUP.list){const e=$("#sl");if(!e)return;e.innerHTML=SUPL.length?SUPL.map(t=>`<div class="card" data-a="sthread" data-id="${esc(t.id)}" style="cursor:pointer"><div class="row between"><b>${av(t,20)}${esc(t.profiles&&t.profiles.nick||"?")}</b>${t.wait?'<span class="tag">aguardando resposta</span>':'<span class="sub">respondido</span>'}</div><div class="sub">${when(t.updated_at)}</div></div>`).join(""):'<div class="card sub">Nenhuma conversa em aberto.</div>';return}
  const e=$("#sc");if(!e)return;const q=SUP.t?`&thread_id=eq.${SUP.t}`:"";const ms=await api(`/rest/v1/support_messages?select=id,role,body&order=id.asc&limit=100${q}`);
  const near=e.scrollHeight-e.scrollTop-e.clientHeight<60;e.innerHTML=ms.length?ms.map(m=>`<div class="sm ${m.role==="admin"?"a":"u"}"><b>${m.role==="admin"?"Equipe":(isA()?"Usuário":"Você")}:</b> ${esc(m.body)}</div>`).join(""):'<p class="sub">Conte como podemos ajudar. Um administrador responde por aqui.</p>';
  if(near||!e.dataset.i){e.scrollTop=e.scrollHeight;e.dataset.i=1}}
@@ -375,6 +386,24 @@ Object.assign(A,{
   <div class="card" data-a="sopen" style="cursor:pointer">🛟 <b>${isA()?"Caixa de suporte":"Falar com o suporte"}</b>${isA()&&waiting?` <span class="tag">${waiting} aguardando</span>`:""}<div class="sub">${isA()?"Conversas dos usuários":"Fale com a equipe"}</div></div>
   <div class="card row between"><span>🔔 Som das notificações</span><button class="btn sm" data-a="snd">${SND.on?"Ligado":"Desligado"}</button></div><button class="btn" data-a="close">Fechar</button>`)}
 });
+</script>
+<script>
+/* ===== Foto de perfil ===== */
+async function cropAvatar(f){let src;try{src=await createImageBitmap(f)}catch(e){src=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=URL.createObjectURL(f)})}
+ const w=src.width,h=src.height,m=Math.min(w,h),c=document.createElement("canvas");c.width=c.height=256;c.getContext("2d").drawImage(src,(w-m)/2,(h-m)/2,m,m,0,0,256,256);
+ return new Promise((ok,no)=>c.toBlob(b=>b?ok(b):no(new Error("falha")),"image/jpeg",.85))}
+const avPath=u=>u?u.slice((SB+"/storage/v1/object/public/images/").length):"";
+async function perfilDlg(){dlg(`<h3>Meu perfil</h3><div style="text-align:center;margin:10px 0">${av(ME,96)}<div><b>${esc(ME.nick)}</b></div></div><label class="btn p" style="display:flex;justify-content:center;cursor:pointer">📷 Escolher foto<input id="pf" type="file" accept="image/jpeg,image/png,image/webp" hidden></label><p class="sub">A foto aparece no ranking, fórum, fichas e partidas. Use uma imagem sua ou do seu time, sem conteúdo ofensivo.</p><div class="err" id="fe"></div><div class="row">${avUrl(ME.avatar_url)?'<button class="btn d" data-a="pfdel">Remover foto</button>':""}<button class="btn" data-a="close">Fechar</button></div>`)}
+Object.assign(A,{perfil:()=>{if(ME)perfilDlg()},
+ pfdel:async()=>{const old=avPath(avUrl(ME.avatar_url));await rpc("set_my_avatar",{p_url:null});if(old)fetch(SB+"/storage/v1/object/images/"+old,{method:"DELETE",headers:{apikey:KEY,Authorization:"Bearer "+SES.access_token}}).catch(()=>{});ME.avatar_url=null;toast("Foto removida.");render(true);perfilDlg()}});
+document.addEventListener("change",async e=>{if(e.target.id!=="pf"||!e.target.files[0]||!ME)return;const f=e.target.files[0];
+ if(!/^image\//.test(f.type)||f.size>15e6)return fail("Escolha uma imagem (JPG, PNG ou WebP) de até 15 MB.");
+ try{const blob=await cropAvatar(f);if(SES.expires_at*1000<Date.now()+60000)await refresh();
+  const path=ME.id+"/avatar-"+Date.now()+".jpg",r=await fetch(SB+"/storage/v1/object/images/"+path,{method:"POST",headers:{apikey:KEY,Authorization:"Bearer "+SES.access_token,"Content-Type":"image/jpeg"},body:blob});
+  if(!r.ok)throw new Error("O envio da foto falhou ("+r.status+").");
+  const old=avPath(avUrl(ME.avatar_url)),url=SB+"/storage/v1/object/public/images/"+path;await rpc("set_my_avatar",{p_url:url});
+  if(old)fetch(SB+"/storage/v1/object/images/"+old,{method:"DELETE",headers:{apikey:KEY,Authorization:"Bearer "+SES.access_token}}).catch(()=>{});
+  ME.avatar_url=url;toast("Foto atualizada!");render(true);perfilDlg()}catch(err){fail(err.message||"Não foi possível enviar a foto.")}});
 </script>
 </body>
 </html>
