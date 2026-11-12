@@ -241,7 +241,8 @@ function msgOf(j,st){const m=j&&(j.msg||j.message||j.error_description||j.error)
  if(c==="42501"||st===403)return "Sem permissão para isso.";
  if(c==="23514"||c==="22001")return "Algum campo está fora das regras de tamanho ou formato.";
  if(/password/i.test(m)&&/weak|should be/i.test(m))return "Senha fraca. Use 8 ou mais caracteres, com letras e números.";
- if(st>=500)return "Servidor indisponível. Tente de novo em instantes.";
+ if(/sending (confirmation|recovery|magic link|email)|error sending/i.test(m))return "Não foi possível enviar o e-mail agora. O envio de e-mails do site ainda está sendo configurado. Tente mais tarde.";
+ if(st>=500)return "Servidor indisponível. Tente de novo em instantes."+(m?" ("+String(m).slice(0,140)+")":"");
  return m||"Erro "+st}
 async function api(path,o){o=o||{};const auth=o.auth!==false;
  if(auth&&SES&&SES.expires_at*1000<Date.now()+60000)await refresh();
