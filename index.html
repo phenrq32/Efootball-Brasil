@@ -192,6 +192,13 @@ small{font-size:max(.75rem,12px)}
 .lc-img:not(:has(img)){background:linear-gradient(135deg,#0d2217,#14301f)}
 .lc-img:not(:has(img))::after{content:"Sem foto";position:absolute;inset:0;display:grid;place-items:center;color:#9bb3a4;font-size:.9rem}
 @media(max-width:520px){.mb{width:56px;height:72px}nav a{font-size:.78rem}}
+.mtabs{display:flex;gap:6px;margin:10px 0;overflow-x:auto}.mtabs button{flex:1;min-height:44px;white-space:nowrap;border:1px solid var(--line);background:var(--card,#0d2217);color:var(--tx);border-radius:12px;padding:8px 12px;font:inherit;cursor:pointer}.mtabs button.on{background:rgba(255,223,0,.14);border-color:rgba(255,223,0,.45);color:var(--y)}
+.ub{display:inline-block;min-width:20px;padding:0 6px;border-radius:10px;background:#e33;color:#fff;font-size:.72rem;text-align:center;line-height:20px}
+.crow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);color:inherit;text-decoration:none;min-height:44px}.crow:first-child{border-top:0}.crow .cm{flex:1;min-width:0;display:flex;flex-direction:column}.crow small{color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmsgs{display:flex;flex-direction:column;gap:6px;max-height:52vh;min-height:160px;overflow-y:auto;padding:10px 4px;margin:10px 0}
+.cb{align-self:flex-start;max-width:82%;background:#14301f;border:1px solid var(--line);border-radius:14px 14px 14px 4px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;overflow-wrap:anywhere;white-space:pre-wrap}.cb.me{align-self:flex-end;background:#0b5a2b;border-radius:14px 14px 4px 14px}.cb small{opacity:.7;font-size:.72rem}
+.cimg{max-width:100%;max-height:220px;border-radius:10px;cursor:zoom-in;object-fit:cover}
+.cin{display:flex;gap:8px;align-items:flex-end}.cin textarea{flex:1;min-height:48px;line-height:1.3;max-height:120px;border-radius:12px;border:1px solid var(--line);background:#07150d;color:var(--tx);padding:10px;font:inherit;resize:vertical}
 </style>
 </head>
 <body>
@@ -254,7 +261,7 @@ const wait=()=>'<div class="card sub">Carregando…</div>';
 
 async function render(q){
  const nav=NAV.slice();if(isA())nav.push(["admin","Admin","🛡️"]);
- $("#nav").innerHTML=nav.map(n=>`<a href="#${n[0]}" class="${CUR===n[0]||(CUR.startsWith("t-")&&n[0]==="forum")||(CUR.startsWith("m-")&&n[0]==="marketplace")||(CUR.startsWith("b-")&&n[0]==="batalha")?"on":""}"><span class="ni" aria-hidden="true">${n[2]}</span> ${n[1]}</a>`).join("");
+ $("#nav").innerHTML=nav.map(n=>`<a href="#${n[0]}" class="${CUR===n[0]||(CUR.startsWith("t-")&&n[0]==="forum")||((CUR.startsWith("m-")||CUR.startsWith("c-"))&&n[0]==="marketplace")||(CUR.startsWith("b-")&&n[0]==="batalha")?"on":""}"><span class="ni" aria-hidden="true">${n[2]}</span> ${n[1]}</a>`).join("");
  {const on=$("#nav a.on");if(on)$("#nav").scrollLeft=Math.max(0,on.offsetLeft-40)}
  $("#user").innerHTML=ME?`<button class="btn sm" data-a="perfil" aria-label="Meu perfil">${av(ME,24)}<span class="unick">${esc(ME.nick)}${isCeo()?" · CEO":isA()?" · admin":""}</span></button> <button class="btn sm" data-a="out">Sair</button>`:'<button class="btn sm p" data-a="auth">Entrar</button>';
  const p=$("#pg");if(!q)p.innerHTML=wait();const mine=++render.n;let h;
@@ -269,6 +276,7 @@ async function page(){
  if(CUR==="formacoes")return pContent("formacao");
  if(CUR==="forum")return pForum();
  if(CUR.startsWith("m-"))return pListing(CUR.slice(2));
+ if(CUR.startsWith("c-"))return pChat(CUR.slice(2));
  if(CUR==="marketplace")return pMarket();
  if(CUR==="fichas")return pFichas();
  if(CUR==="batalha")return pBatalha();
@@ -518,7 +526,7 @@ document.addEventListener("change",async e=>{if(e.target.id!=="pf"||!e.target.fi
 const BRL=c=>(c/100).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 const imgOk=u=>typeof u==="string"&&u.startsWith(SB+"/storage/v1/object/public/images/");
 const cpfOk=c=>{c=String(c).replace(/\D/g,"");if(c.length!==11||/^(\d)\1+$/.test(c))return false;const d=n=>{let t=0;for(let i=0;i<n;i++)t+=+c[i]*(n+1-i);t=t*10%11;return t===10?0:t};return d(9)===+c[9]&&d(10)===+c[10]};
-let MK={max:10000,ord:"new"},MKR=[];
+let MK={max:10000,ord:"new",view:"all"},MKR=[];
 async function resizeImg(f,max){let src;try{src=await createImageBitmap(f)}catch(e){src=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=URL.createObjectURL(f)})}
  const k=Math.min(1,max/Math.max(src.width,src.height)),c=document.createElement("canvas");c.width=Math.round(src.width*k);c.height=Math.round(src.height*k);c.getContext("2d").drawImage(src,0,0,c.width,c.height);
  return new Promise((ok,no)=>c.toBlob(b=>b?ok(b):no(new Error("falha")),"image/jpeg",.82))}
@@ -629,11 +637,12 @@ const cap=(x)=>x?`<span>${x}</span>`:"";
 const fcount=n=>n>1?`<span class="pill c">📷 ${n}</span>`:"";
 async function mkHtml(){
  let q="";const sv=(MK.q||"").replace(/[^\p{L}\p{N} ._-]/gu,"").trim();if(sv)q+="&title=ilike.*"+encodeURIComponent(sv)+"*";
- q+=MK.mine&&ME?`&seller_id=eq.${ME.id}&status=neq.removido`:"&status=eq.ativo";
+ let favIds=null;if(MK.view==="fav"&&ME){favIds=(await api("/rest/v1/favorites?select=listing_id")).map(x=>x.listing_id).filter(x=>UUID.test(x))}
+ if(favIds)q+="&status=neq.removido&id=in.("+(favIds.length?favIds.join(","):"00000000-0000-0000-0000-000000000000")+")";else q+=MK.mine&&ME?`&seller_id=eq.${ME.id}&status=neq.removido`:"&status=eq.ativo";
  const ord=MK.ord==="asc"?"price_cents.asc":MK.ord==="desc"?"price_cents.desc":"created_at.desc";
  const rows=await api(`/rest/v1/listings?price_cents=lte.${MK.max*100}${q}&select=id,seller_id,title,ovr,coins,platform,acct_level,price_cents,image_urls,status,created_at,profiles!seller_id(nick,avatar_url)&order=${ord}&limit=60`);
  let fav=new Set();if(ME){try{fav=new Set((await api("/rest/v1/favorites?select=listing_id")).map(x=>x.listing_id))}catch(e){}}
- if(!rows.length)return `<div class="card empty"><div class="logo" aria-hidden="true"></div><h3>Nada por aqui ainda</h3><p class="sub">${MK.mine?"Você ainda não publicou nada.":"Nenhum anúncio com esses filtros. Volte logo: novas contas aparecem toda hora!"}</p></div>`;
+ if(!rows.length)return `<div class="card empty"><div class="logo" aria-hidden="true"></div><h3>Nada por aqui ainda</h3><p class="sub">${MK.view==="fav"?"Você ainda não favoritou nenhuma conta. Toque no 🤍 de um anúncio para guardar aqui.":MK.mine?"Você ainda não publicou nada.":"Nenhum anúncio com esses filtros. Volte logo: novas contas aparecem toda hora!"}</p></div>`;
  return `<div class="mkgrid">${rows.map(l=>{const im=l.image_urls.filter(imgOk),isNew=Date.now()-new Date(l.created_at)<MKNEW;
   return `<article class="lc"><div class="lc-img">${im[0]?`<img src="${esc(im[0])}" alt="" loading="lazy">`:""}${l.ovr?`<span class="ovrb">${esc(l.ovr)}<small>OVR</small></span>`:""}${isNew?'<span class="pill n">NOVO</span>':""}${fcount(im.length)}${ME?`<button class="lf" data-a="mfav" data-id="${esc(l.id)}" data-fav="${esc(l.id)}" aria-label="Favoritar">${fav.has(l.id)?"❤️":"🤍"}</button>`:""}</div>
   <div class="lc-b"><h3><a class="lc-link" href="#m-${esc(l.id)}">${esc(l.title)}</a></h3><div class="chips">${cap(esc(l.platform||""))}${l.coins?cap(esc(Number(l.coins).toLocaleString("pt-BR"))+" moedas"):""}${l.acct_level?cap("Nível "+esc(l.acct_level)):""}${l.status==="vendido"?cap("Vendido"):""}</div>
@@ -650,7 +659,10 @@ async function pMarket(){
   if(rq.length)pend=`<div class="card"><h3>Pedidos de vendedor</h3>${rq.map(r=>`<div class="row between" style="padding:4px 0"><span>${av(r,24)}${nk(r)}</span><span class="row"><button class="btn sm p" data-a="mappr" data-id="${esc(r.user_id)}">Aprovar</button><button class="btn sm d" data-a="mrej" data-id="${esc(r.user_id)}">Recusar</button></span></div>`).join("")}</div>`;
   const sl=await api("/rest/v1/profiles?role=eq.vendedor&select=id,nick,avatar_url&order=nick.asc");
   sellers=`<div class="card"><h3>Vendedores autorizados</h3><p class="sub">Digite o nickname exato para autorizar alguém a publicar anúncios.</p><div class="row" style="flex-wrap:nowrap"><label class="f" style="flex:1;margin:0"><input id="vn" maxlength="20" placeholder="Nickname exato" aria-label="Nickname do vendedor"></label><button class="btn p" data-a="vadd">Autorizar</button></div><div class="err" id="fe4"></div>${sl.length?sl.map(u=>`<div class="row between" style="padding:5px 0;border-top:1px solid var(--line)"><span>${av(u,26)}${esc(u.nick)} <span class="vchip">✓ Vendedor</span></span><button class="btn sm d" data-a="vrem" data-id="${esc(u.id)}" data-n="${esc(u.nick)}">Remover</button></div>`).join(""):'<p class="sub">Nenhum vendedor autorizado ainda.</p>'}</div>`}catch(e){}}
- return `<div class="mkh"><h2>🛒 Marketplace</h2></div><div class="warn"><b>Compra e pagamento ainda não estão ativos.</b> Por enquanto você pode ver os anúncios, favoritar e demonstrar interesse. A Konami proíbe a venda de contas: leia os <a href="#" data-a="doc" data-id="vend" style="color:var(--y)">Termos do Vendedor</a>.</div><div class="card">${box}</div>${pend}${sellers}
+ let unread=0;if(ME){try{unread=(await api(`/rest/v1/listing_chats?or=(buyer_id.eq.${ME.id},seller_id.eq.${ME.id})&select=buyer_id,last_at,last_sender,buyer_read_at,seller_read_at`)).filter(c=>c.last_sender&&c.last_sender!==ME.id&&new Date(c.last_at)>new Date((c.buyer_id===ME.id?c.buyer_read_at:c.seller_read_at)||0)).length}catch(e){}}
+ const tabs=`<div class="mtabs" role="tablist"><button class="${MK.view==="all"?"on":""}" data-a="mtab" data-id="all">Todos</button><button class="${MK.view==="fav"?"on":""}" data-a="mtab" data-id="fav">❤️ Favoritos</button><button class="${MK.view==="msg"?"on":""}" data-a="mtab" data-id="msg">💬 Mensagens${unread?` <b class="ub">${unread}</b>`:""}</button></div>`;
+ if(MK.view==="msg"&&ME)return `<div class="mkh"><h2>🛒 Marketplace</h2></div>${tabs}`+await chatsHtml();
+ return `<div class="mkh"><h2>🛒 Marketplace</h2></div><div class="warn"><b>Compra e pagamento ainda não estão ativos.</b> Por enquanto você pode ver os anúncios, favoritar e conversar com o vendedor. A Konami proíbe a venda de contas: leia os <a href="#" data-a="doc" data-id="vend" style="color:var(--y)">Termos do Vendedor</a>.</div>${tabs}<div class="card">${box}</div>${pend}${sellers}
  <div class="card mkbar"><label class="f">Buscar<input id="mq" type="search" maxlength="40" placeholder="Nome do anúncio" value="${esc(MK.q||"")}"></label><label class="f">Ordem<select id="mo"><option value="new" ${MK.ord==="new"?"selected":""}>Recentes</option><option value="asc" ${MK.ord==="asc"?"selected":""}>Menor preço</option><option value="desc" ${MK.ord==="desc"?"selected":""}>Maior preço</option></select></label><label class="f" style="grid-column:1/-1">Preço máximo: <b id="mxv">${BRL(MK.max*100)}</b><input id="mxs" type="range" min="100" max="10000" step="100" value="${MK.max}"></label></div>
  <div id="mkres">${await mkHtml()}</div>`}
 /* filtros atualizam só a lista (a busca não perde o foco) */
@@ -675,7 +687,7 @@ async function pListing(id){
  ${l.highlights?`<div class="card"><h3>⭐ Destaques da conta</h3><p class="body">${esc(l.highlights)}</p></div>`:""}
  ${l.description?`<div class="card"><h3>Descrição</h3><p class="body">${esc(l.description)}</p></div>`:""}
  <div class="card"><div class="row between"><span>${av(l,34)}<b>${nk(l)}</b> <span class="vchip">✓ Vendedor autorizado</span></span></div></div>
- <div class="row"><button class="btn" data-a="mfav" data-id="${esc(l.id)}" data-fav="${esc(l.id)}">${fav?"❤️ Favorito":"🤍 Favoritar"}</button><button class="btn" data-a="mint" data-id="${esc(l.id)}" id="mib">${intr?"✓ Tenho interesse":"🙋 Tenho interesse"}</button><button class="btn" data-a="mshare">🔗 Compartilhar</button></div>
+ <div class="row"><button class="btn" data-a="mfav" data-id="${esc(l.id)}" data-fav="${esc(l.id)}">${fav?"❤️ Favorito":"🤍 Favoritar"}</button>${mine?'<button class="btn" data-a="mtab" data-id="msg">💬 Minhas conversas</button>':l.status==="ativo"?`<button class="btn p" data-a="cchat" data-id="${esc(l.id)}">💬 Conversar com o vendedor</button>`:""}<button class="btn" data-a="mshare">🔗 Compartilhar</button></div>
  ${ic!==null?`<p class="sub" style="margin-top:8px">👀 ${ic} ${ic===1?"pessoa demonstrou":"pessoas demonstraram"} interesse.</p>`:""}
  ${mine||isA()?`<div class="row" style="margin-top:8px"><button class="btn" data-a="medit" data-id="${esc(l.id)}">✏️ Editar</button><button class="btn d" data-a="mdel" data-id="${esc(l.id)}">Remover anúncio</button></div>`:""}
  <div class="warn" style="margin-top:12px"><b>Compra e pagamento ainda não estão ativos.</b> Nunca combine pagamentos fora do site e nunca envie senhas por mensagem. A venda de contas é proibida pela Konami: ao comprar ou vender você assume o risco.</div>
@@ -698,7 +710,7 @@ const mRead=()=>({title:val("m_t"),platform:$("#m_pl").value||null,ovr:parseInt(
 const mCheck=d=>d.title.length<5?"O título precisa de 5 a 60 caracteres.":!(d.price>=100&&d.price<=1000000)?"O preço deve ficar entre R$ 1,00 e R$ 10.000,00.":"";
 async function favSet(id){let on;try{await api("/rest/v1/favorites",{method:"POST",body:{user_id:ME.id,listing_id:id},headers:{Prefer:"return=minimal"}});on=true}catch(e){if(e.status===409){await api(`/rest/v1/favorites?listing_id=eq.${id}&user_id=eq.${ME.id}`,{method:"DELETE"});on=false}else throw e}return on}
 Object.assign(A,{
- mmine:()=>{MK.mine=!MK.mine;render(true)},
+ mmine:()=>{MK.mine=!MK.mine;MK.view="all";render(true)},
  vadd:async()=>{if(!isA())return;const n=val("vn"),er=$("#fe4");if(!/^[A-Za-z0-9_.]{3,20}$/.test(n))return er.textContent="Digite o nickname exato.";
   const u=await api("/rest/v1/profiles?nick=eq."+encodeURIComponent(n)+"&select=id,role");if(!u.length)return er.textContent="Nenhum membro com esse nickname.";if(u[0].role==="admin")return er.textContent="Administradores já podem publicar.";
   await rpc("admin_set_role",{p_user:u[0].id,p_role:"vendedor"});toast(n+" agora é vendedor autorizado.");render(true)},
@@ -714,7 +726,7 @@ Object.assign(A,{
  meditsave:async id=>{const d=mRead(),m=mCheck(d);if(m)return fail(m);
   await api("/rest/v1/listings?id=eq."+id,{method:"PATCH",body:{title:d.title,platform:d.platform,ovr:d.ovr,coins:d.coins,acct_level:d.acct_level,price_cents:d.price,highlights:d.highlights,description:d.description},headers:{Prefer:"return=minimal"}});closeDlg();toast("Anúncio atualizado.");render(true)},
  mdel:async id=>{if(!UUID.test(id)||!confirm("Remover este anúncio?"))return;await api("/rest/v1/listings?id=eq."+id,{method:"PATCH",body:{status:"removido"},headers:{Prefer:"return=minimal"}});toast("Anúncio removido.");location.hash="#marketplace"},
- mfav:async id=>{if(!ME)return authDlg("login");const on=await favSet(id);document.querySelectorAll('[data-fav="'+id+'"]').forEach(b=>{b.textContent=b.classList.contains("lf")?(on?"❤️":"🤍"):(on?"❤️ Favorito":"🤍 Favoritar")});toast(on?"Favoritado.":"Removido dos favoritos.")},
+ mfav:async id=>{if(!ME)return authDlg("login");const on=await favSet(id);document.querySelectorAll('[data-fav="'+id+'"]').forEach(b=>{b.textContent=b.classList.contains("lf")?(on?"❤️":"🤍"):(on?"❤️ Favorito":"🤍 Favoritar")});toast(on?"Favoritado.":"Removido dos favoritos.");if(MK.view==="fav"&&$("#mkres"))mkList()},
  mint:async id=>{if(!ME)return authDlg("login");let on;try{await api("/rest/v1/interests",{method:"POST",body:{user_id:ME.id,listing_id:id},headers:{Prefer:"return=minimal"}});on=true}catch(e){if(e.status===409){await api(`/rest/v1/interests?listing_id=eq.${id}&user_id=eq.${ME.id}`,{method:"DELETE"});on=false}else throw e}
   const b=$("#mib");if(b)b.textContent=on?"✓ Tenho interesse":"🙋 Tenho interesse";toast(on?"Interesse registrado. O vendedor poderá ver.":"Interesse removido.")},
  mshare:()=>{const u=location.href;if(navigator.share)navigator.share({title:MKL?MKL.title:"eFootball Brasil",url:u}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(u).then(()=>toast("Link copiado!"),()=>toast(u))},
@@ -745,7 +757,7 @@ async function pFin(){await loadFee();let os=[],ls=[];try{os=await api("/rest/v1
  ${chartHtml(os)}<div class="row" style="margin:8px 0"><button class="btn sm" data-a="fincsv">⬇️ Baixar relatório (CSV)</button></div><h4 style="margin:10px 0 4px">Pedidos por situação</h4>${Object.keys(ORD).map(k=>`<div class="row between" style="padding:3px 0"><span>${ORD[k]}</span><span class="sub">${g(k).n} · ${BRL(g(k).v)}</span></div>`).join("")}
  <h4 style="margin:14px 0 4px">Comissão do site</h4><div class="row" style="flex-wrap:nowrap"><label class="f" style="flex:1;margin:0">Percentual (0 a 50)<input id="fe_p" type="number" min="0" max="50" inputmode="numeric" value="${FEE}"></label><button class="btn p" data-a="feset">Salvar</button></div><p class="sub">Vale para as próximas compras. Pedidos já feitos mantêm a comissão da data da compra. O vendedor vê o percentual e quanto vai receber ao anunciar.</p><div class="err" id="fe5"></div>
  <h4 style="margin:14px 0 4px">Saques da administração</h4><p class="sub">Um único meio: <b>Pix para conta ou chave em nome do CNPJ 70.106.657/0001-13</b>. O destino é definido no serviço de pagamento (não neste site) e fica travado nessa conta. Em preparação: depende do serviço de pagamento escolhido.</p></div>`}
-async function pAdmin3(){return (await pAdmin2())+(await pFin())}
+async function pAdmin3(){return (await pAdmin2())+(await pReports())+(await pFin())}
 Object.assign(A,{feset:async()=>{if(!isA())return;const v=parseInt($("#fe_p").value,10),er=$("#fe5");if(!(v>=0&&v<=50))return er.textContent="Informe um valor de 0 a 50.";if(!confirm("Mudar a comissão para "+v+"%? Vale só para compras futuras."))return;await rpc("admin_set_fee",{p_fee:v});FEE=v;toast("Comissão atualizada para "+v+"%.");render(true)}});
 </script>
 <script>
@@ -787,6 +799,64 @@ const csvC=v=>{v=String(v==null?"":v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return '
 Object.assign(A,{fincsv:()=>{if(!isA())return;if(!FIN.length)return toast("Ainda não há pedidos para exportar.");
  const rows=[["Data","Pedido","Item","Situação","Valor (R$)","Comissão (%)","Comissão (R$)"]].concat(FIN.map(o=>[new Date(o.created_at).toLocaleDateString("pt-BR"),o.id,o.title,ORD[o.status]||o.status,(o.price_cents/100).toFixed(2).replace(".",","),o.fee_percent,(Math.round(o.price_cents*o.fee_percent/100)/100).toFixed(2).replace(".",",")]));
  const b=new Blob(["﻿"+rows.map(r=>r.map(csvC).join(";")).join("\r\n")],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="efootball-brasil-pedidos-"+new Date().toISOString().slice(0,10)+".csv";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast("Relatório gerado.")}});
+</script>
+<script>
+"use strict";
+/* ---------- chat comprador x vendedor ---------- */
+let CH={id:null,last:0,file:null,busy:false};
+const hm=d=>{const x=new Date(d);return isNaN(x)?"":x.toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})};
+async function chatsHtml(){
+ let rows=[];try{rows=await api(`/rest/v1/listing_chats?select=id,listing_id,buyer_id,seller_id,last_at,last_sender,buyer_read_at,seller_read_at,listings(title,image_urls),buyer:profiles!buyer_id(nick,avatar_url),seller:profiles!seller_id(nick,avatar_url)&order=last_at.desc&limit=50`)}catch(e){return `<div class="card">${esc(e.message)}</div>`}
+ rows=rows.filter(c=>c.buyer_id===ME.id||c.seller_id===ME.id);
+ if(!rows.length)return `<div class="card empty"><div class="logo" aria-hidden="true"></div><h3>Nenhuma conversa ainda</h3><p class="sub">Abra um anúncio e toque em “Conversar com o vendedor”.</p></div>`;
+ return `<div class="card">${rows.map(c=>{const other=c.buyer_id===ME.id?c.seller:c.buyer,un=c.last_sender&&c.last_sender!==ME.id&&new Date(c.last_at)>new Date((c.buyer_id===ME.id?c.buyer_read_at:c.seller_read_at)||0),t=c.listings&&c.listings.title||"Anúncio removido";
+  return `<a class="crow" href="#c-${esc(c.id)}">${av({profiles:other},34)}<span class="cm"><b>${esc(other&&other.nick||"?")}</b><small>${esc(t)} · ${hm(c.last_at)}</small></span>${un?'<span class="ub">novo</span>':""}</a>`}).join("")}</div>`}
+const bubbles=ms=>ms.map(m=>`<div class="cb ${m.sender_id===(ME&&ME.id)?"me":""}">${m.body?`<span>${esc(m.body)}</span>`:""}${imgOk(m.image_url)?`<img class="cimg" src="${esc(m.image_url)}" alt="Foto enviada" loading="lazy" data-a="cimg" data-id="${esc(m.id)}" data-u="${esc(m.image_url)}">`:""}<small>${hm(m.created_at)}</small></div>`).join("");
+async function pChat(id){
+ const back='<a href="#marketplace" class="sub" data-a="mtab" data-id="msg" style="display:inline-block;margin:4px 0 10px">← Conversas</a>';
+ if(!ME)return back+'<div class="card">Entre na sua conta para ver conversas.</div>';
+ if(!UUID.test(id))return back+'<div class="card">Conversa não encontrada.</div>';
+ const c=(await api(`/rest/v1/listing_chats?id=eq.${id}&select=id,listing_id,buyer_id,seller_id,listings(title),buyer:profiles!buyer_id(nick,avatar_url),seller:profiles!seller_id(nick,avatar_url)`))[0];
+ if(!c)return back+'<div class="card">Conversa não encontrada.</div>';
+ const part=c.buyer_id===ME.id||c.seller_id===ME.id,other=c.buyer_id===ME.id?c.seller:c.buyer;
+ const ms=await api(`/rest/v1/listing_chat_messages?chat_id=eq.${id}&select=id,sender_id,body,image_url,created_at&order=id.asc&limit=300`);
+ let reps=[];try{reps=await api(`/rest/v1/chat_reports?chat_id=eq.${id}&status=eq.aberta&select=id,reason,created_at,reporter:profiles!reporter_id(nick,avatar_url)`)}catch(e){}
+ CH={id,last:ms.length?ms[ms.length-1].id:0,file:null,busy:false};
+ if(part)rpc("chat_mark_read",{p_chat:id}).catch(()=>{});
+ const who=part?`${av({profiles:other},34)}<b>${esc(other&&other.nick||"?")}</b>`:`<b>${esc(c.buyer&&c.buyer.nick||"?")} × ${esc(c.seller&&c.seller.nick||"?")}</b>`;
+ return back+`<div class="card chat"><div class="row between"><span>${who}<br><small><a href="#m-${esc(c.listing_id)}" style="color:var(--y)">${esc(c.listings&&c.listings.title||"Anúncio")}</a></small></span>${part?'<button class="btn sm d" data-a="crep">🚩 Denunciar</button>':""}</div>
+ ${reps.length?`<div class="warn"><b>Denúncia aberta.</b> ${reps.map(r=>esc((r.reporter&&r.reporter.nick||"?")+": "+r.reason)).join(" · ")}${isA()?reps.map(r=>` <button class="btn sm p" data-a="cres" data-id="${esc(r.id)}">Marcar como resolvida</button>`).join(""):""}</div>`:""}
+ <div class="warn"><b>Cuidado:</b> nunca envie senhas ou códigos, e nunca pague fora do site. A venda de contas é proibida pela Konami; você assume o risco. A administração só lê esta conversa se alguém a denunciar.</div>
+ <div class="cmsgs" id="cm" aria-live="polite">${ms.length?bubbles(ms):'<p class="sub" style="text-align:center">Nenhuma mensagem ainda. Diga olá!</p>'}</div>
+ ${part?`<div id="cpv" class="sub"></div><div class="cin"><label class="btn sm" for="cfile" aria-label="Enviar foto" style="cursor:pointer">📷</label><input id="cfile" type="file" accept="image/jpeg,image/png,image/webp" hidden><textarea id="cin" maxlength="1000" rows="1" placeholder="Escreva uma mensagem" aria-label="Mensagem"></textarea><button class="btn p" data-a="csend">Enviar</button></div><div class="err" id="cerr"></div>`:'<p class="sub">Você está vendo esta conversa como administrador, por causa de uma denúncia.</p>'}</div>`}
+async function chatRefresh(){
+ if(!CH.id||!CUR.startsWith("c-")||document.hidden)return;
+ try{const ms=await api(`/rest/v1/listing_chat_messages?chat_id=eq.${CH.id}&id=gt.${CH.last}&select=id,sender_id,body,image_url,created_at&order=id.asc`);
+  if(!ms.length)return;const el=$("#cm");if(!el)return;const bot=el.scrollHeight-el.scrollTop-el.clientHeight<60;
+  if(el.querySelector("p.sub"))el.innerHTML="";el.insertAdjacentHTML("beforeend",bubbles(ms));CH.last=ms[ms.length-1].id;if(bot)el.scrollTop=el.scrollHeight;
+  if(ME&&ms.some(m=>m.sender_id!==ME.id))rpc("chat_mark_read",{p_chat:CH.id}).catch(()=>{})}catch(e){}}
+setInterval(chatRefresh,4000);
+const cScroll=()=>{const el=$("#cm");if(el)el.scrollTop=el.scrollHeight};
+new MutationObserver(()=>{if(CUR.startsWith("c-"))cScroll()}).observe(document.getElementById("pg"),{childList:true});
+document.addEventListener("change",e=>{if(e.target.id!=="cfile")return;const f=e.target.files[0];e.target.value="";if(!f)return;
+ if(!/^image\/(jpeg|png|webp)$/.test(f.type)){const r=$("#cerr");if(r)r.textContent="Use uma foto JPG, PNG ou WebP.";return}
+ CH.file=f;const v=$("#cpv");if(v)v.innerHTML='📎 '+esc(f.name).slice(0,40)+' <button class="btn sm" data-a="cdrop">✕ Remover</button>'});
+Object.assign(A,{
+ mtab:id=>{if(id!=="all"&&!ME)return authDlg("login");MK.view=id;MK.mine=false;if(CUR==="marketplace")render(true);else location.hash="#marketplace"},
+ cchat:async id=>{if(!ME)return authDlg("login");const cid=await rpc("open_listing_chat",{p_listing:id});location.hash="#c-"+cid},
+ cdrop:()=>{CH.file=null;const v=$("#cpv");if(v)v.textContent=""},
+ csend:async()=>{if(!CH.id||CH.busy)return;const t=val("cin"),er=$("#cerr");if(er)er.textContent="";if(!t&&!CH.file)return;CH.busy=true;
+  try{let url=null;if(CH.file){const blob=await resizeImg(CH.file,1000);url=await upImg(blob,ME.id+"/chat-"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+".jpg")}
+   await rpc("send_chat_message",{p_chat:CH.id,p_body:t,p_image:url});CH.file=null;const i=$("#cin");if(i)i.value="";const v=$("#cpv");if(v)v.textContent="";await chatRefresh()}
+  catch(e){if(er)er.textContent=e.message||"Não foi possível enviar."}finally{CH.busy=false}},
+ cimg:(id,el)=>{const u=el&&el.dataset.u;if(imgOk(u))dlg(`<img src="${esc(u)}" alt="Foto enviada" style="max-width:100%;border-radius:12px"><div class="row" style="margin-top:10px"><button class="btn" data-a="close">Fechar</button></div>`)},
+ crep:()=>dlg(`<h3>Denunciar conversa</h3><p class="sub">Ao denunciar, um administrador poderá ler esta conversa para decidir. Descreva o que aconteceu.</p><label class="f">Motivo<textarea id="crs" maxlength="500" rows="4"></textarea></label><div class="err" id="fe"></div><div class="row"><button class="btn d" data-a="crepsend">Enviar denúncia</button><button class="btn" data-a="close">Cancelar</button></div>`),
+ crepsend:async()=>{const r=val("crs");if(r.length<5)return fail("Explique o motivo (mínimo 5 caracteres).");await rpc("report_chat",{p_chat:CH.id,p_reason:r});closeDlg();toast("Denúncia enviada. Um administrador vai analisar.");render(true)},
+ cres:async id=>{if(!isA())return;await rpc("admin_resolve_chat_report",{p_report:id});toast("Denúncia resolvida.");render(true)}
+});
+async function pReports(){
+ try{const r=await api("/rest/v1/chat_reports?status=eq.aberta&select=id,chat_id,reason,created_at,reporter:profiles!reporter_id(nick,avatar_url)&order=created_at.asc&limit=50");
+  return `<div class="card"><h3>🚩 Denúncias de conversas${r.length?` <span class="ub">${r.length}</span>`:""}</h3>${r.length?r.map(x=>`<div class="row between" style="padding:6px 0;border-top:1px solid var(--line)"><span>${av({profiles:x.reporter},24)}<b>${esc(x.reporter&&x.reporter.nick||"?")}</b> · ${hm(x.created_at)}<br><small>${esc(x.reason)}</small></span><span class="row"><a class="btn sm p" href="#c-${esc(x.chat_id)}">Ler conversa</a><button class="btn sm" data-a="cres" data-id="${esc(x.id)}">Resolver</button></span></div>`).join(""):'<p class="sub">Nenhuma denúncia aberta.</p>'}</div>`}catch(e){return ""}}
 </script>
 </body>
 </html>
