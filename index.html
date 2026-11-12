@@ -1087,9 +1087,11 @@ const _pA3=pAdmin3;pAdmin3=async()=>(await pMetrics())+(await _pA3());
 </script>
 <script>
 "use strict";
-/* ---------- campeonatos (mata-mata de 8, 16 e 32 times) ---------- */
+/* ---------- campeonatos v2: inscrição pelo site, mascote narrador, palpites e animações ---------- */
 let CLUBS=null,ORGC={u:null,v:false},CPK=null;
+const CAMPS={id:null,data:null,lines:[],i:0,timer:null,seen:null,sig:null,draw:false,prev:null};
 const CRESTSB=/^https:\/\/poxujpgrrsynvcnvxqkl\.supabase\.co\/storage\//;
+const motionOk=()=>!document.documentElement.classList.contains("no-anim")&&!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
 async function clubsLoad(){if(!CLUBS)CLUBS=await api("/rest/v1/clubs?select=id,league,name,short,c1,c2,crest_url&order=league.asc,name.asc&limit=500");return CLUBS}
 const lum=h=>{const n=parseInt(String(h).slice(1),16);const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)};return .2126*f(n>>16&255)+.7152*f(n>>8&255)+.0722*f(n&255)};
 function crest(c,z){z=z||34;if(!c)return `<span class="cr" style="width:${z}px;height:${Math.round(z*1.2)}px"></span>`;
@@ -1100,56 +1102,137 @@ async function orgOk(){if(isA())return true;if(!ME)return false;if(ORGC.u===ME.i
 const roundsOf=n=>n===8?3:n===16?4:5;
 const rname=(r,R)=>{const k=R-r;return k===0?"Final":k===1?"Semifinal":k===2?"Quartas de final":k===3?"Oitavas de final":"16 avos de final"};
 const CSTAT={draft:"Montando",running:"Em andamento",done:"Encerrado"};
+const nick=s=>s?((s.profiles&&s.profiles.nick)||s.player||""):"";
+const who=s=>s?s.clubs.name+(nick(s)?" (@"+nick(s)+")":""):"?";
+const hsh=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0;return h};
+const pk=(arr,k)=>arr[hsh(k)%arr.length];
+/* ----- efeitos ----- */
+function typeTo(el,txt){if(!el)return;clearInterval(el._t);if(!motionOk()){el.textContent=txt;return}let i=0;el.textContent="";el._t=setInterval(()=>{i+=2;el.textContent=txt.slice(0,i);if(i>=txt.length)clearInterval(el._t)},22)}
+function mascotSay(txt,ms){let e=$("#msay");if(!e){e=document.createElement("div");e.id="msay";e.className="msay";e.setAttribute("role","status");e.innerHTML='<div class="logo" style="width:54px;height:70px"></div><div class="bub"></div>';e.addEventListener("click",()=>e.remove());document.body.appendChild(e)}typeTo(e.querySelector(".bub"),txt);clearTimeout(e._h);e._h=setTimeout(()=>e.remove(),ms||7500)}
+function confetti2(n){if(!motionOk())return;const w=document.createElement("div");w.className="cfx";const cols=["#ffdf00","#00c25a","#2d7bff","#ffffff","#ff4d6d","#b57bff"];for(let i=0;i<(n||70);i++){const p=document.createElement("i");p.style.cssText=`left:${Math.random()*100}%;background:${cols[i%6]};animation-duration:${2.4+Math.random()*2}s;animation-delay:${Math.random()*.6}s`;w.appendChild(p)}document.body.appendChild(w);setTimeout(()=>w.remove(),5400)}
+/* ----- narração (só usa o que aconteceu de verdade) ----- */
+function mline(m,SM,R){const a=SM[m.a_slot],b=SM[m.b_slot];if(!a||!b||!m.played)return "";
+ const aw=m.winner_slot===m.a_slot,W=aw?a:b,Lo=aw?b:a,wg=aw?m.a_goals:m.b_goals,lg=aw?m.b_goals:m.a_goals,k=m.round+"-"+m.pos,wn=who(W),ln=who(Lo),tot=m.a_goals+m.b_goals,nx=m.round<R?rname(m.round+1,R).toLowerCase():"";
+ if(m.round===R)return pk([`🏆 ${wn} é o CAMPEÃO! Vitória na final sobre ${ln}: ${m.a_goals} a ${m.b_goals}${m.pen_winner?" e decisão nos pênaltis":""}!`,`Acabou! ${wn} levanta a taça depois de bater ${ln}! Que final!`],k);
+ if(m.pen_winner)return pk([`Que emoção! ${m.a_goals} a ${m.b_goals} no tempo normal e ${wn} venceu nos pênaltis! ${ln} ficou pelo caminho.`,`Haja coração! ${wn} levou a melhor nos pênaltis contra ${ln} e avança para ${nx||"a final"}.`],k);
+ if(wg-lg>=4)return `Que massacre! ${wn} goleou ${ln} por ${wg} a ${lg}! Ninguém segurou!`;
+ if(wg-lg>=3)return pk([`${wn} atropelou ${ln}: ${wg} a ${lg}!`,`Show de bola! ${wg} a ${lg} para ${wn} em cima de ${ln}.`],k);
+ if(tot>=6)return `Que jogão! ${tot} gols em campo e ${wn} vence por ${wg} a ${lg}!`;
+ if(wg===1&&lg===0)return pk([`Vitória magra, mas vale a vaga! ${wn} vence ${ln} por 1 a 0.`,`Placar mínimo e muita tensão: ${wn} 1 a 0 em ${ln}.`],k);
+ return pk([`${wn} vence ${ln} por ${wg} a ${lg} e avança${nx?" para as "+nx:""}!`,`Resultado fechado: ${wn} ${wg} x ${lg} ${ln}. ${nx?"Segue para as "+nx+".":"Classificado!"}`],k)}
+function tlines(t,SM,ms,R,filled){const L=[];
+ if(t.status==="draft"){const left=t.size-filled;
+  L.push(left>0?`Inscrições abertas! Ainda restam ${left} vaga${left>1?"s":""} de ${t.size}. Bora garantir a sua!`:`Lotou! ${t.size} times confirmados. Organizador, é hora do sorteio!`);
+  L.push("Dica do mascote: escolha o clube que você mais gosta de jogar no eFootball. Confiança conta!");
+  if(filled>0)L.push(`Já temos ${filled} time${filled>1?"s":""} na disputa. A torcida está chegando!`);return L}
+ const pl=ms.filter(m=>m.played).sort((x,y)=>(y.round-x.round)||(y.pos-x.pos));
+ if(t.status==="done"&&SM[t.champion_slot])L.push(`🏆 ${who(SM[t.champion_slot])} é o campeão de ${t.title}! Que campanha!`);
+ pl.slice(0,3).forEach(m=>L.push(mline(m,SM,R)));
+ ms.filter(m=>!m.played&&SM[m.a_slot]&&SM[m.b_slot]).slice(0,2).forEach(m=>L.push(`Vem aí pelas ${rname(m.round,R).toLowerCase()}: ${who(SM[m.a_slot])} contra ${who(SM[m.b_slot])}. Quem leva?`));
+ if(!pl.length)L.push(`O sorteio saiu! Começam as ${rname(1,R).toLowerCase()}. Boa sorte a todos!`);
+ return L}
+function startNarr(){clearInterval(CAMPS.timer);CAMPS.i=0;narrShow();CAMPS.timer=setInterval(()=>{if(!/^camp/.test(CUR)||!$("#nb")){clearInterval(CAMPS.timer);return}if(document.hidden||CAMPS.lines.length<2)return;CAMPS.i=(CAMPS.i+1)%CAMPS.lines.length;narrShow()},9000)}
+function narrShow(){const e=$("#nb");if(e&&CAMPS.lines.length)typeTo(e,CAMPS.lines[CAMPS.i%CAMPS.lines.length])}
+const narrCard=()=>`<div class="card narr fu"><div class="logo" style="width:64px;height:84px"></div><div class="nbw"><div class="nbn">🎙️ Mascote narrador</div><div class="nbb"><span id="nb" aria-live="polite"></span></div><button class="btn sm" data-a="cnext">Próxima fala ▶</button></div></div>`;
+/* ----- lista ----- */
 async function pCamps(){
- let ts=[];try{ts=await api("/rest/v1/tournaments?select=id,title,size,status,created_at,profiles(nick)&order=created_at.desc&limit=60")}catch(e){return `<div class="card"><h2>🏆 Campeonatos</h2><p class="sub">Ainda não está disponível. ${esc(e.message||"")}</p></div>`}
- const org=await orgOk();
- return `<div class="row between"><h2>🏆 Campeonatos</h2>${org?'<button class="btn p" data-a="cnew">+ Novo campeonato</button>':""}</div><p class="sub">Mata-mata de 8, 16 ou 32 times, com clubes das principais ligas. Só o organizador lança os resultados.</p>`+
- (isA()?await pOrgs():"")+(ts.length?ts.map(t=>`<a class="card" href="#camp-${esc(t.id)}"><span class="tag">${esc(CSTAT[t.status]||t.status)}</span> <span class="tag">${t.size} times</span><h3>${esc(t.title)}</h3><div class="sub">Organizador: ${esc(t.profiles&&t.profiles.nick||"—")} · ${when(t.created_at)}</div></a>`).join(""):`<div class="card sub">Nenhum campeonato ainda.${org?" Crie o primeiro!":""}</div>`)}
+ let ts=[];try{ts=await api("/rest/v1/tournaments?select=id,title,size,status,created_at,profiles(nick),tournament_slots(count)&order=created_at.desc&limit=60")}catch(e){return `<div class="card"><h2>🏆 Campeonatos</h2><p class="sub">Ainda não está disponível. ${esc(e.message||"")}</p></div>`}
+ const org=await orgOk();CAMPS.lines=["Bora competir? Escolha um campeonato, entre com o seu time e eu narro cada jogo!","Quer ver seu nickname embaixo do escudo? É só se inscrever num campeonato com as vagas abertas!"];if(ts.some(t=>t.status==="running"))CAMPS.lines.push("Tem campeonato rolando agora! Dá uma olhada na chave e dê o seu palpite.");setTimeout(startNarr,60);
+ const lb={draft:["🟢 Inscrições abertas","tg-open"],running:["● Ao vivo","tg-live"],done:["🏆 Encerrado",""]};
+ return `<div class="row between"><h2>🏆 Campeonatos</h2>${org?'<button class="btn p" data-a="cnew">+ Novo campeonato</button>':""}</div>${narrCard()}`+(isA()?await pOrgs():"")+
+ (ts.length?ts.map((t,k)=>{const n=t.tournament_slots&&t.tournament_slots[0]?t.tournament_slots[0].count:0,pc=Math.round(n/t.size*100),l=lb[t.status]||[t.status,""];
+  return `<a class="card tcard fu" style="--i:${k}" href="#camp-${esc(t.id)}"><div class="row between"><span class="tag ${l[1]}">${l[0]}</span><span class="tag">${t.size} times</span></div><h3>${esc(t.title)}</h3><div class="prog" aria-hidden="true"><i style="width:${pc}%"></i></div><div class="sub">${n}/${t.size} inscritos · Organizador: ${esc(t.profiles&&t.profiles.nick||"—")} · ${when(t.created_at)}</div></a>`}).join(""):`<div class="card sub">Nenhum campeonato ainda.${org?" Crie o primeiro!":""}</div>`)}
+/* ----- campeonato ----- */
+async function picksOf(id){try{return (await rpc("tournament_pick_counts",{p_tid:id}))||{}}catch(e){return {}}}
+function myBox(t,SM,ms,R){if(!ME)return "";const me=Object.values(SM).find(s=>s.user_id===ME.id);if(!me)return "";const nm=me.clubs.name;let tx="",lv="";
+ if(t.status==="draft"){tx=`Você está inscrito com o ${nm}. Aguarde o sorteio!`;lv=`<button class="btn sm d" data-a="cleave" data-id="${t.id}">Sair do campeonato</button>`}
+ else{const mine=ms.filter(m=>m.a_slot===me.slot||m.b_slot===me.slot).sort((x,y)=>y.round-x.round),last=mine[0];
+  if(t.status==="done"&&t.champion_slot===me.slot)tx=`🏆 Você é o campeão com o ${nm}! Parabéns!`;
+  else if(!last)tx=`Você está no campeonato com o ${nm}.`;
+  else if(last.played&&last.winner_slot!==me.slot)tx=`Você foi eliminado nas ${rname(last.round,R).toLowerCase()}. Foi uma bela campanha com o ${nm}!`;
+  else if(!last.played&&last.a_slot&&last.b_slot){const op=SM[last.a_slot===me.slot?last.b_slot:last.a_slot];tx=`Seu próximo jogo: ${nm} contra ${who(op)} nas ${rname(last.round,R).toLowerCase()}.`}
+  else tx=`Você avançou! Aguardando o adversário das ${rname(last.round,R).toLowerCase()}.`}
+ return `<div class="card mybox fu"><b>${me.profiles?av(me,22):""} Seu campeonato</b><div>${esc(tx)}</div>${lv}</div>`}
+function statsBox(ms,SM){const pl=ms.filter(m=>m.played);if(!pl.length)return "";let g=0,big=null,gf={};
+ pl.forEach(m=>{g+=m.a_goals+m.b_goals;const df=Math.abs(m.a_goals-m.b_goals);if(!big||df>big.df)big={df,m};gf[m.a_slot]=(gf[m.a_slot]||0)+m.a_goals;gf[m.b_slot]=(gf[m.b_slot]||0)+m.b_goals});
+ let best=null;Object.keys(gf).forEach(k=>{if(!best||gf[k]>best.g)best={s:+k,g:gf[k]}});
+ const bm=big.m,aw=bm.winner_slot===bm.a_slot,bw=SM[bm.winner_slot],bl=SM[aw?bm.b_slot:bm.a_slot],ws=aw?bm.a_goals:bm.b_goals,ls=aw?bm.b_goals:bm.a_goals;
+ const tl=(n,l)=>`<div class="mtn"><b>${n}</b><small>${l}</small></div>`;
+ return `<div class="card fu"><h3>📊 Números do campeonato</h3><div class="mtg">${tl(pl.length+"/"+ms.length,"jogos disputados")}${tl(g,"gols marcados")}${tl((g/pl.length).toLocaleString("pt-BR",{maximumFractionDigits:1}),"gols por jogo")}${best&&SM[best.s]?tl(esc(SM[best.s].clubs.short)+" · "+best.g,"melhor ataque"):""}</div>${big.df>0&&bw&&bl?`<p class="sub">Maior vitória: <b>${esc(bw.clubs.name)} ${ws} x ${ls} ${esc(bl.clubs.name)}</b></p>`:""}</div>`}
 async function pCamp(id){
  if(!UUID.test(id))return '<div class="card">Campeonato não encontrado.</div>';
  const t=(await api(`/rest/v1/tournaments?id=eq.${id}&select=id,title,size,status,champion_slot,organizer_id,created_at,profiles(nick)`))[0];if(!t)return '<div class="card">Campeonato não encontrado.</div>';
- const sl=await api(`/rest/v1/tournament_slots?tournament_id=eq.${id}&select=slot,player,clubs(id,name,short,c1,c2,crest_url,league)&order=slot.asc`);
+ const sl=await api(`/rest/v1/tournament_slots?tournament_id=eq.${id}&select=slot,player,user_id,profiles(nick,avatar_url),clubs(id,name,short,c1,c2,crest_url,league)&order=slot.asc`);
  const SM={};sl.forEach(s=>SM[s.slot]=s);
- const can=isA()||(!!ME&&ME.id===t.organizer_id&&await orgOk());
- const nm=s=>s?`<span class="cn">${esc(s.clubs.name)}${s.player?` <small>· ${esc(s.player)}</small>`:""}</span>`:'<span class="cn sub">A definir</span>';
- const head=`<a href="#campeonatos" class="sub">← Todos os campeonatos</a><div class="card"><span class="tag">${esc(CSTAT[t.status])}</span> <span class="tag">${t.size} times</span><h2 style="margin:6px 0">${esc(t.title)}</h2><div class="sub">Organizador: ${esc(t.profiles&&t.profiles.nick||"—")} · ${when(t.created_at)}</div>${can?`<div class="row" style="margin-top:8px"><button class="btn sm d" data-a="cdel" data-id="${id}">Apagar campeonato</button></div>`:""}</div>`;
+ const can=isA()||(!!ME&&ME.id===t.organizer_id&&await orgOk()),R=roundsOf(t.size);
+ let ms=[];if(t.status!=="draft")ms=await api(`/rest/v1/tournament_matches?tournament_id=eq.${id}&select=round,pos,a_slot,b_slot,a_goals,b_goals,pen_winner,winner_slot,played&order=round.asc,pos.asc`);
+ const picks=t.status==="running"?await picksOf(id):{};
+ const played=ms.filter(m=>m.played),keys=new Set(played.map(m=>m.round+"-"+m.pos));
+ let fresh=[];if(CAMPS.id===id&&CAMPS.seen)fresh=played.filter(m=>!CAMPS.seen.has(m.round+"-"+m.pos));
+ const was=CAMPS.id===id?CAMPS.prev:null;CAMPS.id=id;CAMPS.seen=keys;CAMPS.prev=t.status;
+ CAMPS.data={t,SM,ms,R,can,picks};CAMPS.lines=tlines(t,SM,ms,R,sl.length);
+ CAMPS.sig=JSON.stringify([[{status:t.status}],sl.map(s=>({slot:s.slot,club_id:s.clubs.id,user_id:s.user_id})),played.map(m=>({round:m.round,pos:m.pos,winner_slot:m.winner_slot}))]);
+ const live=t.status==="running"?'<span class="tag tg-live">● Ao vivo</span>':t.status==="draft"?'<span class="tag tg-open">🟢 Inscrições abertas</span>':'<span class="tag">🏆 Encerrado</span>';
+ const head=`<a href="#campeonatos" class="sub">← Todos os campeonatos</a><div class="card hd fu"><div class="trophy" aria-hidden="true">🏆</div><div>${live} <span class="tag">${t.size} times</span><h2 style="margin:6px 0">${esc(t.title)}</h2><div class="sub">Organizador: ${esc(t.profiles&&t.profiles.nick||"—")} · ${when(t.created_at)}</div><div class="row" style="margin-top:8px"><button class="btn sm" data-a="cshare">🔗 Compartilhar</button>${can?`<button class="btn sm d" data-a="cdel" data-id="${id}">Apagar</button>`:""}</div></div></div>`;
+ setTimeout(()=>campAfter(t,SM,R,fresh,was),60);
  if(t.status==="draft"){
-  const cells=[];for(let i=1;i<=t.size;i++){const s=SM[i];cells.push(can?`<button class="cslot ${s?"on":""}" data-a="cpick" data-id="${id}" data-s="${i}">${s?crest(s.clubs,30)+nm(s):`<span class="cslotn">+ Vaga ${i}</span>`}</button>`:`<div class="cslot ${s?"on":""}">${s?crest(s.clubs,30)+nm(s):`<span class="cslotn">Vaga ${i}</span>`}</div>`)}
+  const pc=Math.round(sl.length/t.size*100),mine=ME&&sl.find(s=>s.user_id===ME.id);
+  const cells=[];for(let i=1;i<=t.size;i++){const s=SM[i],me=s&&ME&&s.user_id===ME.id;
+   const inner=s?`${crest(s.clubs,44)}<span class="cn"><b>${esc(s.clubs.name)}</b>${nick(s)?`<small class="nk">${s.profiles?av(s,16):""}@${esc(nick(s))}</small>`:'<small class="nk">sem participante</small>'}</span>`:`<span class="cslotn">Vaga livre</span>`;
+   cells.push(can?`<button class="cslot fu ${s?"on":""} ${me?"me":""}" style="--i:${i}" data-a="cpick" data-id="${id}" data-s="${i}">${inner}</button>`:`<div class="cslot fu ${s?"on":""} ${me?"me":""}" style="--i:${i}">${inner}</div>`)}
   const lg=[...new Set((await clubsLoad()).map(c=>c.league))];
-  return head+`<div class="card"><h3>Times (${sl.length}/${t.size})</h3>${can?'<p class="sub">Toque numa vaga para escolher o clube e, se quiser, o participante.</p>':'<p class="sub">O organizador ainda está montando o campeonato.</p>'}<div class="cgrid">${cells.join("")}</div>${can?`<div class="row" style="margin-top:10px"><label class="f" style="margin:0">Completar vagas vazias com clubes sorteados de<select id="cfl"><option value="">Todas as ligas</option>${lg.map(l=>`<option>${esc(l)}</option>`).join("")}</select></label><button class="btn" data-a="cfill" data-id="${id}">Sortear clubes</button></div><div class="row" style="margin-top:10px"><label class="row" style="gap:6px"><input type="checkbox" id="csh" checked> Sortear os confrontos</label><button class="btn p" data-a="cstart" data-id="${id}" ${sl.length===t.size?"":"disabled"}>Iniciar campeonato</button></div>`:""}</div>`}
- const ms=await api(`/rest/v1/tournament_matches?tournament_id=eq.${id}&select=round,pos,a_slot,b_slot,a_goals,b_goals,pen_winner,winner_slot,played&order=round.asc,pos.asc`);
- const R=roundsOf(t.size),cols=[];
- for(let r=1;r<=R;r++){const rm=ms.filter(m=>m.round===r);cols.push(`<div class="brc"><div class="brh">${rname(r,R)}</div>${rm.map(m=>{const a=SM[m.a_slot],b=SM[m.b_slot],ok=can&&a&&b;
-  const row=(s,g,side)=>`<div class="bt ${m.played&&m.winner_slot===(side==="A"?m.a_slot:m.b_slot)?"win":""}">${s?crest(s.clubs,24):crest(null,24)}${nm(s)}<span class="bs">${m.played?g:""}${m.played&&m.pen_winner===side?" <small>(p)</small>":""}</span></div>`;
-  return `<div class="bm ${ok?"clk":""}" ${ok?`role="button" tabindex="0" data-a="cmres" data-id="${id}" data-r="${m.round}" data-p="${m.pos}"`:""}>${row(a,m.a_goals,"A")}${row(b,m.b_goals,"B")}</div>`}).join("")}</div>`)}
+  const join=mine?"":(sl.length>=t.size?'<p class="sub">Todas as vagas foram preenchidas.</p>':ME?`<button class="btn p wide" data-a="cjoin" data-id="${id}">⚽ Quero participar</button>`:`<button class="btn p wide" data-a="auth" data-id="reg">Crie sua conta para participar</button>`);
+  return head+narrCard()+myBox(t,SM,ms,R)+`<div class="card fu"><h3>Inscrições: ${sl.length} de ${t.size} vagas</h3><div class="prog" aria-hidden="true"><i style="width:${pc}%"></i></div>${join}</div>
+  <div class="card"><h3>Times</h3>${can?'<p class="sub">Organizador: toque numa vaga para escolher ou trocar o clube. Quem se inscreve pelo site aparece com o nickname.</p>':""}<div class="cgrid">${cells.join("")}</div>${can?`<div class="row" style="margin-top:10px"><label class="f" style="margin:0">Completar vagas vazias com clubes sorteados de<select id="cfl"><option value="">Todas as ligas</option>${lg.map(l=>`<option>${esc(l)}</option>`).join("")}</select></label><button class="btn" data-a="cfill" data-id="${id}">Sortear clubes</button></div><div class="row" style="margin-top:10px"><label class="row" style="gap:6px"><input type="checkbox" id="csh" checked> Sortear os confrontos</label><button class="btn p" data-a="cstart" data-id="${id}" ${sl.length===t.size?"":"disabled"}>Iniciar campeonato</button></div>`:""}</div>`}
+ const cols=[];let n=0;
+ for(let r=1;r<=R;r++){const rm=ms.filter(m=>m.round===r);cols.push(`<div class="brc"><div class="brh">${rname(r,R)}</div>${rm.map(m=>{const a=SM[m.a_slot],b=SM[m.b_slot],todo=can&&a&&b&&!m.played,pkx=picks[m.round+"-"+m.pos];
+  const row=(s,g,side)=>{const wn=m.played&&m.winner_slot===(side==="A"?m.a_slot:m.b_slot),me=s&&ME&&s.user_id===ME.id;return `<div class="bt ${wn?"win":""} ${me?"me":""}">${s?crest(s.clubs,26):crest(null,26)}<span class="cn">${s?`<b>${esc(s.clubs.name)}</b>${nick(s)?`<small class="nk">@${esc(nick(s))}</small>`:""}`:'<span class="sub">A definir</span>'}</span><span class="bs">${m.played?g:""}${m.played&&m.pen_winner===side?" <small>(p)</small>":""}</span></div>`};
+  return `<div class="bm fu ${todo?"todo":""} ${a&&b?"clk":""}" style="--i:${n++}" role="button" tabindex="0" data-a="cmatch" data-id="${id}" data-r="${m.round}" data-p="${m.pos}" aria-label="Abrir jogo">${row(a,m.a_goals,"A")}${row(b,m.b_goals,"B")}${a&&b&&!m.played&&pkx&&(pkx.a+pkx.b)>0?`<div class="pkb" title="Palpites"><i style="width:${Math.round(pkx.a/(pkx.a+pkx.b)*100)}%"></i></div>`:""}</div>`}).join("")}</div>`)}
  const ch=t.status==="done"&&SM[t.champion_slot];
- return head+(ch?`<div class="card champ">${crest(ch.clubs,64)}<div><div class="sub">Campeão</div><h2 style="margin:0">🏆 ${esc(ch.clubs.name)}</h2>${ch.player?`<div class="sub">${esc(ch.player)}</div>`:""}</div></div>`:"")+
- (can?`<p class="sub">Toque em um jogo para lançar ou corrigir o resultado.</p>`:"")+`<div class="brkw"><div class="brk">${cols.join("")}</div></div>`}
+ return head+narrCard()+myBox(t,SM,ms,R)+(ch?`<div class="card champ fu">${crest(ch.clubs,72)}<div><div class="sub">Campeão</div><h2 style="margin:0">🏆 ${esc(ch.clubs.name)}</h2>${nick(ch)?`<div class="nk2">${ch.profiles?av(ch,20):""}@${esc(nick(ch))}</div>`:""}</div></div>`:"")+
+ `<p class="sub">${can?"Toque em um jogo para lançar ou corrigir o resultado.":"Toque em um jogo para ver os detalhes e dar o seu palpite."}</p><div class="brkw"><div class="brk ${CAMPS.draw?"drw":""}">${cols.join("")}</div></div>`+statsBox(ms,SM)}
+function campAfter(t,SM,R,fresh,was){
+ if(!/^camp-/.test(CUR)||!CAMPS.data||CAMPS.data.t.id!==t.id)return;
+ startNarr();
+ if(CAMPS.draw){CAMPS.draw=false;confetti2(40);mascotSay("Sorteio feito! Confira os confrontos da primeira fase. Boa sorte a todos!",8000)}
+ else if(fresh.length){const m=fresh.sort((x,y)=>(y.round-x.round)||(y.pos-x.pos))[0];mascotSay(mline(m,SM,R),9000);if(t.status==="done"&&was!=="done")confetti2(110)}
+ else if(t.status==="done"){let seen=false;try{seen=sessionStorage.getItem("efb_champ_"+t.id)==="1";sessionStorage.setItem("efb_champ_"+t.id,"1")}catch(e){}if(!seen)confetti2(90)}}
+/* ----- ações ----- */
 Object.assign(A,{
  cnew:async()=>{if(!ME)return authDlg("login");if(!await orgOk())return toast("Só organizadores criam campeonatos.");
   dlg(`<h3>Novo campeonato</h3>${fld("cn_t","Nome do campeonato",'maxlength="60"')}<label class="f">Quantidade de times<select id="cn_s"><option value="8">8 times</option><option value="16">16 times</option><option value="32">32 times</option></select></label><div class="err" id="fe"></div><div class="row"><button class="btn p" data-a="cnew2">Criar</button><button class="btn" data-a="close">Cancelar</button></div>`)},
  cnew2:async()=>{const t=val("cn_t"),s=+$("#cn_s").value;if(t.length<3)return fail("Dê um nome ao campeonato (3+ letras).");const id=await rpc("create_tournament",{p_title:t,p_size:s});closeDlg();toast("Campeonato criado.");location.hash="#camp-"+id},
  cpick:async(id,el)=>{const s=+el.dataset.s;if(!UUID.test(id)||!(s>=1&&s<=32))return;await clubsLoad();
-  const sl=await api(`/rest/v1/tournament_slots?tournament_id=eq.${id}&select=slot,club_id,player`);const mine=sl.find(x=>x.slot===s);
+  const sl=await api(`/rest/v1/tournament_slots?tournament_id=eq.${id}&select=slot,club_id,player,user_id`);const mine=sl.find(x=>x.slot===s);
   CPK={tid:id,slot:s,used:new Set(sl.filter(x=>x.slot!==s).map(x=>x.club_id))};
-  dlg(`<h3>Vaga ${s}</h3>${fld("cpl","Participante (opcional)",'maxlength="30" placeholder="Nickname ou nome"')}<label class="f">Buscar clube<input id="cq" maxlength="40" placeholder="Ex.: Flamengo, Real, Bayern" autocomplete="off"></label><div id="cl" class="clist"></div>${mine?`<div class="row" style="margin-top:8px"><button class="btn sm d" data-a="cclr">Esvaziar vaga</button></div>`:""}<div class="err" id="fe"></div>`);
-  if(mine&&mine.player)$("#cpl").value=mine.player;cpList("")},
- cpset:async id=>{if(!CPK)return;await rpc("set_tournament_slot",{p_tid:CPK.tid,p_slot:CPK.slot,p_club:+id,p_player:val("cpl")});closeDlg();render(true)},
+  dlg(`<h3>Vaga ${s}</h3>${mine&&mine.user_id?'<p class="sub">Essa vaga é de um membro inscrito. Você pode trocar o clube dele ou esvaziar a vaga.</p>':fld("cpl","Participante (opcional)",'maxlength="30" placeholder="Nickname ou nome"')}<label class="f">Buscar clube<input id="cq" maxlength="40" placeholder="Ex.: Flamengo, Real, Bayern" autocomplete="off"></label><div id="cl" class="clist"></div>${mine?`<div class="row" style="margin-top:8px"><button class="btn sm d" data-a="cclr">Esvaziar vaga</button></div>`:""}<div class="err" id="fe"></div>`);
+  if(mine&&mine.player&&!mine.user_id)$("#cpl").value=mine.player;cpList("")},
+ cjoin:async id=>{if(!ME)return authDlg("login");if(!UUID.test(id))return;await clubsLoad();
+  const sl=await api(`/rest/v1/tournament_slots?tournament_id=eq.${id}&select=club_id`);CPK={tid:id,mode:"join",used:new Set(sl.map(x=>x.club_id))};
+  dlg(`<h3>Escolha o seu time</h3><p class="sub">Seu nickname vai aparecer embaixo do clube na chave.</p><button class="btn p" data-a="cjoinr" style="width:100%">🎲 Sortear um clube pra mim</button><label class="f">Ou busque o clube<input id="cq" maxlength="40" placeholder="Ex.: Flamengo, Real, Bayern" autocomplete="off"></label><div id="cl" class="clist"></div><div class="err" id="fe"></div>`);cpList("")},
+ cjoinr:async()=>{if(!CPK||CPK.mode!=="join")return;const c=await rpc("join_tournament",{p_tid:CPK.tid,p_club:null});joined(c)},
+ cpset:async id=>{if(!CPK)return;if(CPK.mode==="join"){const c=await rpc("join_tournament",{p_tid:CPK.tid,p_club:+id});return joined(c)}
+  await rpc("set_tournament_slot",{p_tid:CPK.tid,p_slot:CPK.slot,p_club:+id,p_player:$("#cpl")?val("cpl"):null});closeDlg();render(true)},
  cclr:async()=>{if(!CPK)return;await rpc("set_tournament_slot",{p_tid:CPK.tid,p_slot:CPK.slot,p_club:null,p_player:null});closeDlg();render(true)},
+ cleave:async id=>{if(!UUID.test(id)||!confirm("Sair deste campeonato? A sua vaga fica livre para outra pessoa."))return;await rpc("leave_tournament",{p_tid:id});toast("Você saiu do campeonato.");render(true)},
  cfill:async id=>{if(!UUID.test(id))return;const n=await rpc("fill_tournament_random",{p_tid:id,p_league:$("#cfl")?$("#cfl").value:""});toast(n+" vaga(s) preenchida(s).");render(true)},
- cstart:async id=>{if(!UUID.test(id)||!confirm("Iniciar o campeonato? Depois disso os times não podem mais ser trocados."))return;await rpc("start_tournament",{p_tid:id,p_shuffle:!$("#csh")||$("#csh").checked});toast("Campeonato iniciado!");render(true)},
+ cstart:async id=>{if(!UUID.test(id)||!confirm("Iniciar o campeonato? Depois disso os times não podem mais ser trocados e as inscrições fecham."))return;await rpc("start_tournament",{p_tid:id,p_shuffle:!$("#csh")||$("#csh").checked});CAMPS.draw=true;toast("Campeonato iniciado!");render(true)},
  cdel:async id=>{if(!UUID.test(id)||!confirm("Apagar este campeonato e todos os resultados?"))return;await rpc("delete_tournament",{p_tid:id});toast("Campeonato apagado.");location.hash="#campeonatos"},
- cmres:async(id,el)=>{const r=+el.dataset.r,p=+el.dataset.p;if(!UUID.test(id))return;
-  const t=(await api(`/rest/v1/tournaments?id=eq.${id}&select=size`))[0],R=roundsOf(t.size);
-  const m=(await api(`/rest/v1/tournament_matches?tournament_id=eq.${id}&round=eq.${r}&pos=eq.${p}&select=a_slot,b_slot,a_goals,b_goals,pen_winner,played`))[0];if(!m)return;
-  const sl=await api(`/rest/v1/tournament_slots?tournament_id=eq.${id}&slot=in.(${m.a_slot},${m.b_slot})&select=slot,player,clubs(name)`);const nA=sl.find(x=>x.slot===m.a_slot),nB=sl.find(x=>x.slot===m.b_slot),lab=s=>s?esc(s.clubs.name)+(s.player?" ("+esc(s.player)+")":""):"?";
+ cnext:()=>{if(CAMPS.lines.length){CAMPS.i=(CAMPS.i+1)%CAMPS.lines.length;narrShow()}},
+ cshare:async()=>{let ok=false;try{await navigator.clipboard.writeText(location.href);ok=true}catch(e){}toast(ok?"Link copiado!":"Copie o link na barra do navegador.")},
+ cmatch:async(id,el)=>{const d=CAMPS.data;if(!d||d.t.id!==id)return;const r=+el.dataset.r,p=+el.dataset.p,m=d.ms.find(x=>x.round===r&&x.pos===p);if(!m)return;
+  const a=d.SM[m.a_slot],b=d.SM[m.b_slot],px=d.picks[r+"-"+p]||{a:0,b:0,mine:null};
+  const side=(s,w)=>`<div class="mside ${w?"win":""}">${s?crest(s.clubs,56):crest(null,56)}<b>${s?esc(s.clubs.name):"A definir"}</b>${s&&nick(s)?`<small class="nk">${s.profiles?av(s,16):""}@${esc(nick(s))}</small>`:""}</div>`;
+  const tx=m.played?mline(m,d.SM,d.R):(a&&b?`Jogo aberto! ${who(a)} contra ${who(b)}. Quem leva?`:"Esse confronto ainda depende dos jogos anteriores.");
+  const open=!m.played&&a&&b,tot=px.a+px.b;
+  const pkUi=open?`<div class="pkw"><b>Quem vence? Palpite da galera</b><div class="row"><button class="btn sm ${px.mine==="A"?"p":""}" data-a="cpk" data-id="${id}" data-r="${r}" data-p="${p}" data-sd="A">${esc(a.clubs.short)}</button><button class="btn sm ${px.mine==="B"?"p":""}" data-a="cpk" data-id="${id}" data-r="${r}" data-p="${p}" data-sd="B">${esc(b.clubs.short)}</button></div>${tot?`<div class="pkb lg"><i style="width:${Math.round(px.a/tot*100)}%"></i></div><div class="row between sub"><span>${esc(a.clubs.short)} ${Math.round(px.a/tot*100)}%</span><span>${tot} palpite${tot>1?"s":""}</span><span>${esc(b.clubs.short)} ${Math.round(px.b/tot*100)}%</span></div>`:'<p class="sub">Seja o primeiro a dar o palpite. É só diversão, sem dinheiro.</p>'}</div>`:"";
+  const form=d.can&&a&&b?`<h4>Resultado (organizador)</h4><div class="row between"><b>${esc(a.clubs.name)}</b><input id="ra" type="number" min="0" max="99" inputmode="numeric" style="width:70px" value="${m.played?m.a_goals:""}" aria-label="Gols de ${esc(a.clubs.name)}"></div><div class="row between" style="margin-top:6px"><b>${esc(b.clubs.name)}</b><input id="rb2" type="number" min="0" max="99" inputmode="numeric" style="width:70px" value="${m.played?m.b_goals:""}" aria-label="Gols de ${esc(b.clubs.name)}"></div><label class="f">Se empatar, vencedor nos pênaltis<select id="rp"><option value="">—</option><option value="A" ${m.pen_winner==="A"?"selected":""}>${esc(a.clubs.name)}</option><option value="B" ${m.pen_winner==="B"?"selected":""}>${esc(b.clubs.name)}</option></select></label><div class="err" id="fe"></div><div class="row"><button class="btn p" data-a="cmsave">Salvar resultado</button></div>`:'<div class="err" id="fe"></div>';
   CPK={tid:id,r,p};
-  dlg(`<h3>${rname(r,R)}</h3><p class="sub">Lance o placar final. Em caso de empate, escolha quem venceu nos pênaltis.</p>
-  <div class="row between"><b>${lab(nA)}</b><input id="ra" type="number" min="0" max="99" inputmode="numeric" style="width:70px" value="${m.played?m.a_goals:""}" aria-label="Gols do primeiro time"></div>
-  <div class="row between" style="margin-top:6px"><b>${lab(nB)}</b><input id="rb2" type="number" min="0" max="99" inputmode="numeric" style="width:70px" value="${m.played?m.b_goals:""}" aria-label="Gols do segundo time"></div>
-  <label class="f">Se empatar, vencedor nos pênaltis<select id="rp"><option value="">—</option><option value="A" ${m.pen_winner==="A"?"selected":""}>${lab(nA)}</option><option value="B" ${m.pen_winner==="B"?"selected":""}>${lab(nB)}</option></select></label>
-  <div class="err" id="fe"></div><div class="row"><button class="btn p" data-a="cmsave">Salvar resultado</button><button class="btn" data-a="close">Cancelar</button></div>`)},
- cmsave:async()=>{if(!CPK)return;const a=$("#ra").value,b=$("#rb2").value;if(a===""||b==="")return fail("Informe os gols dos dois times.");const A_=+a,B_=+b;if(!(A_>=0&&A_<=99&&B_>=0&&B_<=99))return fail("Placar inválido.");
+  dlg(`<h3>${rname(r,d.R)}</h3><div class="vs">${side(a,m.played&&m.winner_slot===m.a_slot)}<div class="vsc">${m.played?`${m.a_goals} x ${m.b_goals}${m.pen_winner?'<small>pênaltis</small>':""}`:"VS"}</div>${side(b,m.played&&m.winner_slot===m.b_slot)}</div><div class="mrow"><div class="logo" style="width:46px;height:60px"></div><div class="bub"><span id="mbm"></span></div></div>${pkUi}${form}<div class="row" style="margin-top:10px"><button class="btn" data-a="close">Fechar</button></div>`);
+  typeTo($("#mbm"),tx)},
+ cpk:async(id,el)=>{if(!ME)return authDlg("login");const r=+el.dataset.r,p=+el.dataset.p,sd=el.dataset.sd;if(!UUID.test(id)||!["A","B"].includes(sd))return;
+  await rpc("pick_match",{p_tid:id,p_round:r,p_pos:p,p_side:sd});CAMPS.data.picks=await picksOf(id);toast("Palpite registrado!");A.cmatch(id,{dataset:{r:String(r),p:String(p)}})},
+ cmsave:async()=>{if(!CPK||!CPK.r)return;const a=$("#ra").value,b=$("#rb2").value;if(a===""||b==="")return fail("Informe os gols dos dois times.");const A_=+a,B_=+b;if(!(A_>=0&&A_<=99&&B_>=0&&B_<=99))return fail("Placar inválido.");
   if(A_===B_&&!$("#rp").value)return fail("Empate: escolha quem venceu nos pênaltis.");
   await rpc("report_match",{p_tid:CPK.tid,p_round:CPK.r,p_pos:CPK.p,p_a:A_,p_b:B_,p_pen:A_===B_?$("#rp").value:null});closeDlg();toast("Resultado salvo.");render(true)},
  oadd:async()=>{if(!isA())return;const n=val("on_n"),er=$("#fe8");if(!/^[A-Za-z0-9_.]{3,20}$/.test(n))return er.textContent="Digite o nickname exato.";
@@ -1157,17 +1240,45 @@ Object.assign(A,{
   await rpc("admin_set_organizer",{p_user:u[0].id,p_on:true});toast(n+" agora pode organizar campeonatos.");render(true)},
  orem:async(id,el)=>{if(!isA()||!UUID.test(id)||!confirm("Remover "+el.dataset.n+" dos organizadores?"))return;await rpc("admin_set_organizer",{p_user:id,p_on:false});toast("Organizador removido.");render(true)}
 });
+function joined(c){const nm=(CLUBS.find(x=>x.id===c)||{}).name||"seu clube";closeDlg();confetti2(40);mascotSay(`Inscrição confirmada com o ${nm}! Seu nickname já está embaixo do escudo. Agora é aguardar o sorteio!`,8000);render(true)}
 function cpList(q){const el=$("#cl");if(!el||!CPK||!CLUBS)return;const s=q.trim().toLowerCase();let last="",h="";
  CLUBS.filter(c=>!CPK.used.has(c.id)&&(!s||c.name.toLowerCase().includes(s)||c.league.toLowerCase().includes(s))).forEach(c=>{if(c.league!==last){last=c.league;h+=`<div class="clg">${esc(c.league)}</div>`}h+=`<button type="button" class="cli" data-a="cpset" data-id="${c.id}">${crest(c,26)}<span>${esc(c.name)}</span></button>`});
  el.innerHTML=h||'<p class="sub">Nenhum clube encontrado.</p>'}
 document.addEventListener("input",e=>{if(e.target&&e.target.id==="cq")cpList(e.target.value)});
 document.addEventListener("keydown",e=>{const t=e.target;if((e.key==="Enter"||e.key===" ")&&t&&t.classList&&t.classList.contains("bm")&&t.dataset.a){e.preventDefault();t.click()}});
+/* atualização ao vivo: só redesenha se algo mudou (inscrição, sorteio ou resultado) */
+setInterval(async()=>{if(!/^camp-/.test(CUR)||document.hidden||($("#dg")&&$("#dg").open))return;const id=CUR.slice(5);if(!UUID.test(id)||!CAMPS.sig||CAMPS.id!==id)return;
+ try{const [t,s,m]=await Promise.all([api(`/rest/v1/tournaments?id=eq.${id}&select=status`),api(`/rest/v1/tournament_slots?tournament_id=eq.${id}&select=slot,club_id,user_id&order=slot.asc`),api(`/rest/v1/tournament_matches?tournament_id=eq.${id}&played=eq.true&select=round,pos,winner_slot&order=round.asc,pos.asc`)]);
+  if(JSON.stringify([t,s,m])!==CAMPS.sig)render(true)}catch(e){}},15000);
 async function pOrgs(){
  let ls=[];try{ls=await api("/rest/v1/profiles?is_organizer=eq.true&select=id,nick,avatar_url&order=nick.asc")}catch(e){return ""}
  return `<div class="card"><h3>🏆 Organizadores de campeonato</h3><p class="sub">Quem você autorizar aqui pode criar campeonatos e lançar resultados só nos campeonatos que criou.</p><div class="row" style="flex-wrap:nowrap"><label class="f" style="flex:1;margin:0"><input id="on_n" maxlength="20" placeholder="Nickname exato" aria-label="Nickname do organizador"></label><button class="btn p" data-a="oadd">Autorizar</button></div><div class="err" id="fe8"></div>
  ${ls.length?ls.map(u=>`<div class="row between" style="padding:5px 0;border-top:1px solid var(--line)"><span>${av(u,26)}${esc(u.nick)}</span><button class="btn sm d" data-a="orem" data-id="${esc(u.id)}" data-n="${esc(u.nick)}">Remover</button></div>`).join(""):'<p class="sub">Nenhum organizador ainda. Administradores já podem organizar.</p>'}</div>`}
 const _pA3c=pAdmin3;pAdmin3=async()=>(await _pA3c())+(await pOrgs());
-(()=>{const s=document.createElement("style");s.textContent=".cr{flex:none;display:inline-block}.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-top:8px}.cslot{display:flex;align-items:center;gap:8px;min-height:48px;padding:8px 10px;border:1px dashed var(--line);border-radius:12px;background:rgba(0,0,0,.18);color:var(--tx);text-align:left;font-weight:600}.cslot.on{border-style:solid}.cslotn{color:var(--mu)}.cn{min-width:0;overflow-wrap:anywhere}.cn small{color:var(--mu);font-weight:400}.brkw{overflow-x:auto;padding-bottom:10px;margin-top:8px}.brk{display:flex;gap:14px;min-width:max-content;align-items:stretch}.brc{display:flex;flex-direction:column;justify-content:space-around;gap:10px;width:230px}.brh{font-weight:800;color:var(--y);font-size:.85rem;text-transform:uppercase;letter-spacing:.04em;text-align:center}.bm{border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.22);overflow:hidden}.bm.clk{cursor:pointer;border-color:rgba(255,223,0,.5)}.bm.clk:hover,.bm.clk:focus-visible{outline:2px solid var(--y)}.bt{display:flex;align-items:center;gap:8px;padding:6px 10px;min-height:44px}.bt+.bt{border-top:1px solid var(--line)}.bt .cn{flex:1;font-size:.9rem}.bt.win{background:rgba(0,194,90,.16)}.bt.win .cn{font-weight:800}.bs{font-weight:900;font-variant-numeric:tabular-nums;min-width:26px;text-align:right}.champ{display:flex;align-items:center;gap:14px;border-color:rgba(255,223,0,.6)}.clist{max-height:42vh;overflow:auto;margin-top:6px}.clg{font-size:.75rem;font-weight:800;color:var(--y);text-transform:uppercase;letter-spacing:.05em;margin:10px 0 4px}.cli{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin-bottom:4px;min-height:40px;padding:5px 10px}";document.head.appendChild(s)})();
+(()=>{const s=document.createElement("style");s.textContent=`
+.cr{flex:none;display:inline-block}.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:8px}
+.cslot{display:flex;align-items:center;gap:10px;min-height:62px;padding:8px 10px;border:1px dashed var(--line);border-radius:14px;background:rgba(0,0,0,.18);color:var(--tx);text-align:left;font-weight:600}.cslot.on{border-style:solid;background:rgba(0,0,0,.28)}.cslot.me{border-color:var(--y);box-shadow:0 0 0 2px rgba(255,223,0,.35)}.cslotn{color:var(--mu);animation:pulse 2s ease-in-out infinite}
+.cn{min-width:0;overflow-wrap:anywhere;display:flex;flex-direction:column}.cn small,.nk{color:var(--mu);font-weight:600;font-size:.78rem;display:flex;align-items:center;gap:4px}.nk2{display:flex;align-items:center;gap:6px;color:var(--mu)}
+.brkw{overflow-x:auto;padding-bottom:10px;margin-top:8px}.brk{display:flex;gap:14px;min-width:max-content;align-items:stretch}.brc{display:flex;flex-direction:column;justify-content:space-around;gap:10px;width:236px}.brh{font-weight:800;color:var(--y);font-size:.85rem;text-transform:uppercase;letter-spacing:.04em;text-align:center}
+.bm{border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.22);overflow:hidden;position:relative;cursor:pointer;transition:transform .15s,border-color .15s}.bm:hover,.bm:focus-visible{transform:translateY(-2px);outline:2px solid var(--y)}.bm.todo{border-color:rgba(255,223,0,.65);animation:glow 2.2s ease-in-out infinite}
+.bt{display:flex;align-items:center;gap:8px;padding:6px 10px;min-height:48px}.bt+.bt{border-top:1px solid var(--line)}.bt .cn{flex:1;font-size:.9rem}.bt.win{background:rgba(0,194,90,.16)}.bt.win .cn b{font-weight:900}.bt.me{box-shadow:inset 3px 0 0 var(--y)}.bs{font-weight:900;font-variant-numeric:tabular-nums;min-width:26px;text-align:right}
+.pkb{height:5px;background:rgba(232,51,74,.55)}.pkb i{display:block;height:100%;background:rgba(0,194,90,.9);transition:width .6s}.pkb.lg{height:10px;border-radius:99px;overflow:hidden;margin:8px 0 4px}
+.champ{display:flex;align-items:center;gap:14px;border-color:rgba(255,223,0,.7);box-shadow:0 0 28px rgba(255,223,0,.25)}.hd{display:flex;gap:14px;align-items:flex-start}.trophy{font-size:54px;line-height:1;animation:bob 2.6s ease-in-out infinite}
+.clist{max-height:42vh;overflow:auto;margin-top:6px}.clg{font-size:.75rem;font-weight:800;color:var(--y);text-transform:uppercase;letter-spacing:.05em;margin:10px 0 4px}.cli{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin-bottom:4px;min-height:40px;padding:5px 10px}
+.narr{display:flex;gap:12px;align-items:flex-end}.nbw{flex:1;min-width:0}.nbn{font-size:.75rem;font-weight:800;color:var(--y);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.nbb,.bub{background:#fff;color:#10261a;border-radius:16px 16px 16px 4px;padding:10px 12px;font-weight:700;font-size:.92rem;line-height:1.35;min-height:44px;margin-bottom:8px;box-shadow:0 6px 16px rgba(0,0,0,.35)}
+.mrow{display:flex;gap:10px;align-items:flex-end;margin:12px 0}.mrow .bub{flex:1;margin:0}
+.msay{position:fixed;left:12px;bottom:12px;max-width:min(90vw,380px);display:flex;gap:8px;align-items:flex-end;z-index:50;cursor:pointer;animation:pop .35s both}.msay .bub{margin:0}
+.vs{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0}.mside{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;min-width:0}.mside b{overflow-wrap:anywhere}.mside.win{filter:drop-shadow(0 0 10px rgba(0,194,90,.8))}.vsc{font-size:1.8rem;font-weight:900;text-align:center;font-variant-numeric:tabular-nums}.vsc small{display:block;font-size:.7rem;color:var(--y)}
+.pkw{margin-top:8px}.mybox{border-color:rgba(255,223,0,.6)}.mybox>div{margin:4px 0 8px}.wide{width:100%;font-size:1.05rem}
+.prog{height:10px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden;margin:8px 0}.prog i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#00b347,#ffdf00);transition:width .8s}
+.tg-open{color:#6dffb0;border-color:rgba(0,194,90,.6)}.tg-live{color:#ff8a98;border-color:rgba(232,51,74,.7);animation:pulse 1.4s ease-in-out infinite}.tcard:hover{transform:translateY(-2px)}
+.cfx{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}.cfx i{position:absolute;top:-14px;width:9px;height:14px;animation:cfall linear forwards}
+.fu{animation:fu .5s both;animation-delay:calc(var(--i,0)*55ms)}.drw .bm{animation:flip .7s both;animation-delay:calc(var(--i,0)*90ms)}
+@keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}@keyframes flip{from{opacity:0;transform:perspective(500px) rotateX(-90deg)}to{opacity:1;transform:none}}
+@keyframes pulse{50%{opacity:.55}}@keyframes glow{50%{box-shadow:0 0 16px rgba(255,223,0,.55)}}@keyframes bob{50%{transform:translateY(-6px) rotate(-5deg)}}@keyframes pop{from{opacity:0;transform:scale(.8) translateY(12px)}to{opacity:1;transform:none}}@keyframes cfall{to{transform:translateY(105vh) rotate(720deg)}}
+html.no-anim .fu,html.no-anim .drw .bm,html.no-anim .trophy,html.no-anim .bm.todo,html.no-anim .tg-live,html.no-anim .cslotn{animation:none!important}
+@media (prefers-reduced-motion:reduce){.fu,.drw .bm,.trophy,.bm.todo,.tg-live,.cslotn,.msay{animation:none!important}.cfx{display:none}}`;document.head.appendChild(s)})();
 </script>
 </body>
 </html>
