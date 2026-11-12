@@ -348,7 +348,8 @@ function siren(on){if(SIREN){clearInterval(SIREN.i);clearTimeout(SIREN.t);try{SI
 /* alarme: o próprio site confere se o servidor responde */
 let HFAIL=0,DOWN=false;
 function alertBar(on){const a=$("#alerta");a.classList.toggle("on",on);a.innerHTML=on?'⚠️ Instabilidade detectada: o servidor não está respondendo.'+(isA()?' <button data-a="mute">Silenciar</button>':""):""}
-async function health(){if(document.hidden)return;let ok=false;try{const r=await fetch(SB+"/auth/v1/health",{headers:{apikey:KEY},cache:"no-store"});ok=r.ok}catch(e){}
+const REALHOST=/(^|\.)(github\.io|efootballbrasil\.com\.br)$/.test(location.hostname);
+async function health(){if(document.hidden||!REALHOST)return;let ok=false;try{const r=await fetch(SB+"/auth/v1/health",{headers:{apikey:KEY},cache:"no-store"});ok=r.ok}catch(e){}
  if(ok){HFAIL=0;if(DOWN){DOWN=false;alertBar(false);siren(false);toast("Servidor normalizado.")}return}
  if(!navigator.onLine)return;if(++HFAIL>=3&&!DOWN){DOWN=true;alertBar(true);if(isA())siren(true)}}
 setInterval(health,20000);
