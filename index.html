@@ -171,6 +171,10 @@ main:not(.q) .price{animation:shimmer 4s ease-in-out infinite}@keyframes shimmer
 .lbs{flex:1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}.lbs::-webkit-scrollbar{display:none}.lbi{flex:0 0 100%;scroll-snap-align:center;display:grid;place-items:center;padding:8px}.lbi img{max-width:100%;max-height:92vh;object-fit:contain}
 .lbx{position:absolute;top:calc(10px + env(safe-area-inset-top));right:12px;z-index:3;width:44px;height:44px;border-radius:50%;padding:0;font-size:1.2rem;background:rgba(255,255,255,.15);border:0}
 .prevs{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin:8px 0}.pv{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:2px solid transparent}.pv.cover{border-color:var(--y)}.pv img{width:100%;height:100%;object-fit:cover;display:block}.pv .x{position:absolute;right:2px;top:2px;width:26px;height:26px;min-height:0;padding:0;border-radius:50%;font-size:.8rem;background:rgba(0,0,0,.7);border:0}.pv .k{position:absolute;left:3px;bottom:3px;font-size:.62rem;background:var(--y);color:#000;border-radius:6px;padding:0 5px;font-weight:800}
+.chw{position:relative;margin:8px 0}.chw svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.chl{display:flex;gap:16px;flex-wrap:wrap;margin:6px 0;font-size:.85rem;color:var(--mu)}.chl i{display:inline-block;width:18px;height:0;border-top:3px solid;vertical-align:middle;margin-right:6px;border-radius:2px}
+.cht{position:absolute;z-index:5;pointer-events:none;background:#0b1c12;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:.82rem;min-width:150px;box-shadow:0 8px 20px rgba(0,0,0,.5)}.cht b{font-size:1rem;color:var(--tx)}.cht .m{color:var(--mu);margin-bottom:4px}.cht i{display:inline-block;width:14px;border-top:3px solid;margin-right:6px;vertical-align:middle}
+.chw details{margin-top:6px}.chw table{width:100%;border-collapse:collapse;font-size:.82rem}.chw td,.chw th{padding:4px 6px;border-bottom:1px solid var(--line);text-align:right}.chw th:first-child,.chw td:first-child{text-align:left}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;translate:none!important;rotate:none!important}}
 </style>
 </head>
@@ -252,7 +256,7 @@ async function page(){
  if(CUR==="fichas")return pFichas();
  if(CUR==="batalha")return pBatalha();
  if(CUR.startsWith("b-"))return pMatchById(CUR.slice(2));
- if(CUR==="admin")return isA()?pAdmin2():'<div class="card">Sem permissão.</div>';
+ if(CUR==="admin")return isA()?pAdmin3():'<div class="card">Sem permissão.</div>';
  const s=SOON[CUR];return s?`<div class="card"><h2>${s[0]}</h2><p>${s[1]}</p></div>`:'<div class="card">Página não encontrada.</div>'}
 const ATAL=[["noticias","📰","Notícias","Novidades do eFootball"],["formacoes","📋","Formações","Táticas da comunidade"],["forum","💬","Fórum","Converse e tire dúvidas"],["fichas","🃏","Fichas","Jogadores da comunidade"],["batalha","⚔️","Batalha","Fila 1v1, 2v2 e 3v3"],["marketplace","🛒","Marketplace","Contas e itens à venda"]];
 async function pHome(){let n=[];try{n=await api("/rest/v1/content?kind=eq.noticia&select=id,title,created_at&order=created_at.desc&limit=3")}catch(e){}
@@ -670,7 +674,7 @@ document.addEventListener("change",e=>{if(e.target.id!=="m_f")return;MKF=MKF.con
 const mForm=(l)=>{l=l||{};return `<div class="warn">Nunca coloque e-mail, senha ou códigos da conta no anúncio ou nas fotos.</div>${fld("m_t","Título (5 a 60)",'maxlength="60" value="'+esc(l.title||"")+'"')}
  <div class="row" style="flex-wrap:nowrap"><label class="f" style="flex:1">Plataforma<select id="m_pl"><option value="">—</option>${["Mobile","PC","PlayStation","Xbox"].map(x=>`<option ${l.platform===x?"selected":""}>${x}</option>`).join("")}</select></label>${fld("m_o","OVR do time",'type="number" min="0" max="999" inputmode="numeric" value="'+esc(l.ovr||"")+'"')}</div>
  <div class="row" style="flex-wrap:nowrap">${fld("m_c","Moedas",'type="number" min="0" inputmode="numeric" value="'+esc(l.coins||"")+'"')}${fld("m_lv","Nível da conta",'type="number" min="0" inputmode="numeric" value="'+esc(l.acct_level||"")+'"')}</div>
- ${fld("m_p","Preço em R$ (1 a 10.000)",'type="number" min="1" max="10000" step="0.01" inputmode="decimal" value="'+(l.price_cents?l.price_cents/100:"")+'"')}
+ ${fld("m_p","Preço em R$ (1 a 10.000)",'type="number" min="1" max="10000" step="0.01" inputmode="decimal" value="'+(l.price_cents?l.price_cents/100:"")+'"')}<div class="card" id="m_fee" style="margin:4px 0 10px"></div>
  <label class="f">Destaques (jogadores e itens principais)<textarea id="m_h" maxlength="500">${esc(l.highlights||"")}</textarea></label><label class="f">Descrição<textarea id="m_d" maxlength="800">${esc(l.description||"")}</textarea></label>`};
 const mRead=()=>({title:val("m_t"),platform:$("#m_pl").value||null,ovr:parseInt(val("m_o"),10)||0,coins:parseInt(val("m_c"),10)||0,acct_level:parseInt(val("m_lv"),10)||null,price:Math.round(parseFloat(val("m_p").replace(",","."))*100),highlights:val("m_h")||null,description:val("m_d")||null});
 const mCheck=d=>d.title.length<5?"O título precisa de 5 a 60 caracteres.":!(d.price>=100&&d.price<=1000000)?"O preço deve ficar entre R$ 1,00 e R$ 10.000,00.":"";
@@ -703,6 +707,68 @@ Object.assign(A,{
   document.body.appendChild(d);document.body.style.overflow="hidden";const s=$("#lbs");s.style.scrollBehavior="auto";s.scrollLeft=(+i)*s.clientWidth},
  mlbx:()=>closeLb()
 });
+</script>
+<script>
+/* ===== Comissão e painel financeiro ===== */
+let FEE=10;
+async function loadFee(){try{const r=await api("/rest/v1/settings?key=eq.fee_percent&select=value");if(r[0])FEE=Math.max(0,Math.min(50,parseInt(r[0].value,10)||10))}catch(e){}}
+function feeCalc(){const e=$("#m_fee");if(!e)return;const v=Math.round(parseFloat((($("#m_p")||{}).value||"").replace(",","."))*100)||0,c=Math.round(v*FEE/100);
+ e.innerHTML=`<b>Comissão do site: ${FEE}%</b><div class="sub">${v?`Preço ${BRL(v)} · comissão ${BRL(c)} · <b>você recebe ${BRL(v-c)}</b>`:"Informe o preço para ver quanto você recebe."} A comissão vale no momento da compra e pode ser alterada pela administração para vendas futuras.</div>`}
+document.addEventListener("input",e=>{if(e.target.id==="m_p")feeCalc()});
+{const _n=A.mnew,_e=A.medit;A.mnew=async()=>{await loadFee();_n();feeCalc()};A.medit=async id=>{await loadFee();_e(id);feeCalc()}}
+const ORD={aguardando_pagamento:"Aguardando pagamento",retido:"Pago e retido em garantia",entregue:"Entregue (aguardando confirmação)",concluido:"Concluído",disputa:"Em disputa",reembolsado:"Reembolsado"};
+async function pFin(){await loadFee();let os=[],ls=[];try{os=await api("/rest/v1/orders?select=id,title,created_at,status,price_cents,fee_percent&order=created_at.desc&limit=1000");FIN=os;ls=await api("/rest/v1/listings?select=status&limit=1000")}catch(e){}
+ const by={};os.forEach(o=>{const b=by[o.status]||(by[o.status]={n:0,v:0,c:0});b.n++;b.v+=o.price_cents;b.c+=Math.round(o.price_cents*o.fee_percent/100)});
+ const g=k=>by[k]||{n:0,v:0,c:0},pago=["retido","entregue","concluido"].reduce((a,k)=>({n:a.n+g(k).n,v:a.v+g(k).v}),{n:0,v:0}),ganho=g("concluido").c,previsto=g("retido").c+g("entregue").c;
+ const at=ls.filter(x=>x.status==="ativo").length,vd=ls.filter(x=>x.status==="vendido").length;
+ return `<div class="card"><h3>💰 Financeiro</h3>
+ <div class="warn">Os pagamentos ainda não estão ativos, então os números abaixo vêm só dos pedidos reais registrados (hoje deve ser zero). Nada aqui é estimado.</div>
+ <div class="specs"><div><span>Contas anunciadas</span><b>${at}</b></div><div><span>Contas vendidas</span><b>${vd}</b></div><div><span>Pedidos pagos</span><b>${pago.n}</b></div><div><span>Total pago</span><b>${BRL(pago.v)}</b></div><div><span>Comissão já ganha</span><b>${BRL(ganho)}</b></div><div><span>Comissão prevista</span><b>${BRL(previsto)}</b></div></div>
+ ${chartHtml(os)}<div class="row" style="margin:8px 0"><button class="btn sm" data-a="fincsv">⬇️ Baixar relatório (CSV)</button></div><h4 style="margin:10px 0 4px">Pedidos por situação</h4>${Object.keys(ORD).map(k=>`<div class="row between" style="padding:3px 0"><span>${ORD[k]}</span><span class="sub">${g(k).n} · ${BRL(g(k).v)}</span></div>`).join("")}
+ <h4 style="margin:14px 0 4px">Comissão do site</h4><div class="row" style="flex-wrap:nowrap"><label class="f" style="flex:1;margin:0">Percentual (0 a 50)<input id="fe_p" type="number" min="0" max="50" inputmode="numeric" value="${FEE}"></label><button class="btn p" data-a="feset">Salvar</button></div><p class="sub">Vale para as próximas compras. Pedidos já feitos mantêm a comissão da data da compra. O vendedor vê o percentual e quanto vai receber ao anunciar.</p><div class="err" id="fe5"></div>
+ <h4 style="margin:14px 0 4px">Saques da administração</h4><p class="sub">Um único meio: <b>Pix para conta ou chave em nome do CNPJ 70.106.657/0001-13</b>. O destino é definido no serviço de pagamento (não neste site) e fica travado nessa conta. Em preparação: depende do serviço de pagamento escolhido.</p></div>`}
+async function pAdmin3(){return (await pAdmin2())+(await pFin())}
+Object.assign(A,{feset:async()=>{if(!isA())return;const v=parseInt($("#fe_p").value,10),er=$("#fe5");if(!(v>=0&&v<=50))return er.textContent="Informe um valor de 0 a 50.";if(!confirm("Mudar a comissão para "+v+"%? Vale só para compras futuras."))return;await rpc("admin_set_fee",{p_fee:v});FEE=v;toast("Comissão atualizada para "+v+"%.");render(true)}});
+</script>
+<script>
+/* ===== Gráfico mensal (vendas e comissão) e relatório CSV ===== */
+let FIN=[],CHD=null;
+const MES=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+function chartHtml(os){
+ const paid=os.filter(o=>["retido","entregue","concluido"].includes(o.status));
+ if(!paid.length)return '<div class="chw"><h4 style="margin:10px 0 4px">Vendas e comissão por mês</h4><p class="sub">Ainda não há vendas pagas. O gráfico aparece aqui quando o primeiro pedido for pago.</p></div>';
+ const now=new Date(),ms=[];for(let i=11;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);ms.push({k:d.getFullYear()*12+d.getMonth(),l:MES[d.getMonth()]+"/"+String(d.getFullYear()).slice(2),v:0,c:0,n:0})}
+ paid.forEach(o=>{const d=new Date(o.created_at),k=d.getFullYear()*12+d.getMonth(),m=ms.find(x=>x.k===k);if(m){m.v+=o.price_cents;m.c+=Math.round(o.price_cents*o.fee_percent/100);m.n++}});
+ const mx=Math.max(...ms.map(m=>m.v),1),step=(()=>{const raw=mx/4,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p;return (f<=1?1:f<=2?2:f<=5?5:10)*p})(),top=step*4;
+ const W=480,H=260,L=56,R=70,T=14,B=34,pw=W-L-R,ph=H-T-B,x=i=>L+pw*i/11,y=v=>T+ph-ph*v/top;
+ const C1="#3987e5",C2="#d95926",short=v=>v>=100000?"R$ "+(v/100000).toFixed(v%100000?1:0).replace(".",",")+" mil":BRL(v);
+ const path=k=>ms.map((m,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(m[k]).toFixed(1)).join(" ");
+ let g="";for(let i=0;i<=4;i++){const v=step*i;g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="currentColor" opacity=".14"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end" font-size="10.5" fill="currentColor" opacity=".75">${short(v)}</text>`}
+ ms.forEach((m,i)=>{if(i%2===1)g+=`<text x="${x(i)}" y="${H-12}" text-anchor="middle" font-size="10.5" fill="currentColor" opacity=".75">${m.l}</text>`});
+ const last=ms[11],y1=y(last.v),y2=y(last.c),dy=Math.abs(y1-y2)<14?(y2>=y1?14:-14):0;
+ const dots=k=>ms.map((m,i)=>`<circle cx="${x(i)}" cy="${y(m[k])}" r="4" fill="${k==="v"?C1:C2}" stroke="#0d2217" stroke-width="2"/>`).join("");
+ CHD={ms,W,H,L,R,T,B,pw,C1,C2};
+ return `<div class="chw" id="chw"><h4 style="margin:10px 0 4px">Vendas e comissão por mês</h4>
+ <div class="chl"><span><i style="border-color:${C1}"></i>Vendas pagas</span><span><i style="border-color:${C2}"></i>Comissão (receita da plataforma)</span></div>
+ <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico de linhas dos últimos 12 meses: vendas pagas e comissão. Os mesmos valores estão na tabela abaixo." id="chs" style="color:var(--tx)">${g}
+ <path d="${path("v")}" fill="none" stroke="${C1}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="${path("c")}" fill="none" stroke="${C2}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${dots("v")}${dots("c")}
+ <text x="${W-R+8}" y="${y1+4+(dy<0?0:0)}" font-size="11" fill="currentColor">Vendas</text><text x="${W-R+8}" y="${y2+4+dy}" font-size="11" fill="currentColor">Comissão</text>
+ <line id="chx" x1="0" x2="0" y1="${T}" y2="${T+ph}" stroke="currentColor" opacity=".5" visibility="hidden"/><rect id="chr" x="${L}" y="${T}" width="${pw}" height="${ph}" fill="transparent"/></svg>
+ <div class="cht" id="cht" style="display:none"></div>
+ <details><summary class="sub" style="cursor:pointer">Ver como tabela</summary><table><tr><th>Mês</th><th>Pedidos</th><th>Vendas</th><th>Comissão</th></tr>${ms.map(m=>`<tr><td>${m.l}</td><td>${m.n}</td><td>${BRL(m.v)}</td><td>${BRL(m.c)}</td></tr>`).join("")}</table></details>
+ <p class="sub">Comissão é a receita bruta da plataforma. Não é lucro líquido: ainda não desconta as taxas do serviço de pagamento nem os impostos. Cada pedido conta no mês em que foi criado.</p></div>`}
+function chartMove(e){const r=$("#chr"),svg=$("#chs"),t=$("#cht");if(!r||!CHD)return;const b=svg.getBoundingClientRect(),sx=CHD.W/b.width,px=(e.clientX-b.left)*sx;
+ const i=Math.max(0,Math.min(11,Math.round((px-CHD.L)/CHD.pw*11))),m=CHD.ms[i],xx=CHD.L+CHD.pw*i/11,ln=$("#chx");ln.setAttribute("x1",xx);ln.setAttribute("x2",xx);ln.setAttribute("visibility","visible");
+ t.style.display="block";t.textContent="";const a=document.createElement("div");a.className="m";a.textContent=m.l;t.appendChild(a);
+ [["Vendas",m.v,CHD.C1],["Comissão",m.c,CHD.C2]].forEach(([n,v,c])=>{const d=document.createElement("div"),k=document.createElement("i");k.style.borderColor=c;const bb=document.createElement("b");bb.textContent=BRL(v);const s2=document.createElement("span");s2.className="sub";s2.textContent=" "+n;d.append(k,bb,s2);t.appendChild(d)});
+ const w=$("#chw").getBoundingClientRect(),left=e.clientX-w.left+14,tw=t.offsetWidth;t.style.left=Math.max(0,Math.min(w.width-tw,left>w.width-tw?e.clientX-w.left-tw-14:left))+"px";t.style.top=Math.max(40,e.clientY-w.top-50)+"px"}
+document.addEventListener("pointermove",e=>{if(e.target&&e.target.id==="chr")chartMove(e)});
+document.addEventListener("pointerleave",e=>{if(e.target&&e.target.id==="chr"){const t=$("#cht"),l=$("#chx");if(t)t.style.display="none";if(l)l.setAttribute("visibility","hidden")}},true);
+/* relatório para o contador (sem dados pessoais dos compradores) */
+const csvC=v=>{v=String(v==null?"":v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'};
+Object.assign(A,{fincsv:()=>{if(!isA())return;if(!FIN.length)return toast("Ainda não há pedidos para exportar.");
+ const rows=[["Data","Pedido","Item","Situação","Valor (R$)","Comissão (%)","Comissão (R$)"]].concat(FIN.map(o=>[new Date(o.created_at).toLocaleDateString("pt-BR"),o.id,o.title,ORD[o.status]||o.status,(o.price_cents/100).toFixed(2).replace(".",","),o.fee_percent,(Math.round(o.price_cents*o.fee_percent/100)/100).toFixed(2).replace(".",",")]));
+ const b=new Blob(["﻿"+rows.map(r=>r.map(csvC).join(";")).join("\r\n")],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="efootball-brasil-pedidos-"+new Date().toISOString().slice(0,10)+".csv";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast("Relatório gerado.")}});
 </script>
 </body>
 </html>
