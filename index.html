@@ -1136,7 +1136,7 @@ function narrShow(){const e=$("#nb");if(e&&CAMPS.lines.length)typeTo(e,CAMPS.lin
 const narrCard=()=>`<div class="card narr fu"><div class="logo" style="width:64px;height:84px"></div><div class="nbw"><div class="nbn">🎙️ Mascote narrador</div><div class="nbb"><span id="nb" aria-live="polite"></span></div><button class="btn sm" data-a="cnext">Próxima fala ▶</button></div></div>`;
 /* ----- lista ----- */
 async function pCamps(){
- let ts=[];try{ts=await api("/rest/v1/tournaments?select=id,title,size,status,created_at,profiles(nick),tournament_slots(count)&order=created_at.desc&limit=60")}catch(e){return `<div class="card"><h2>🏆 Campeonatos</h2><p class="sub">Ainda não está disponível. ${esc(e.message||"")}</p></div>`}
+ let ts=[];try{ts=await api("/rest/v1/tournaments?select=id,title,size,status,created_at,profiles!organizer_id(nick),tournament_slots(count)&order=created_at.desc&limit=60")}catch(e){return `<div class="card"><h2>🏆 Campeonatos</h2><p class="sub">Ainda não está disponível. ${esc(e.message||"")}</p></div>`}
  const org=await orgOk();CAMPS.lines=["Bora competir? Escolha um campeonato, entre com o seu time e eu narro cada jogo!","Quer ver seu nickname embaixo do escudo? É só se inscrever num campeonato com as vagas abertas!"];if(ts.some(t=>t.status==="running"))CAMPS.lines.push("Tem campeonato rolando agora! Dá uma olhada na chave e dê o seu palpite.");setTimeout(startNarr,60);
  const lb={draft:["🟢 Inscrições abertas","tg-open"],running:["● Ao vivo","tg-live"],done:["🏆 Encerrado",""]};
  return `<div class="row between"><h2>🏆 Campeonatos</h2>${org?'<button class="btn p" data-a="cnew">+ Novo campeonato</button>':""}</div>${narrCard()}`+(isA()?await pOrgs():"")+
@@ -1161,7 +1161,7 @@ function statsBox(ms,SM){const pl=ms.filter(m=>m.played);if(!pl.length)return ""
  return `<div class="card fu"><h3>📊 Números do campeonato</h3><div class="mtg">${tl(pl.length+"/"+ms.length,"jogos disputados")}${tl(g,"gols marcados")}${tl((g/pl.length).toLocaleString("pt-BR",{maximumFractionDigits:1}),"gols por jogo")}${best&&SM[best.s]?tl(esc(SM[best.s].clubs.short)+" · "+best.g,"melhor ataque"):""}</div>${big.df>0&&bw&&bl?`<p class="sub">Maior vitória: <b>${esc(bw.clubs.name)} ${ws} x ${ls} ${esc(bl.clubs.name)}</b></p>`:""}</div>`}
 async function pCamp(id){
  if(!UUID.test(id))return '<div class="card">Campeonato não encontrado.</div>';
- const t=(await api(`/rest/v1/tournaments?id=eq.${id}&select=id,title,size,status,champion_slot,organizer_id,created_at,profiles(nick)`))[0];if(!t)return '<div class="card">Campeonato não encontrado.</div>';
+ const t=(await api(`/rest/v1/tournaments?id=eq.${id}&select=id,title,size,status,champion_slot,organizer_id,created_at,profiles!organizer_id(nick)`))[0];if(!t)return '<div class="card">Campeonato não encontrado.</div>';
  const sl=await api(`/rest/v1/tournament_slots?tournament_id=eq.${id}&select=slot,player,user_id,profiles(nick,avatar_url),clubs(id,name,short,c1,c2,crest_url,league)&order=slot.asc`);
  const SM={};sl.forEach(s=>SM[s.slot]=s);
  const can=isA()||(!!ME&&ME.id===t.organizer_id&&await orgOk()),R=roundsOf(t.size);
