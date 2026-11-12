@@ -1512,5 +1512,433 @@ Object.assign(A,{
   closeDlg();toast(note);W=null;if(id)location.hash="f-"+id;else render()}
 });
 </script>
+<script>
+(()=>{const s=document.createElement("style");s.textContent=`
+.cgh{display:block}.cgt{display:flex;gap:10px;align-items:center}.cgt>div:nth-child(2){flex:1}.cgo{font-size:2rem;font-weight:800;line-height:1;text-align:center}.cgo small{display:block;font-size:.6rem;opacity:.7}
+.cgbars{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:2px 14px;margin:8px 0}
+.cgb{display:grid;grid-template-columns:84px minmax(0,1fr) 2.6ch;gap:8px;align-items:center;font-size:.82rem;margin:3px 0}.cgb>div{height:8px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}.cgb i{display:block;height:100%;border-radius:99px;background:var(--g)}.cgb i.bad{background:#ff6b6b}.cgb b{text-align:right}
+.cgw{background:#4a1b1b;border:1px solid #7a2a2a;border-radius:10px;padding:8px 10px;margin-top:8px;font-size:.9rem}
+.cgg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:12px 0}.cgg .wide{grid-column:1/-1;min-height:56px;font-size:1.1rem}
+.cgch{display:grid;gap:8px;margin-top:8px}.cgch .btn{display:flex;flex-direction:column;align-items:flex-start;text-align:left;min-height:52px}.cgch small{font-weight:400;opacity:.8}
+.cgev,.cgmom,.cgrep{border-color:var(--g)!important}.cgev p,.cgrep p{margin:8px 0}
+.cgsc{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;text-align:center;gap:8px}.cgsc small{display:block}.cgs{font-size:2.4rem;font-weight:800}
+.cgmt{position:relative;height:34px;border-radius:10px;background:rgba(255,255,255,.1);margin:12px 0;overflow:hidden}.cgz{position:absolute;top:0;bottom:0;background:rgba(47,209,111,.55);border-left:2px solid #2fd16f;border-right:2px solid #2fd16f}.cgk{position:absolute;top:0;bottom:0;width:6px;margin-left:-3px;background:#fff;box-shadow:0 0 10px #fff}
+.cgG{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;border:4px solid #fff;border-bottom:0;border-radius:6px 6px 0 0;padding:4px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.07) 0 8px,transparent 8px 16px);max-width:420px;margin:8px auto}.cgz2{min-height:64px;border-radius:8px;border:1px dashed rgba(255,255,255,.4);background:rgba(0,0,0,.25);color:#fff;font:inherit;font-size:1.3rem;cursor:pointer;display:grid;place-items:center;padding:0}button.cgz2:hover{background:rgba(47,209,111,.35)}.cgz2 span{opacity:.9}.cgz2.me{background:rgba(47,209,111,.35)}.cgz2.gk{border-color:#ffb020}.cgsw{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px}.cgsk{width:40px;height:40px;border-radius:50%;border:3px solid transparent;cursor:pointer;padding:0;min-height:0}.cgsk.on{border-color:#fff;box-shadow:0 0 0 2px var(--g)}.cgcv{width:100%;max-width:520px;aspect-ratio:3/2;display:block;margin:8px auto;border-radius:12px;background:#0b2a17}.cgstop{min-height:64px;font-size:1.2rem;width:100%}
+.cgres{padding:12px;border-radius:12px;margin:8px 0;font-size:1.05rem;background:rgba(255,255,255,.08)}.cgres.gol{background:#0b5a2b}.cgres.bad{background:#4a1b1b}
+.cgl{margin:4px 0;font-size:.9rem}.cgl.ok,.cgl.gol{color:#7dffb0}.cgl.bad{color:#ff9b9b}
+.cgat{display:flex;gap:8px;align-items:center;margin:6px 0}.cgat>span{width:96px;font-size:.88rem}.cgat>b{width:2.6ch;text-align:right}.cgat .btn{min-width:40px;padding:4px 10px}
+.cgclub{display:flex;gap:10px;align-items:center;text-align:left;cursor:pointer;color:inherit;font:inherit}.cgclub.on{border-color:var(--g)!important;box-shadow:0 0 0 2px var(--g)}
+.cgtb{width:100%;border-collapse:collapse;font-size:.85rem}.cgtb th,.cgtb td{padding:5px 6px;text-align:left;border-bottom:1px solid var(--line)}
+@media (prefers-reduced-motion:no-preference){.cgmom,.cgev,.cgrep{animation:pop .3s both}}html.no-anim .cgmom,html.no-anim .cgev,html.no-anim .cgrep{animation:none!important}
+`;document.head.appendChild(s)})();
+let CGU=null;
+/* ---------- CARREIRA: jogo de carreira de jogador (original) ---------- */
+const CG_AT=[["ritmo","Ritmo","⚡"],["chute","Chute","🎯"],["passe","Passe","🎩"],["drible","Drible","🌀"],["defesa","Defesa","🛡️"],["fisico","Físico","💪"]];
+const CG_W={CA:{chute:.35,ritmo:.2,drible:.15,fisico:.15,passe:.1,defesa:.05},SA:{drible:.25,ritmo:.2,chute:.25,passe:.2,fisico:.05,defesa:.05},PE:{drible:.25,ritmo:.28,chute:.17,passe:.2,fisico:.05,defesa:.05},PD:{drible:.25,ritmo:.28,chute:.17,passe:.2,fisico:.05,defesa:.05},
+ MEI:{passe:.35,drible:.25,chute:.2,ritmo:.1,fisico:.05,defesa:.05},MC:{passe:.3,drible:.15,defesa:.15,fisico:.15,ritmo:.15,chute:.1},ME:{passe:.3,drible:.15,defesa:.15,fisico:.15,ritmo:.15,chute:.1},MD:{passe:.3,drible:.15,defesa:.15,fisico:.15,ritmo:.15,chute:.1},
+ VOL:{defesa:.35,passe:.25,fisico:.2,ritmo:.1,drible:.05,chute:.05},ZAG:{defesa:.45,fisico:.25,ritmo:.15,passe:.1,drible:.03,chute:.02},LE:{ritmo:.25,defesa:.25,passe:.2,fisico:.15,drible:.1,chute:.05},LD:{ritmo:.25,defesa:.25,passe:.2,fisico:.15,drible:.1,chute:.05},GOL:{defesa:.6,fisico:.2,passe:.2}};
+const CG_MT={CA:[["chute",.55],["drible",.2],["passe",.25]],SA:[["chute",.4],["drible",.3],["passe",.3]],PE:[["drible",.4],["chute",.3],["passe",.3]],PD:[["drible",.4],["chute",.3],["passe",.3]],MEI:[["passe",.45],["chute",.3],["drible",.25]],
+ MC:[["passe",.5],["drible",.2],["defesa",.2],["chute",.1]],ME:[["passe",.45],["drible",.25],["defesa",.2],["chute",.1]],MD:[["passe",.45],["drible",.25],["defesa",.2],["chute",.1]],VOL:[["defesa",.5],["passe",.4],["chute",.1]],
+ ZAG:[["defesa",.7],["passe",.3]],LE:[["defesa",.4],["passe",.3],["drible",.3]],LD:[["defesa",.4],["passe",.3],["drible",.3]],GOL:[["goleiro",1]]};
+const CG_T5=["manchester city","arsenal","liverpool","chelsea","manchester united","tottenham","barcelona","real madrid","atletico de madrid","bayern","borussia dortmund","bayer leverkusen","paris saint","psg","inter de mil","milan","napoli"];
+const CG_T4=["newcastle","aston villa","west ham","juventus","roma","lazio","atalanta","athletic","real sociedad","villarreal","sevilla","leipzig","stuttgart","monaco","marseille","lyon","lille","benfica","porto","sporting","ajax","psv","flamengo","palmeiras"];
+const CG_T3=["corinthians","sao paulo","atletico mineiro","atletico-mg","internacional","gremio","fluminense","botafogo","cruzeiro","santos","vasco"];
+const CG_T1=["chapecoense","mirassol","coventry","hull","le mans","paris fc","deportivo","sunderland","cagliari","lecce","levante","espanyol"];
+const CG_BIG=["Premier League","Serie A (Itália)","Bundesliga","LaLiga","Ligue 1"];
+const cgNorm=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+const cgTier=c=>{const n=cgNorm(c.name),h=l=>l.some(k=>n.includes(k));return h(CG_T5)?5:h(CG_T4)?4:h(CG_T3)?3:h(CG_T1)?1:CG_BIG.includes(c.league)?3:2};
+const cgStr=t=>40+9*t;
+const cgRand=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),cgPick=a=>a[Math.floor(Math.random()*a.length)],cgClamp=(v,a,b)=>Math.max(a,Math.min(b,v)),cgChance=p=>Math.random()<p;
+const cgMoney=n=>"R$ "+Math.round(n).toLocaleString("pt-BR");
+const cgOvr=(p,at)=>{const w=CG_W[p]||CG_W.CA;let t=0;for(const k in w)t+=w[k]*(at[k]||0);return Math.round(t)};
+const cgSnap=c=>({id:c.id,name:c.name,short:c.short,c1:c.c1,c2:c.c2,league:c.league,tier:cgTier(c)});
+let G=null,CGV="hub",M=null,CGX={sel:null,pts:12,newAt:null,newPos:"CA",newName:"",skin:1,hair:0,hairc:0,newClub:null,starts:null,board:null};
+const CGSHOP=[
+ ["bota","Chuteiras profissionais",[["+3 em Chute",12000,{at:{chute:3}}],["+5 em Chute",60000,{at:{chute:5}}]]],
+ ["gym","Academia particular",[["Treinos rendem +25%",20000,{gym:.25}],["Treinos rendem +50%",90000,{gym:.5}]]],
+ ["nutri","Nutricionista",[["Recupera +10 de energia por semana",15000,{regen:10}],["Recupera +20 de energia por semana",70000,{regen:20}]]],
+ ["fisio","Fisioterapeuta",[["Lesões duram menos e são mais raras",25000,{fisio:1}]]],
+ ["imp","Assessor de imprensa",[["Fama cresce mais rápido",30000,{imp:1}]]],
+ ["casa","Casa",[["Apartamento (+moral por semana)",50000,{moral:1}],["Mansão (+moral e +energia)",400000,{moral:3,regen:5}]]],
+ ["carro","Carro",[["Esportivo (+fama)",80000,{fama:5}],["Supercarro (+muita fama)",600000,{fama:15}]]]];
+const CGEV=[
+ {t:"Balada na véspera",x:"Os amigos chamam você para uma festa na véspera do jogo. A câmera de um fã pode estar em qualquer lugar.",ch:[
+  {l:"Ir e curtir",o:[[.5,{m:12,e:-20},"Foi ótimo, mas você vai sentir o cansaço."],[.5,{m:6,e:-20,f:-5,c:-8},"Alguém filmou. O técnico não gostou nada."]]},
+  {l:"Ficar em casa",o:[[1,{m:2,e:10},"Noite tranquila. Você acorda inteiro."]]}]},
+ {t:"Entrevista polêmica",x:"Um repórter provoca você sobre o técnico na saída do treino.",ch:[
+  {l:"Responder com firmeza",o:[[.5,{f:6,fa:6},"A resposta viraliza e a torcida adora."],[.5,{f:3,c:-10},"O técnico ouviu e ficou irritado."]]},
+  {l:"Elogiar o time",o:[[1,{c:5,fa:2},"Todo mundo aprova a maturidade."]]},
+  {l:"Não falar nada",o:[[1,{},"Você segue em frente e a história morre."]]}]},
+ {t:"Proposta de patrocínio",x:"Uma marca de energético oferece um contrato de imagem.",ch:[
+  {l:"Aceitar",o:[[1,{$:25000,f:4},"Dinheiro na conta e mais visibilidade."]]},
+  {l:"Pedir mais dinheiro",o:[[.5,{$:55000,f:4},"Eles toparam! Muito bom."],[.5,{},"Eles desistiram e fecharam com outro atleta."]]},
+  {l:"Recusar",o:[[1,{m:2},"Você prefere focar no futebol."]]}]},
+ {t:"Visita ao hospital infantil",x:"O clube convida você para visitar crianças internadas.",ch:[
+  {l:"Ir com carinho",o:[[1,{fa:10,m:8,f:3,e:-8},"Um dia que ninguém vai esquecer."]]},
+  {l:"Mandar presentes",o:[[1,{fa:3,$:-3000},"Os presentes foram muito bem-vindos."]]},
+  {l:"Dispensar",o:[[1,{fa:-4},"A torcida comentou nas redes."]]}]},
+ {t:"Discussão no treino",x:"Um companheiro entra duro e a confusão começa no coletivo.",ch:[
+  {l:"Revidar",o:[[.4,{m:5,c:-12},"O técnico viu tudo e deu bronca."],[.6,{m:-3,c:-6},"Todo mundo se afasta. Clima estranho."]]},
+  {l:"Separar e acalmar",o:[[1,{c:8,m:3},"Liderança reconhecida pelo grupo."]]}]},
+ {t:"Empresário na linha",x:"Seu empresário diz que um clube grande tem interesse. Quer que você faça cera por aqui.",ch:[
+  {l:"Seguir o plano",o:[[.5,{f:3,c:-12,fa:-6},"A torcida percebeu e vaiou."],[.5,{f:5,$:20000},"Ele conseguiu um bônus para você."]]},
+  {l:"Dizer que vai se dedicar ao clube",o:[[1,{c:6,fa:5,m:3},"Boa imagem com todo mundo."]]}]},
+ {t:"Dor muscular",x:"Você sente a coxa puxar no fim do treino.",ch:[
+  {l:"Continuar jogando",o:[[.45,{inj:2,m:-4},"Piorou. Vai ficar uns jogos fora."],[.55,{c:4},"Aguentou firme e o técnico gostou."]]},
+  {l:"Ir ao departamento médico",o:[[1,{e:8},"Cuidado certo. Tudo sob controle."]]}]},
+ {t:"Fã pedindo foto",x:"Um grupo de torcedores espera na saída do estádio.",ch:[
+  {l:"Tirar fotos com todo mundo",o:[[1,{fa:6,f:2,e:-5},"A torcida ama você."]]},
+  {l:"Passar direto",o:[[1,{fa:-3},"Sem tempo hoje."]]}]},
+ {t:"Negócio de um amigo",x:"Um amigo de infância quer abrir uma lanchonete e pede um investimento.",ch:[
+  {l:"Investir R$ 30.000",o:[[.5,{$:-30000,m:5},"O negócio não decolou. Pelo menos ajudou o amigo."],[.5,{$:50000,m:6},"A lanchonete bombou! Retorno ótimo."]]},
+  {l:"Recusar com jeito",o:[[1,{},"Ele entendeu."]]}]},
+ {t:"Convite para o programa de TV",x:"Um programa esportivo quer você no estúdio.",ch:[
+  {l:"Aceitar",o:[[.65,{f:8,e:-10},"Você foi muito bem na tela."],[.35,{f:2,e:-10,c:-4},"Falou demais e o clube não gostou."]]},
+  {l:"Recusar",o:[[1,{e:6},"Descanso é bom."]]}]},
+ {t:"Treino extra do técnico",x:"O técnico oferece uma sessão extra individual no fim do dia.",ch:[
+  {l:"Topar",o:[[1,{c:6,e:-12,xp:30},"Aprendeu muito e o técnico notou."]]},
+  {l:"Recusar",o:[[1,{e:6},"Você descansa em casa."]]}]},
+ {t:"Rival provocando nas redes",x:"Um jogador do time rival posta uma provocação sobre você.",ch:[
+  {l:"Responder à altura",o:[[.5,{f:6,fa:5},"A resposta bombou."],[.5,{f:3,c:-6,m:-4},"A polêmica incomodou o clube."]]},
+  {l:"Responder em campo",o:[[1,{m:6},"Você guarda a motivação para o jogo."]]}]},
+ {t:"Prêmio da torcida",x:"A torcida vota em você como destaque do mês e quer um discurso.",ch:[
+  {l:"Falar com emoção",o:[[1,{fa:10,m:8},"Arrepio em todo mundo."]]},
+  {l:"Agradecer rápido",o:[[1,{fa:3},"Simples e direto."]]}]},
+ {t:"Família visita",x:"Sua família quer passar uns dias com você.",ch:[
+  {l:"Receber com carinho",o:[[1,{m:14,e:6,$:-4000},"Bateria recarregada."]]},
+  {l:"Falar que está focado",o:[[1,{m:-6,c:2},"Ficou o gostinho de saudade."]]}]},
+ {t:"Nova chuteira de graça",x:"Uma marca manda um par para teste.",ch:[
+  {l:"Usar no jogo",o:[[.5,{xp:24,m:3},"Ficou confortável. Parece ter ajudado."],[.5,{m:-3},"Bolhas no pé. Não foi uma boa."]]},
+  {l:"Guardar para depois",o:[[1,{},"Sem riscos."]]}]}];
+const CGMA={
+ gol:["GOOOOL! Que pintura!","É dele! Olha a categoria!","Balançou a rede! O estádio vem abaixo!"],
+ save:["Defendeu! Que reflexo!","Pegou! Sensacional!"],miss:["Passou perto... faltou capricho.","Pra fora! Dá pra melhorar."],
+ ast:["Passe perfeito! Gol de quem recebeu!","Garçom! Assistência de craque!"],win:["Vitória! Que jogão!","Três pontos no bolso!"],loss:["Foi duro, mas bola pra frente.","Derrota... mas a gente aprende."],draw:["Empate. Ponto é ponto."]};
+const cgSay=k=>mascotSay(cgPick(CGMA[k]||CGMA.gol),3800);
+
+/* ----- estado e salvamento ----- */
+const CRK=()=>"efb_car_"+(ME?ME.id:"guest");
+function crSave(now){if(!G)return;G.t=Date.now();try{localStorage.setItem(CRK(),JSON.stringify(G))}catch(e){}if(!ME)return;clearTimeout(crSave.h);crSave.h=setTimeout(crPush,now?0:2500)}
+async function crPush(){if(!ME||!G)return;try{await api("/rest/v1/careers?on_conflict=user_id",{method:"POST",body:{user_id:ME.id,data:G,ovr:cgClamp(G.ovr,0,99),goals:cgClamp(G.st.goals,0,3000),titles:cgClamp(G.st.titles,0,100),season:cgClamp(G.season,1,40),club_name:G.club.name.slice(0,60),player_name:G.name.slice(0,40),updated_at:new Date().toISOString()},headers:{Prefer:"resolution=merge-duplicates,return=minimal"}})}catch(e){}}
+async function crLoad(){let loc=null,srv=null;try{loc=JSON.parse(localStorage.getItem(CRK()))}catch(e){}
+ if(ME){try{const r=await api("/rest/v1/careers?user_id=eq."+ME.id+"&select=data");srv=r[0]&&r[0].data}catch(e){}}
+ const best=[loc,srv].filter(x=>x&&x.v===1&&x.club&&x.at).sort((a,b)=>(b.t||0)-(a.t||0))[0];G=best||null}
+function cgBonus(){const b={at:{},gym:0,regen:0,moral:0,fama:0,fisio:0,imp:0};if(!G)return b;
+ for(const it of CGSHOP){const lv=G.items[it[0]]||0;if(!lv)continue;const f=it[2][lv-1][2];
+  if(f.at)for(const k in f.at)b.at[k]=(b.at[k]||0)+f.at[k];for(const k of["gym","regen","moral","fama","fisio","imp"])if(f[k])b[k]+=f[k]}return b}
+const cgEff=k=>{const b=cgBonus();let v=(G.at[k]||0)+(b.at[k]||0);if(G.energy<30)v*=.92;v*=1+(G.moral-50)/500;return cgClamp(Math.round(v),1,99)};
+const cgCurOvr=()=>cgOvr(G.pos,Object.fromEntries(CG_AT.map(a=>[a[0],(G.at[a[0]]||0)+(cgBonus().at[a[0]]||0)])));
+const cgRole=()=>{const d=cgCurOvr()-(cgStr(G.club.tier)-6)+(G.coach-50)/10;return d>=4?"titular":d>=-4?"rotação":"reserva"};
+const cgWage=(t,o)=>Math.round([0,400,1200,3500,9000,22000][t]*(.6+o/100)*cgRand(90,115)/100/10)*10;
+function cgNew(name,pos,at,club){const o=cgOvr(pos,at),c=cgSnap(club),pot=cgRand(72,94);
+ G={v:1,t:Date.now(),skin:CGX.skin,hair:CGX.hair,hairc:CGX.hairc,name,pos,age:16,club:c,role:"rotação",wage:cgWage(c.tier,o),years:3,at:{...at},pot,xp:{},ovr:o,energy:100,moral:60,fama:3,coach:55,fans:50,money:2000,week:1,season:1,rested:false,life:false,inj:0,items:{},
+  st:{games:0,goals:0,assists:0,ratS:0,titles:0,awards:0,seasons:[]},sg:{g:0,go:0,as:0,pts:0,rs:0,w:0,d:0,l:0},pend:{event:null,window:null,report:null},done:false,news:["Você assinou seu primeiro contrato profissional com o "+c.name+"!"]};
+ G.role=cgRole();G.ovr=cgCurOvr();crSave(true)}
+const cgNews=t=>{G.news.unshift(t);G.news.length=Math.min(G.news.length,6)};
+function cgFx(f,from){if(!f)return;const bm=cgBonus();
+ if(f.m)G.moral=cgClamp(G.moral+f.m,0,100);if(f.e)G.energy=cgClamp(G.energy+f.e,0,100);if(f.c)G.coach=cgClamp(G.coach+f.c,0,100);if(f.fa)G.fans=cgClamp(G.fans+f.fa,0,100);
+ if(f.f)G.fama=cgClamp(G.fama+(f.f>0&&bm.imp?Math.ceil(f.f*1.5):f.f),0,100);if(f.$)G.money=Math.max(0,G.money+f.$*(f.$>0?(.6+G.club.tier*.25):1));if(f.inj)G.inj=Math.max(G.inj,f.inj);
+ if(f.xp){const k=cgPick(CG_AT)[0];cgXp(k,f.xp)}}
+function cgXp(k,x){const o=cgCurOvr(),eff=cgClamp((G.pot-o)/10+.15,.1,1.2),bm=cgBonus();G.xp[k]=(G.xp[k]||0)+x*(1+bm.gym)*eff;let up=0;while(G.xp[k]>=100&&G.at[k]<99){G.xp[k]-=100;G.at[k]++;up++}if(G.at[k]>=99)G.xp[k]=0;return up}
+/* ----- ações do hub ----- */
+const CGA={
+ train:k=>{if(!G.at[k]||G.inj>0)return toast(G.inj>0?"Você está lesionado.":"Atributo inválido.");if(G.energy<22)return toast("Sem energia. Descanse antes.");G.energy-=22;const up=cgXp(k,cgRand(22,38));G.ovr=cgCurOvr();
+  if(up){toast(CG_AT.find(a=>a[0]===k)[1]+" subiu para "+G.at[k]+"!");if(motionOk())confetti2(18)}else toast("Bom treino! Progresso salvo.");crSave();crDraw()},
+ rest:()=>{if(G.rested)return toast("Você já descansou esta semana.");G.rested=true;G.energy=cgClamp(G.energy+25,0,100);G.moral=cgClamp(G.moral+2,0,100);crSave();crDraw()},
+ life:i=>{if(G.life)return toast("Uma atividade por semana.");const T=G.club.tier,L=[{e:-5,m:10,$:-1500,tx:"Dia em família. Moral lá em cima."},{e:-8,f:3,tx:"A entrevista rendeu e sua fama cresceu."},{e:-10,fa:6,m:4,$:-2000,tx:"Ação social com a comunidade. A torcida adorou."},{e:-12,$:8000,f:2,tx:"Evento de patrocinador: dinheiro e visibilidade."}][+i];
+  if(!L||G.energy<-L.e)return toast("Energia insuficiente.");G.life=true;cgFx(L);cgNews(L.tx);toast(L.tx);crSave();crDraw()},
+ buy:k=>{const it=CGSHOP.find(x=>x[0]===k);if(!it)return;const lv=G.items[k]||0,n=it[2][lv];if(!n)return;if(G.money<n[1])return toast("Dinheiro insuficiente.");G.money-=n[1];G.items[k]=lv+1;G.ovr=cgCurOvr();toast("Comprado: "+n[0]);crSave();crDraw()},
+ ev:i=>{const e=G.pend.event;if(!e)return;const c=e.ch[+i];if(!c)return;let r=Math.random(),o=c.o[0];for(const x of c.o){if(r<x[0]){o=x;break}r-=x[0]}cgFx(o[1]);G.pend.event=null;G.pend.res={t:e.t,tx:o[2]};cgNews(e.t+": "+o[2]);crSave();crDraw()},
+ evok:()=>{G.pend.res=null;crDraw()},
+ view:v=>{CGV=v;if(v==="rank")cgBoard();crDraw()}};
+/* ----- semana, temporada ----- */
+function cgNextWeek(){G.week++;G.money+=G.wage;const bm=cgBonus();G.energy=cgClamp(G.energy+40+bm.regen,0,100);G.rested=false;G.life=false;if(G.inj>0)G.inj--;
+ G.moral=cgClamp(G.moral+bm.moral+(G.moral>60?-1:G.moral<40?1:0),0,100);G.fama=cgClamp(G.fama+bm.fama*0,0,100);
+ if(bm.fama)G.fama=cgClamp(G.fama+Math.ceil(bm.fama/5),0,100);
+ if([1,6,11,16].includes(G.week))G.role=cgRole();
+ if(G.week>20){cgSeasonEnd();return}
+ if(cgChance(.55))G.pend.event=cgPick(CGEV);
+ if(G.week===11&&cgChance(.6)){const o=cgOffers();if(o.length)G.pend.window={mid:true,offers:o,renew:null}}}
+function cgOffers(){const o=cgCurOvr(),avg=G.sg.g?G.sg.rs/G.sg.g:6.5,sc=o+G.fama/10+(avg-6)*3,cl=(CLUBS||[]).filter(c=>c.id!==G.club.id).map(c=>({c,t:cgTier(c)})).filter(x=>cgStr(x.t)-9<=sc);
+ const out=[],used=new Set();cl.sort(()=>Math.random()-.5);cl.sort((a,b)=>b.t-a.t+Math.random()*1.6-.8);
+ for(const x of cl){if(out.length>=3)break;if(used.has(x.t)&&out.length>=2)continue;used.add(x.t);const d=o-(cgStr(x.t)-6);out.push({club:cgSnap(x.c),role:d>=4?"titular":d>=-4?"rotação":"reserva",wage:cgWage(x.t,o),years:cgRand(1,4)})}return out}
+const cgGauss=()=>{let s=0;for(let i=0;i<6;i++)s+=Math.random();return (s-3)/.7};
+function cgSeasonEnd(){const s=G.sg,T=G.club.tier;let pts=s.pts,rv=0;for(let i=0;i<19;i++){const st=cgStr(cgClamp(T+cgPick([-1,0,0,0,1]),1,5))+cgRand(-6,6),p=cgClamp(Math.round(28+(st-cgStr(T))*.55+cgGauss()*6),6,52);if(p>pts)rv++}
+ const pos=1+rv,avg=s.g?s.rs/s.g:0,title=pos===1,rep={pos,pts,g:s.g,go:s.go,as:s.as,avg:+avg.toFixed(2),title,aw:[]};
+ if(title){G.st.titles++;rep.aw.push("🏆 Campeão da liga!");G.fans=cgClamp(G.fans+10,0,100);G.money+=G.wage*8;G.fama=cgClamp(G.fama+6,0,100)}
+ if(s.g>=10&&avg>=7.8){G.st.awards++;rep.aw.push("⭐ Craque da temporada");G.fama=cgClamp(G.fama+8,0,100);G.money+=G.wage*4}
+ if(s.go>=12){rep.aw.push("⚽ Artilheiro do time ("+s.go+" gols)");G.fama=cgClamp(G.fama+4,0,100)}
+ G.st.seasons.push({s:G.season,age:G.age,club:G.club.short||G.club.name,pos,g:s.g,go:s.go,as:s.as,avg:rep.avg,ovr:cgCurOvr()});
+ /* idade e evolução */
+ G.age++;const keys=CG_AT.map(a=>a[0]);let log=[];
+ if(G.age<=21)for(const k of keys)G.at[k]=cgClamp(G.at[k]+cgRand(1,3),1,99)
+ else if(G.age<=27)for(let i=0;i<3;i++){const k=cgPick(keys);G.at[k]=cgClamp(G.at[k]+cgRand(0,2),1,99)}
+ else if(G.age>=32){G.at.ritmo=cgClamp(G.at.ritmo-cgRand(2,4),1,99);G.at.fisico=cgClamp(G.at.fisico-cgRand(1,3),1,99)}
+ else if(G.age>=30)G.at.ritmo=cgClamp(G.at.ritmo-cgRand(0,2),1,99);
+ G.ovr=cgCurOvr();G.years--;G.sg={g:0,go:0,as:0,pts:0,rs:0,w:0,d:0,l:0};G.coach=cgClamp(G.coach+(title?6:0),0,100);
+ rep.age=G.age;rep.ovr=G.ovr;G.pend.report=rep;G.pend.event=null;
+ const retire=G.age>=36||(G.age>=34&&G.ovr<(cgStr(2)-10));
+ if(retire){G.done=true;G.pend.window=null;return}
+ const off=cgOffers(),renew=G.years<=0?{wage:Math.round(cgWage(G.club.tier,G.ovr)*cgRand(95,125)/100/10)*10,years:cgRand(2,4)}:null;G.pend.window={mid:false,offers:off,renew}}
+function cgSign(club,role,wage,years){G.club=club;G.role=role;G.wage=wage;G.years=years;G.coach=55;G.fans=50;cgNews("Você assinou com o "+club.name+" ("+years+" ano"+(years>1?"s":"")+").")}
+Object.assign(CGA,{
+ accept:i=>{const w=G.pend.window;if(!w)return;const o=w.offers[+i];if(!o)return;cgSign(o.club,o.role,o.wage,o.years);cgNewSeason(w)},
+ renew:()=>{const w=G.pend.window;if(!w||!w.renew)return;G.wage=w.renew.wage;G.years=w.renew.years;cgNews("Contrato renovado por "+w.renew.years+" anos.");cgNewSeason(w)},
+ stay:()=>{const w=G.pend.window;if(!w)return;if(!w.mid&&G.years<=0)return toast("Seu contrato acabou: renove ou escolha uma proposta.");cgNewSeason(w)},
+ refuse:()=>{G.pend.window=null;crSave();crDraw()},
+ report:()=>{G.pend.report=null;crSave();crDraw()},
+ vwin:()=>{CGV="window";crDraw()}});
+function cgNewSeason(w){G.pend.window=null;if(!w.mid){G.season++;G.week=1;G.energy=100;G.moral=cgClamp(G.moral+5,0,100);G.role=cgRole();G.rested=false;G.life=false;if(cgChance(.5))G.pend.event=cgPick(CGEV)}crSave(true);CGV="hub";crDraw()}
+
+/* ---------- animação dos lances ---------- */
+const CGCR=(()=>{let s=7;const o=[];for(let i=0;i<260;i++){s=(s*1103515245+12345)>>>0;const x=s%360;s=(s*1103515245+12345)>>>0;const y=6+s%56;s=(s*1103515245+12345)>>>0;o.push({x,y,c:["#e63946","#f1fa8c","#4cc9f0","#fff","#2fd16f","#ff9f1c","#b388ff"][s%7],p:(s>>8)%100/10})}return o})();
+const cgEase=t=>t<0?0:t>1?1:t*t*(3-2*t),cgLer=(a,b,t)=>a+(b-a)*t,cgSeg=(t,a,b)=>cgClamp((t-a)/(b-a),0,1);
+const cgGX=z=>[103,180,257][z%3],cgGY=z=>Math.floor(z/3)?150:97;
+function cgPlayer(x,g,px,py,col,col2,sc,rot,lab){g.save();g.translate(px,py);g.rotate(rot||0);g.scale(sc,sc);g.fillStyle="rgba(0,0,0,.3)";g.beginPath();g.ellipse(0,14,10,4,0,0,7);g.fill();g.fillStyle=col;g.fillRect(-8,-4,16,22);g.fillStyle=col2;g.fillRect(-8,6,16,3);g.fillStyle="#f1c9a0";g.beginPath();g.arc(0,-10,7,0,7);g.fill();g.fillStyle="#222";g.fillRect(-7,-17,14,4);g.restore()}
+function cgBall(g,x,y,r){g.fillStyle="rgba(0,0,0,.28)";g.beginPath();g.ellipse(x,y+r*.9,r*.9,r*.35,0,0,7);g.fill();g.fillStyle="#fff";g.beginPath();g.arc(x,y,r,0,7);g.fill();g.strokeStyle="#222";g.lineWidth=Math.max(1,r*.18);g.stroke();g.fillStyle="#222";g.beginPath();g.arc(x,y,r*.38,0,7);g.fill()}
+function cgDrawGoal(g,an,t,cl){const W=360,H=240,out=an.out,z=an.z,kz=an.kz;
+ const sky=g.createLinearGradient(0,0,0,70);sky.addColorStop(0,"#0b1630");sky.addColorStop(1,"#1d2d55");g.fillStyle=sky;g.fillRect(0,0,W,70);
+ const cheer=out==="gol"?cgSeg(t,.55,.8):0;for(const c of CGCR){g.fillStyle=c.c;g.fillRect(c.x,c.y-(cheer?Math.abs(Math.sin(t*18+c.p))*5*cheer:0),3,4)}
+ g.fillStyle="#0e5a2b";g.fillRect(0,70,W,H-70);for(let i=0;i<8;i++){g.fillStyle=i%2?"rgba(255,255,255,.05)":"rgba(0,0,0,.08)";g.fillRect(0,70+i*22,W,22)}
+ /* rede */
+ let tx=cgGX(z),ty=cgGY(z);if(out==="over")ty=28;if(out==="wide"){tx=z%3===0?58:z%3===2?302:z%3===1?(Math.random()<.5?58:302):tx;if(z%3===1)tx=58}
+ const hit=cgSeg(t,.52,.62);g.fillStyle="rgba(255,255,255,.07)";g.fillRect(70,60,220,110);g.strokeStyle="rgba(255,255,255,.3)";g.lineWidth=1;
+ const bulge=out==="gol"?Math.exp(-Math.pow(cgSeg(t,.52,1)*3-.3,2))*(1-cgSeg(t,.8,1)*.5)*16*(hit>0?1:0):0;
+ for(let i=0;i<=22;i++){const x=70+i*10;g.beginPath();for(let y=60;y<=170;y+=5){const d=Math.hypot(x-tx,y-ty),b=bulge*Math.exp(-d*d/2600),xx=x+(tx-x)*b/16*.25;y===60?g.moveTo(xx,y-b*.4):g.lineTo(xx,y-b*.4)}g.stroke()}
+ for(let j=0;j<=11;j++){const y=60+j*10;g.beginPath();for(let x=70;x<=290;x+=5){const d=Math.hypot(x-tx,y-ty),b=bulge*Math.exp(-d*d/2600);x===70?g.moveTo(x,y-b*.4):g.lineTo(x,y-b*.4)}g.stroke()}
+ g.strokeStyle="#fff";g.lineWidth=5;g.strokeRect(70,60,220,110);
+ /* goleiro */
+ const kd=cgEase(cgSeg(t,.12,.5)),col=kz%3,kx=cgLer(180,cgGX(kz),kd),ky=cgLer(130,cgGY(kz)+(cgGY(kz)>120?-6:6),kd),sc=1.1,dir=col===0?-1:1,kk=col===1?cgPose.jump(kd):cgPose.dive(kd);
+ const kitM=cgKit(cl,false),oc=an.opp||cl,kitO=cgKit(oc,cgDist(cgKit(oc,false).j1,kitM.j1)<90),kitK=cgKeeperKit([kitM.j1,kitO.j1]),lkM=cgMe(),lkO=cgLook((oc.name||"x")+"o");
+ cgFig(g,kx,ky+30*sc,sc,dir,kd<.05?cgPose.ready:kk,kitK,an.keeper?lkM:lkO,true);
+ cgFig(g,122,236,1.15,1,cgPose.kick(cgSeg(t,0,.14)),an.keeper?kitO:kitM,an.keeper?lkO:lkM,false);
+ /* bola */
+ const f=cgEase(cgSeg(t,.08,.55)),bx=cgLer(172,tx,f),by=cgLer(224,ty,f)-Math.sin(f*Math.PI)*(out==="over"?0:18),r=cgLer(13,6,f);
+ if(t<.55)cgBall(g,bx,by,r);else if(out==="gol"){const a=cgSeg(t,.55,.8);cgBall(g,tx,ty+a*30,6);}
+ else if(out==="save"){const a=cgSeg(t,.55,.9),dir=kz%3>=z%3?1:-1;cgBall(g,tx+dir*a*70,ty+a*60,cgLer(6,9,a))}
+ else if(out==="over"){const a=cgSeg(t,.55,.8);g.globalAlpha=1-a;cgBall(g,tx+(tx-180)*a*.3,ty-a*30,cgLer(6,4,a));g.globalAlpha=1}
+ else{const a=cgSeg(t,.55,.85);cgBall(g,tx+(tx<180?-1:1)*a*40,ty+a*20,cgLer(6,5,a))}
+ /* texto */
+ const T={gol:["GOOOL!","#2fd16f"],save:["DEFENDEU!","#ffb020"],over:["POR CIMA!","#ff6b6b"],wide:["PRA FORA!","#ff6b6b"]}[an.keeper?(out==="gol"?"concede":out):out]||["GOL DELES","#ff6b6b"];
+ const a=cgSeg(t,.62,.75);if(a>0){g.save();g.translate(W/2,205);g.scale(.6+.6*cgEase(a),.6+.6*cgEase(a));g.font="900 34px Inter,Arial,sans-serif";g.textAlign="center";g.lineWidth=5;g.strokeStyle="#000";g.fillStyle=T[1];g.strokeText(T[0],0,0);g.fillText(T[0],0,0);g.restore()}
+ if(out==="gol"&&t>.55){g.fillStyle="rgba(255,255,255,"+(.5*(1-cgSeg(t,.55,.7)))+")";g.fillRect(0,0,W,H)}}
+/* ---------- bonecos estilo flat, uniforme por time ---------- */
+const CGSK=["#f3d2b3","#e2b48a","#c98c5c","#a3693f","#7b4a2a","#5a3420"],CGHR=["#1c1410","#2b1d14","#4a3220","#d9b24a","#8a2d1b","#111"];
+const cgRgb=h=>{const n=parseInt(String(h||"#888").slice(1),16);return[n>>16&255,n>>8&255,n&255]};
+const cgDist=(a,b)=>{const x=cgRgb(a),y=cgRgb(b);return Math.hypot(x[0]-y[0],x[1]-y[1],x[2]-y[2])};
+const cgShade=(h,f)=>{const c=cgRgb(h).map(v=>Math.round(cgClamp(v*f,0,255)));return "rgb("+c.join(",")+")"};
+function cgKit(c,alt){let j1=alt?c.c2:c.c1,j2=alt?c.c1:c.c2;if(cgDist(j1,j2)<60)j2=lum(j1)>.5?"#1b1b1b":"#f5f5f5";const pat=hsh(c.name)%5;
+ let sh=pat===0?j2:(lum(j1)>.55?"#222a36":"#f3f3f3");if(cgDist(sh,j1)<80)sh=lum(j1)>.5?"#1e2530":"#f3f3f3";const so=pat===0?j1:j2;return{j1,j2,pat,sh,so}}
+const cgGKits=[["#ffcf40","#222"],["#2fd16f","#0a3"],["#ff7a00","#222"],["#9b7bff","#fff"]];
+function cgKeeperKit(avoid){for(const k of cgGKits){if(avoid.every(a=>cgDist(k[0],a)>110))return{j1:k[0],j2:k[1],pat:0,sh:"#222",so:k[0]}}return{j1:"#111",j2:"#fff",pat:0,sh:"#111",so:"#111"}}
+const cgLook=(seed)=>({sk:CGSK[hsh(seed+"s")%6],hr:CGHR[hsh(seed+"h")%6],hs:hsh(seed+"x")%6});
+const cgMe=()=>({sk:CGSK[(G&&G.skin!=null?G.skin:hsh(G.name)%6)%6],hr:CGHR[(G&&G.hairc!=null?G.hairc:hsh(G.name+"h")%6)%6],hs:(G&&G.hair!=null?G.hair:hsh(G.name+"x")%6)%6});
+const cgPose={
+ stand:{lean:2,a1:[12,22],a2:[-8,5],l1:[5,3],l2:[-4,-3]},
+ run:p=>{const s=Math.sin(p),c=Math.cos(p);return{lean:12,y:Math.abs(c)*1.8,a1:[-45*s+10,-45*s+80],a2:[45*s+10,45*s+80],l1:[42*s,42*s-(20+45*Math.max(0,c))],l2:[-42*s,-42*s-(20+45*Math.max(0,-c))]}},
+ kick:k=>{const w=cgEase(cgSeg(k,0,.45)),f=cgEase(cgSeg(k,.45,.8));const th=k<.45?cgLer(5,-40,w):cgLer(-40,70,f),sn=k<.45?cgLer(3,-95,w):cgLer(-95,60,f);return{lean:k<.45?-4:8,a1:[-30,-10],a2:[60,80],l1:[th,sn],l2:[8,2]}},
+ slide:{rot:-80,y:-13,lean:0,a1:[40,60],a2:[-35,-15],l1:[6,10],l2:[-8,38]},
+ ready:{lean:6,a1:[55,45],a2:[40,35],l1:[16,6],l2:[-16,-8]},
+ dive:k=>({rot:80*k,y:-4*k,lean:0,a1:[165,172],a2:[150,160],l1:[-25,-35],l2:[-8,-20]}),
+ jump:k=>({y:10*Math.sin(Math.PI*k),lean:0,a1:[150,165],a2:[-150,-165],l1:[8,-10],l2:[-8,-26]}),
+ fall:k=>({rot:-80*k,y:-10*k,lean:0,a1:[40,60],a2:[-35,-15],l1:[6,12],l2:[-8,30]})};
+function cgFig(g,x,y,sc,face,P,kit,lk,keeper){P={lean:0,y:0,rot:0,a1:[12,22],a2:[-8,5],l1:[4,2],l2:[-4,-3],...P};const Rd=a=>a*Math.PI/180,Lv=(a,l)=>[Math.sin(Rd(a))*l,Math.cos(Rd(a))*l];
+ g.save();g.fillStyle="rgba(0,0,0,.28)";g.beginPath();g.ellipse(x,y+1,11*sc,3.6*sc,0,0,7);g.fill();
+ g.translate(x,y-30*sc);g.scale(face*sc,sc);g.translate(0,-P.y);g.rotate(Rd(P.rot));g.lineCap="round";g.lineJoin="round";
+ const sk=lk.sk,skB=cgShade(sk,.82),jB=cgShade(kit.j1,.8),shB=cgShade(kit.sh,.8),soB=cgShade(kit.so,.8);
+ const leg=(a,back)=>{const k=Lv(a[0],15),f=Lv(a[1],15),n=[k[0]+f[0],k[1]+f[1]];g.strokeStyle=back?skB:sk;g.lineWidth=5.6;g.beginPath();g.moveTo(0,0);g.lineTo(k[0],k[1]);g.lineTo(n[0],n[1]);g.stroke();
+  g.strokeStyle=back?soB:kit.so;g.lineWidth=6.8;g.beginPath();g.moveTo(k[0]+f[0]*.3,k[1]+f[1]*.3);g.lineTo(n[0],n[1]);g.stroke();
+  g.strokeStyle=back?shB:kit.sh;g.lineWidth=9.2;g.beginPath();g.moveTo(0,0);g.lineTo(k[0]*.72,k[1]*.72);g.stroke();
+  if(kit.pat!==0){g.strokeStyle=kit.j2;g.lineWidth=7.2;g.beginPath();g.moveTo(k[0]+f[0]*.3,k[1]+f[1]*.3);g.lineTo(k[0]+f[0]*.4,k[1]+f[1]*.4);g.stroke()}
+  const v=Lv(a[1]+90,1);g.save();g.translate(n[0]+v[0]*3.2,n[1]+v[1]*3.2+.6);g.rotate(Math.atan2(v[1],v[0]));g.fillStyle=back?"#101010":"#1b1b1b";g.beginPath();g.ellipse(0,0,5.6,3,0,0,7);g.fill();g.fillStyle=kit.j2;g.fillRect(-1,-3,2,6);g.restore()};
+ const arm=(a,back,sx,sy)=>{const u=Lv(a[0],10.5),f=Lv(a[1],9.5),e=[sx+u[0],sy+u[1]],h=[e[0]+f[0],e[1]+f[1]];
+  if(keeper){g.strokeStyle=back?skB:sk}else g.strokeStyle=back?skB:sk;g.lineWidth=4.6;g.beginPath();g.moveTo(sx,sy);g.lineTo(e[0],e[1]);g.lineTo(h[0],h[1]);g.stroke();
+  g.strokeStyle=back?jB:kit.j1;g.lineWidth=7.4;g.beginPath();g.moveTo(sx,sy);g.lineTo(sx+u[0]*.82,sy+u[1]*.82);g.stroke();
+  if(keeper){g.strokeStyle=back?jB:kit.j1;g.lineWidth=5.6;g.beginPath();g.moveTo(e[0],e[1]);g.lineTo(h[0],h[1]);g.stroke()}
+  g.fillStyle=keeper?kit.j2:(back?skB:sk);g.beginPath();g.arc(h[0],h[1],keeper?3.6:2.7,0,7);g.fill()};
+ leg(P.l2,true);
+ g.save();g.rotate(Rd(P.lean));arm(P.a2,true,0,-22);
+ /* tronco */
+ g.beginPath();g.moveTo(-6.8,-24);g.quadraticCurveTo(0,-26.5,6.8,-24);g.lineTo(6,2);g.lineTo(-6,2);g.closePath();g.save();g.clip();g.fillStyle=kit.j1;g.fillRect(-9,-28,18,32);
+ g.fillStyle=kit.j2;if(kit.pat===1){for(let i=-9;i<9;i+=6)g.fillRect(i,-28,3,32)}else if(kit.pat===2){for(let i=-26;i<2;i+=8)g.fillRect(-9,i,18,4)}else if(kit.pat===3){g.beginPath();g.moveTo(-9,-22);g.lineTo(-9,-12);g.lineTo(9,4);g.lineTo(9,-6);g.closePath();g.fill()}else if(kit.pat===4){g.fillRect(-9,-28,9,32)}else{g.fillRect(-9,-1,18,3)}
+ g.restore();g.fillStyle=kit.j2;g.beginPath();g.moveTo(-3,-25);g.quadraticCurveTo(0,-21,3,-25);g.lineTo(4.5,-24.5);g.quadraticCurveTo(0,-18.5,-4.5,-24.5);g.fill();
+ /* cabeça */
+ g.fillStyle=sk;g.fillRect(-2,-28,4.2,5);g.beginPath();g.arc(1,-32,6.4,0,7);g.fill();g.fillStyle=skB;g.beginPath();g.arc(-2.6,-31.4,1.8,0,7);g.fill();
+ g.fillStyle=lk.hr;const hs=lk.hs;if(hs===0||hs===3||hs===2){g.beginPath();g.arc(.6,-32.6,6.9,Math.PI*1.04,Math.PI*(hs===2?1.75:2.05));g.lineTo(hs===2?4:5.5,-34);g.closePath();g.fill()}
+ else if(hs===1){for(const c of[[-4,-37],[0,-39],[4,-37],[-6,-33],[6,-34]]){g.beginPath();g.arc(c[0]+1,c[1],3,0,7);g.fill()}}
+ else if(hs===5){g.beginPath();g.moveTo(-3,-37);g.lineTo(-1,-42);g.lineTo(2,-37.5);g.lineTo(5,-41);g.lineTo(6,-36);g.closePath();g.fill();g.beginPath();g.arc(1,-32.6,6.6,Math.PI*1.1,Math.PI*1.9);g.fill()}
+ g.fillStyle="#1b1b1b";g.beginPath();g.arc(4,-32,.9,0,7);g.fill();g.strokeStyle="rgba(0,0,0,.45)";g.lineWidth=.7;g.beginPath();g.arc(3.6,-30,1.6,.2,Math.PI-.3);g.stroke();
+ g.restore();
+ leg(P.l1,false);g.save();g.rotate(Rd(P.lean));arm(P.a1,false,0,-22);g.restore();g.restore()}
+
+function cgDrawPitch(g,an,t,cl){const W=360,H=240,oc=an.opp||cl,kM=cgKit(cl,false),kO=cgKit(oc,cgDist(cgKit(oc,false).j1,kM.j1)<90),lM=cgMe();
+ const sky=g.createLinearGradient(0,0,0,64);sky.addColorStop(0,"#0b1630");sky.addColorStop(1,"#1d2d55");g.fillStyle=sky;g.fillRect(0,0,W,64);for(const c of CGCR){if(c.y<60){g.fillStyle=c.c;g.fillRect(c.x,c.y,3,4)}}
+ g.fillStyle="#13243d";g.fillRect(0,60,W,12);g.fillStyle="#fff";for(let i=0;i<W;i+=40)g.fillRect(i+6,63,26,5);
+ g.fillStyle="#0e5a2b";g.fillRect(0,72,W,H-72);for(let i=0;i<12;i++){g.fillStyle=i%2?"rgba(255,255,255,.05)":"rgba(0,0,0,.09)";g.fillRect(i*30,72,30,H-72)}
+ g.strokeStyle="rgba(255,255,255,.5)";g.lineWidth=2;g.beginPath();g.moveTo(180,72);g.lineTo(180,H);g.stroke();
+ g.strokeStyle="rgba(255,255,255,.5)";g.strokeRect(W-4,92,3,64);g.strokeStyle="rgba(255,255,255,.35)";g.lineWidth=1;for(let y=92;y<=156;y+=8){g.beginPath();g.moveTo(W-22,y);g.lineTo(W,y);g.stroke()}g.lineWidth=2;g.strokeStyle="#fff";g.beginPath();g.moveTo(W-4,156);g.lineTo(W-4,92);g.lineTo(W-22,92);g.stroke();
+ const S=(x,y)=>148+(y-120)*.36,SC=y=>1.2+(y-120)*.0015,it=[];
+ const add=(x,y,pose,kit,lk,face)=>it.push({y,f:()=>cgFig(g,x,S(x,y),SC(y),face||1,pose,kit,lk,false)}),lO=i=>cgLook((oc.name||"o")+i),lT=i=>cgLook((cl.name||"t")+i);
+ let bx=0,by=0,bh=0;const ph=t*26;
+ const lab=(tx,col)=>{const a=cgSeg(t,.72,.85);if(a>0){g.save();g.translate(W/2,44);g.scale(.7+.5*cgEase(a),.7+.5*cgEase(a));g.font="900 26px Inter,Arial,sans-serif";g.textAlign="center";g.lineWidth=5;g.strokeStyle="#000";g.fillStyle=col;g.strokeText(tx,0,0);g.fillText(tx,0,0);g.restore()}};
+ const goalTxt=(a,tx)=>{if(a>0){g.save();g.font="900 30px Inter,Arial,sans-serif";g.textAlign="center";g.lineWidth=5;g.strokeStyle="#000";g.fillStyle="#2fd16f";g.strokeText(tx||"GOL!",W-70,100);g.fillText(tx||"GOL!",W-70,100);g.restore()}};
+ if(an.type==="pass"){const M3=[[140,180],[250,112],[300,36]],O=[[150,120],[215,150],[262,72]],mt=M3[an.sel],ok=an.out!=="bad",ast=an.out==="ast",f=cgEase(cgSeg(t,.14,.52));
+  const meK=cgSeg(t,0,.16);add(60,120,t<.2?cgPose.kick(meK):cgPose.stand,kM,lM);
+  M3.forEach((m,i)=>{if(i===an.sel)return;add(m[0],m[1],cgPose.stand,kM,lT(i))});
+  const mx=ok?mt[0]+(t<.5?cgLer(-14,0,cgSeg(t,.1,.5)):0):mt[0];add(mx,mt[1],ast&&t>.55?cgPose.kick(cgSeg(t,.55,.72)):(t<.5&&ok?cgPose.run(ph):cgPose.stand),kM,lT(an.sel));
+  O.forEach((o,i)=>{if(i===an.sel&&!ok){const ox=cgLer(o[0],mt[0]-6,cgEase(cgSeg(t,.2,.55)));add(ox,cgLer(o[1],mt[1],cgEase(cgSeg(t,.2,.55))),t>.2&&t<.55?cgPose.run(ph):cgPose.stand,kO,lO(i),-1)}else add(o[0],o[1],cgPose.stand,kO,lO(i),-1)});
+  const tg=ok?mt:[mt[0]-6,mt[1]];bx=cgLer(74,tg[0]+8,f);by=cgLer(120,tg[1],f);bh=6+Math.sin(f*Math.PI)*(an.sel===2?36:an.sel===1?14:6);
+  if(ast&&t>.6){const s=cgEase(cgSeg(t,.62,.85));bx=cgLer(mt[0]+8,W-8,s);by=cgLer(mt[1],122,s);bh=6+Math.sin(s*Math.PI)*8+cgLer(0,18,s);goalTxt(cgSeg(t,.8,.9))}
+  lab(ast?"ASSISTÊNCIA!":ok?"PASSE CERTO":"INTERCEPTADO","#fff")}
+ else if(an.type==="dribble"){const ok=an.out!=="bad",sel=an.sel,f=cgSeg(t,.08,.78),D=[195,120];let px,py;
+  if(ok){px=cgLer(70,300,cgEase(f));py=120+Math.sin(f*Math.PI)*(sel===2?-70:sel===1?-24:-34)}else{px=cgLer(70,155,cgEase(cgSeg(t,.08,.5)));py=120}
+  let dx=D[0],dy=D[1],dp=cgPose.ready;if(ok){if(f>.55){dp=cgPose.fall(cgSeg(t,.55,.85))}}else{const a=cgEase(cgSeg(t,.3,.58));dx=cgLer(D[0],px+22,a);dp=t>.3&&t<.62?cgPose.slide:cgPose.stand}
+  add(dx,dy,dp,kO,lO(1),-1);add(px,py,t<.1?cgPose.stand:(!ok&&t>.5?cgPose.fall(cgSeg(t,.5,.8)*.5):cgPose.run(ph)),kM,lM);
+  bx=ok?px+14:(t<.55?px+14:cgLer(px+14,px-20,cgEase(cgSeg(t,.55,.9))));by=ok?py:py;bh=4+Math.abs(Math.sin(t*40))*2;lab(ok?(sel===1?"CHAPÉU!":"PASSOU!"):"DESARMADO","#fff")}
+ else{const ok=an.out!=="bad",ax=cgLer(300,ok?170:90,cgEase(cgSeg(t,.05,.62))),sl=cgSeg(t,.38,.62),mx=cgLer(105,ok?150:135,cgEase(sl));
+  add(mx,128,t<.35?cgPose.ready:t<.7?cgPose.slide:cgPose.stand,kM,lM);
+  add(ax,120,ok&&t>.58?cgPose.fall(cgSeg(t,.58,.85)):cgPose.run(ph),kO,lO(2),-1);
+  if(ok){bx=t<.58?ax-12:cgLer(ax-12,ax-52,cgEase(cgSeg(t,.58,.95)));by=120}else{bx=cgLer(ax-12,ax-12,0);by=120;if(an.conc&&t>.7){const s=cgEase(cgSeg(t,.7,.95));bx=cgLer(ax-12,6,s)}}bh=4;
+  lab(ok?"DESARME!":(an.conc?"GOL DELES":"CHEGOU ATRASADO"),ok?"#fff":"#ff9b9b")}
+ it.sort((a,b)=>a.y-b.y).forEach(o=>o.f());
+ const gy=S(0,by);g.fillStyle="rgba(0,0,0,.3)";g.beginPath();g.ellipse(bx,gy+2,5,1.8,0,0,7);g.fill();cgBall(g,bx,gy-bh,5.5)}
+
+function cgDrawAn(g,an,t,cl){if(an.k==="goal")cgDrawGoal(g,an,t,cl);else cgDrawPitch(g,an,t,cl)}
+function cgSpec(c,r){if(c.k==="chute")return{k:"goal",opp:M.opp,z:c.sel,kz:c.kz,out:!c.on?(c.pos>c.center&&c.q<.5?"over":"wide"):r.c==="gol"?"gol":"save"};
+ if(c.k==="goleiro"){const z=c.side+3*cgRand(0,1),sv=r.c==="gol";return{k:"goal",opp:M.opp,keeper:true,z,kz:sv?z:c.sel+3*(1-Math.floor(z/3)),out:sv?"save":"gol"}}
+ if(c.k==="passe")return{k:"pitch",opp:M.opp,type:"pass",sel:c.sel,out:r.c==="bad"?"bad":r.c==="gol"?"ast":"ok"};
+ if(c.k==="drible")return{k:"pitch",opp:M.opp,type:"dribble",sel:c.sel,out:r.c==="bad"?"bad":"ok"};
+ return{k:"pitch",opp:M.opp,type:"tackle",out:r.c==="bad"?"bad":"ok",conc:!!c.conc}}
+function cgPlay(){const c=M&&M.cur,cv=$("#cgc");if(!c||c.stage!=="anim"||!cv||c.playing)return;c.playing=true;const g=cv.getContext("2d");g.scale(2,2);const dur=c.an.k==="goal"?2600:2300,t0=performance.now(),cl=G.club;
+ const step=now=>{if(!M||M.cur!==c||c.stage!=="anim"||!document.body.contains(cv))return;const t=cgClamp((now-t0)/dur,0,1);g.save();cgDrawAn(g,c.an,t,cl);g.restore();if(t<1)c.raf=requestAnimationFrame(step);else setTimeout(()=>{if(M&&M.cur===c&&c.stage==="anim")CGM.mreveal()},450)};c.raf=requestAnimationFrame(step)}
+
+/* ----- partida ----- */
+const cgPois=l=>{let L=Math.exp(-l),k=0,p=1;do{k++;p*=Math.random()}while(p>L);return k-1};
+function cgStartMatch(){const pool=(CLUBS||[]).filter(c=>Math.abs(cgTier(c)-G.club.tier)<=1&&c.id!==G.club.id),opp=cgSnap(pool.length?cgPick(pool):CLUBS[0]),home=cgChance(.5);
+ const own=cgStr(G.club.tier)+(G.moral-50)/12+(home?2:-1),op=cgStr(opp.tier)+cgRand(-5,5),lam=(a,b)=>1.25*Math.exp((a-b)/38)*(a===own&&G.role==='titular'?.85:1);
+ const role=G.role,n=G.inj>0?0:role==="titular"?6:role==="rotação"?3:2,ev=[];
+ for(let i=cgPois(lam(own,op));i>0;i--)ev.push({m:cgRand(2,90),k:"mg"});for(let i=cgPois(lam(op,own));i>0;i--)ev.push({m:cgRand(2,90),k:"og"});
+ const lo=role==="titular"?5:role==="rotação"?45:65;for(let i=0;i<n;i++)ev.push({m:cgRand(lo,89),k:"mom"});ev.sort((a,b)=>a.m-b.m);
+ M={opp,home,my:0,op:0,ev,i:0,rating:6+(G.moral-50)/60,goals:0,ast:0,log:[],cur:null,phase:"play",tired:G.energy<30,inj:G.inj>0,own,opS:op};
+ CGV="match";cgAdvance()}
+function cgAdvance(){clearInterval(M.tm);M.cur=null;
+ while(M.i<M.ev.length){const e=M.ev[M.i];
+  if(e.k==="mg"){M.my++;M.log.push({m:e.m,t:"⚽ Gol do "+G.club.name+"!",c:"ok"});M.i++}
+  else if(e.k==="og"){M.op++;M.log.push({m:e.m,t:"😬 Gol do "+M.opp.name+".",c:"bad"});M.i++}
+  else{M.cur=cgMoment(e.m);M.i++;return}}
+ cgFinish()}
+function cgMoment(min,force){const pos=force||(()=>{let r=Math.random();for(const x of CG_MT[G.pos]){if(r<x[1])return x[0];r-=x[1]}return CG_MT[G.pos][0][0]})();
+ const T={chute:{ic:"🎯",tx:"A bola sobra na entrada da área. Você vai bater!",ch:[["Canto alto esquerdo","",.18],["Meio alto","",.24],["Canto alto direito","",.18],["Rasteiro esquerdo","",.3],["Rasteiro no meio","",.34],["Rasteiro direito","",.3]],timing:true,goal:true,tx2:"Escolha o canto e depois acerte a força."},
+  passe:{ic:"🎩",tx:"Você recebe de frente. Para quem vai o passe?",ch:[["Meio-campista ao lado","Seguro",.42],["Atacante em profundidade","Risco médio",.32],["Ponta na lateral, lançamento longo","Alto risco, grande recompensa",.24]],timing:true,tx2:"Acerte a força do passe."},
+  drible:{ic:"🌀",tx:"O marcador está de frente para você. Hora de driblar.",ch:[["Drible curto","Seguro"],["Chapéu ou firula","Arriscado e vistoso"],["Acelerar pela lateral","Usa o seu ritmo"]]},
+  defesa:{ic:"🛡️",tx:"O atacante vem em velocidade! Pare o relógio na hora certa para dar o bote.",ch:[["Dar o bote!","Pare na zona verde",.28,1]],timing:true},
+  goleiro:{ic:"🧤",tx:"Chute forte vindo! Escolha o lado para pular.",ch:[["Pular na esquerda",""],["Ficar no meio",""],["Pular na direita",""]]}}[pos];
+ return {k:pos,m:min,...T,stage:T.timing?"pick":"pick",sel:null}}
+const cgRate=d=>{M.rating=cgClamp(M.rating+d,3,10)};
+function cgResolve(q){const my0=M.my,op0=M.op,cgSay=k=>{M.cur.say=k};const c=M.cur,a=cgEff(c.k==="goleiro"?"defesa":c.k),opT=M.opp.tier;let r={t:"",c:"ok"};const L=t=>{r.t=t};
+ if(c.k==="chute"){const z=c.sel,over=c.pos>c.center,acc=cgClamp(.06+.5*q+(a-60)/300,.05,.95);c.kz=cgRand(0,5);
+  const sameR=Math.floor(z/3)===Math.floor(c.kz/3),dc=Math.abs(z%3-c.kz%3),adj=(sameR&&dc===1)||(!sameR&&dc===0);let sv=c.kz===z?.9:adj?.5:.18;sv=cgClamp(sv*(1+(opT-2)*.06),.05,.95);if(!over&&q<.5)sv=Math.max(sv,.7);
+  c.on=cgChance(acc);
+  if(!c.on){cgRate(-.2);r.c="bad";L(over&&q<.5?"Chutou forte demais e a bola foi por cima.":"Pra fora. A pontaria falhou.")}
+  else if(cgChance(sv)){cgRate(-.05);r.c="bad";L(c.kz===z?"O goleiro adivinhou o canto e defendeu!":"O goleiro alcançou e defendeu!");cgSay("save")}
+  else{M.my++;M.goals++;cgRate(1);L("GOL! Que chute!");r.c="gol";cgXp("chute",6);cgSay("gol")}}
+ else if(c.k==="passe"){const i=c.sel,pc=[.88,.62,.4][i],ac=[.1,.32,.55][i],p=cgClamp(pc*(.55+.6*q)+(a-60)/220,.1,.97);
+  if(cgChance(p)){cgRate([.15,.4,.7][i]);cgXp("passe",6);if(cgChance(ac*(1+(a-60)/200))){M.my++;M.ast++;cgRate(.9);L("ASSISTÊNCIA! Gol do seu time!");r.c="gol";cgSay("ast")}else L("Passe certo e a jogada continua.")}
+  else{cgRate([-.2,-.35,-.4][i]);r.c="bad";if(cgChance(.1*(i+1))){M.op++;L("Passe errado... e o adversário faz o gol no contra-ataque.")}else L("Passe errado, bola perdida.")}}
+ else if(c.k==="drible"){const i=c.sel,k=i===2?"ritmo":"drible",ae=cgEff(k),p=cgClamp([.72,.5,.6][i]+(ae-60)/180,.1,.95);
+  if(cgChance(p)){cgRate([.3,.6,.4][i]);cgXp(k,6);L("Passou do marcador!");if(!c.chain&&!["GOL","ZAG","LE","LD"].includes(G.pos)&&cgChance(.3)){r.chain=true;L("Passou do marcador e a bola sobrou para finalizar!")}}
+  else{cgRate(-.3);r.c="bad";if(cgChance(.12)){M.op++;L("Perdeu a bola e o adversário fez o gol.")}else L("O marcador desarmou.")}}
+ else if(c.k==="defesa"){const p=cgClamp((.35+(a-40)/110)*(.45+1.1*q),.05,.95);
+  if(cgChance(p)){cgRate(.5);cgXp("defesa",6);L("Desarme limpo! Perigo afastado.")}else{cgRate(-.3);r.c="bad";if(cgChance(.3)){M.op++;c.conc=true;L("Chegou atrasado e saiu o gol deles.")}else L("Chegou atrasado, mas a defesa se salvou.")}}
+ else if(c.k==="goleiro"){const side=cgRand(0,2),ok=side===c.sel;c.side=side;const p=ok?cgClamp(.55+(a-50)/150,.35,.9):cgClamp(.1+(a-50)/300,.05,.4);
+  if(cgChance(p)){cgRate(.8);cgXp("defesa",7);L("DEFESAÇA!");r.c="gol";cgSay("save")}else{cgRate(-.5);M.op++;r.c="bad";L("Não deu. É gol deles.")}}
+ c.res=r;c.q=q;c.logE={m:c.m,t:(c.ic||"")+" "+r.t,c:r.c};if(r.chain)c.next=true;
+ if(cgAnimOn()){c.an=cgSpec(c,r);c.stage="anim";c.pre={my:my0,op:op0}}else{c.stage="res";M.log.push(c.logE);if(c.say)cgSay0(c.say)}}
+const cgAnimOn=()=>motionOk()&&!document.hidden&&!!document.getElementById("cr");
+const cgSay0=k=>mascotSay(cgPick(CGMA[k]||CGMA.gol),3800);
+const CGM={
+ mpick:i=>{const c=M&&M.cur;if(!c||c.stage!=="pick")return;c.sel=+i;if(!c.ch[c.sel])return;if(c.timing){c.stage="time";c.green=c.ch[c.sel][2];c.center=.25+Math.random()*.5;c.pos=0;c.dir=1;crDraw();cgMeter()}else{cgResolve(0);crDraw()}},
+ mstop:()=>{const c=M&&M.cur;if(!c||c.stage!=="time")return;clearInterval(M.tm);const d=Math.abs(c.pos-c.center),q=cgClamp(1-d/(c.green*1.1),0,1);c.q=q;cgResolve(q);crDraw()},
+ mnext:()=>{const c=M&&M.cur;if(c&&c.next){M.cur=cgMoment(c.m,"chute");M.cur.chain=true;crDraw();return}cgAdvance();crDraw()},
+ mend:()=>{cgLeave()},mreveal:()=>{const c=M&&M.cur;if(!c||c.stage!=="anim")return;cancelAnimationFrame(c.raf);c.stage="res";M.log.push(c.logE);if(c.say)cgSay0(c.say);crDraw()}};
+function cgMeter(){clearInterval(M.tm);const c=M.cur,sp=.018+Math.random()*.01;M.tm=setInterval(()=>{if(!c||c.stage!=="time"){clearInterval(M.tm);return}c.pos+=sp*c.dir;if(c.pos>=1){c.pos=1;c.dir=-1}if(c.pos<=0){c.pos=0;c.dir=1}const m=$("#cgm");if(m)m.style.left=(c.pos*100)+"%";else clearInterval(M.tm)},16)}
+function cgFinish(){const my=M.my,op=M.op,res=my>op?"w":my<op?"l":"d";let rt=M.rating;if(res==="w")rt+=.3;if(res==="l")rt-=.2;rt=+cgClamp(rt,3,10).toFixed(1);
+ G.energy=Math.max(0,G.energy-30);M.rt=rt;M.res=res;M.phase="end";const s=G.sg;s.g++;s.go+=M.goals;s.as+=M.ast;s.rs+=rt;s.pts+=res==="w"?3:res==="d"?1:0;s[res]++;
+ G.st.games++;G.st.goals+=M.goals;G.st.assists+=M.ast;G.st.ratS+=rt;
+ cgFx({m:res==="w"?6:res==="l"?-5:0,fa:rt>=7.5?3:rt<5.5?-2:0,f:M.goals?1+M.goals:(rt>=8?1:0),c:rt>=7?2:rt<5.5?-3:0});
+ if(res==="w")G.money+=Math.round(G.wage*.3);
+ const bm=cgBonus(),risk=(.04+(G.energy<30?.06:0)+(M.tired?.02:0))*(bm.fisio?.5:1);M.hurt=0;if(!M.inj&&cgChance(risk)){M.hurt=cgRand(1,5)-(bm.fisio?1:0);M.hurt=Math.max(1,M.hurt);G.inj=M.hurt+1}
+ G.ovr=cgCurOvr();cgSay(res==="w"?"win":res==="l"?"loss":"draw");
+ cgNews((M.inj?"Você acompanhou do banco: ":"")+(res==="w"?"Vitória":res==="l"?"Derrota":"Empate")+" por "+my+"x"+op+" contra o "+M.opp.name+" (nota "+rt.toFixed(1)+").");
+ G.ovr=cgCurOvr();crSave()}
+function cgLeave(){clearInterval(M&&M.tm);M=null;CGV="hub";cgNextWeek();crSave(true);crDraw()}
+Object.assign(CGA,{play:()=>{if(G.pend.event||G.pend.report||G.done)return;cgStartMatch();crDraw()}});
+
+/* ----- telas ----- */
+const cgBar=(l,v,cl)=>`<div class="cgb"><span>${l}</span><div><i style="width:${cgClamp(v,0,100)}%" class="${cl||""}"></i></div><b>${Math.round(v)}</b></div>`;
+const cgB=(t,a,id,x)=>`<button class="btn ${x||""}" data-a="cg" data-id="${esc(id)}">${t}</button>`;
+function cgHead(){const c=G.club,o=cgCurOvr();return `<div class="card cgh"><div class="cgt">${crest(c,44)}<div style="min-width:0"><b>${esc(G.name)}</b> <span class="tag">${esc(G.pos)}</span><div class="sub">${esc(c.name)} · ${esc(c.league)}</div><div class="sub">Temporada ${G.season} · Semana ${Math.min(G.week,20)}/20 · ${G.age} anos</div></div><div class="cgo">${o}<small>OVR</small></div></div>
+ <div class="cgbars">${cgBar("⚡ Energia",G.energy,G.energy<30?"bad":"")}${cgBar("😊 Moral",G.moral)}${cgBar("🤝 Técnico",G.coach)}${cgBar("📣 Torcida",G.fans)}${cgBar("🌟 Fama",G.fama)}</div>
+ <div class="row between"><span>💰 <b>${cgMoney(G.money)}</b></span><span class="sub">${esc(G.role)} · salário ${cgMoney(G.wage)}/sem · contrato ${Math.max(0,G.years)} ano(s)</span></div>${G.inj>0?`<div class="cgw">🩹 Lesionado: fora por ${G.inj} semana(s).</div>`:""}</div>`}
+function cgHub(){const p=G.pend;let h="";
+ if(p.res)h+=`<div class="card cgev"><b>${esc(p.res.t)}</b><p>${esc(p.res.tx)}</p>${cgB("Continuar","","evok","p")}</div>`;
+ if(p.report){const r=p.report;h+=`<div class="card cgrep"><h3>📅 Fim da temporada ${G.season-0}</h3><p>Posição na liga: <b>${r.pos}º</b> · ${r.pts} pts · ${r.g} jogos · ${r.go} gols · ${r.as} assistências · nota média ${r.avg}</p>${r.aw.map(x=>`<div class="tag">${x}</div>`).join(" ")}<p class="sub">Você agora tem ${r.age} anos e OVR ${r.ovr}.</p>${cgB("Continuar","","report","p")}</div>`;return h}
+ if(p.event){const e=p.event;h+=`<div class="card cgev"><b>🎬 ${esc(e.t)}</b><p>${esc(e.x)}</p><div class="cgch">${e.ch.map((c,i)=>cgB(esc(c.l),"","ev:"+i)).join("")}</div></div>`}
+ if(p.window)h+=`<div class="card cgev"><b>📨 ${p.window.mid?"Propostas no meio da temporada":"Janela de transferências"}</b><p class="sub">${p.window.offers.length} proposta(s)${p.window.renew?" e renovação disponível":""}.</p>${cgB("Ver propostas","","vwin","p")}</div>`;
+ if(!p.event&&!(p.window&&!p.window.mid)){h+=`<div class="cgg">${G.inj>0?cgB("📺 Acompanhar partida (lesionado)","","play","p wide"):cgB("⚽ Jogar partida · semana "+G.week,"","play","p wide")}${cgB("🏋️ Treinar","","view:train")}${cgB("😴 Descansar "+(G.rested?"(feito)":"+25⚡"),"","rest")}${cgB("🎉 Vida","","view:life")}${cgB("🛒 Loja","","view:shop")}${cgB("📊 Carreira","","view:stats")}${cgB("🏆 Ranking","","view:rank")}</div>`}
+ h+=`<div class="card"><b>📰 Notícias</b>${G.news.map(n=>`<p class="sub">• ${esc(n)}</p>`).join("")}</div>`;return h}
+const cgBack=`<p>${cgB("← Voltar ao clube","","view:hub","sm")}</p>`;
+function cgTrain(){return cgBack+`<h3>🏋️ Treino</h3><p class="sub">Cada treino custa 22 de energia. O progresso desacelera perto do seu potencial.</p><div class="grid">${CG_AT.map(a=>{const k=a[0],v=G.at[k],b=cgBonus().at[k]||0,x=G.xp[k]||0;return `<div class="card"><div class="row between"><b>${a[2]} ${esc(k==="defesa"&&G.pos==="GOL"?"Reflexos":a[1])}</b><b>${v}${b?` <small>(+${b})</small>`:""}</b></div><div class="cgb"><span>Progresso</span><div><i style="width:${x}%"></i></div><b>${Math.round(x)}</b></div>${cgB("Treinar (−22⚡)","","train:"+k,"p sm")}</div>`}).join("")}</div>`}
+function cgLife(){const L=[["👨‍👩‍👧","Tempo em família","Moral +10, custa R$ 1.500"],["🎤","Dar entrevistas","Fama +3"],["🤝","Ação social","Torcida +6, moral +4, custa R$ 2.000"],["💼","Evento de patrocinador","Ganha dinheiro e fama"]];return cgBack+`<h3>🎉 Vida fora de campo</h3><p class="sub">Uma atividade por semana${G.life?" (já feita)":""}. Eventos e decisões surgem ao longo da carreira.</p><div class="grid">${L.map((x,i)=>`<div class="card"><b>${x[0]} ${x[1]}</b><p class="sub">${x[2]}</p>${cgB("Fazer","","life:"+i,"sm"+(G.life?"":" p"))}</div>`).join("")}</div>`}
+function cgShop(){return cgBack+`<h3>🛒 Loja</h3><p class="sub">💰 ${cgMoney(G.money)}</p><div class="grid">${CGSHOP.map(it=>{const lv=G.items[it[0]]||0,n=it[2][lv];return `<div class="card"><b>${esc(it[1])}</b> <span class="sub">nível ${lv}/${it[2].length}</span>${lv?`<p class="sub">Atual: ${esc(it[2][lv-1][0])}</p>`:""}${n?`<p>${esc(n[0])}<br><b>${cgMoney(n[1])}</b></p>${cgB("Comprar","","buy:"+it[0],G.money>=n[1]?"p sm":"sm")}`:'<p class="sub">Nível máximo ✔</p>'}</div>`}).join("")}</div>`}
+function cgStats(){const s=G.st,avg=s.games?(s.ratS/s.games).toFixed(2):"–";return cgBack+`<h3>📊 Sua carreira</h3><div class="card"><div class="row between"><span>Jogos <b>${s.games}</b></span><span>Gols <b>${s.goals}</b></span><span>Assistências <b>${s.assists}</b></span></div><div class="row between"><span>Nota média <b>${avg}</b></span><span>Títulos <b>${s.titles}</b></span><span>Prêmios <b>${s.awards}</b></span></div></div>
+ <div class="card"><b>Atributos</b>${CG_AT.map(a=>cgBar(a[2]+" "+(a[0]==="defesa"&&G.pos==="GOL"?"Reflexos":a[1]),(G.at[a[0]]||0)+(cgBonus().at[a[0]]||0))).join("")}<p class="sub">Potencial: ${G.pot>=90?"⭐⭐⭐ enorme":G.pot>=82?"⭐⭐ alto":"⭐ bom"}</p></div>
+ <div class="card"><b>Temporadas</b>${s.seasons.length?`<div style="overflow-x:auto"><table class="cgtb"><tr><th>Temp.</th><th>Clube</th><th>Pos.</th><th>J</th><th>G</th><th>A</th><th>Nota</th><th>OVR</th></tr>${s.seasons.map(x=>`<tr><td>${x.s}</td><td>${esc(x.club)}</td><td>${x.pos}º</td><td>${x.g}</td><td>${x.go}</td><td>${x.as}</td><td>${x.avg}</td><td>${x.ovr}</td></tr>`).join("")}</table></div>`:'<p class="sub">Ainda sem temporadas completas.</p>'}</div>
+ <p>${cgB("Recomeçar do zero","","reset","sm")}</p>`}
+async function cgBoard(){try{CGX.board=await rpc("career_board")}catch(e){CGX.board="err"}crDraw()}
+function cgRank(){const b=CGX.board;return cgBack+`<h3>🏆 Ranking da comunidade</h3><p class="sub">Só por diversão: os números vêm do próprio jogo. Mostra apenas apelido e resumo.</p>`+(b===null?'<div class="card sub">Carregando...</div>':b==="err"?'<div class="card sub">Ranking indisponível ainda.</div>':b.length?`<div class="card" style="overflow-x:auto"><table class="cgtb"><tr><th>#</th><th>Jogador</th><th>Clube</th><th>OVR</th><th>Gols</th><th>Títulos</th></tr>${b.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.player_name||"?")}<br><small>@${esc(x.nick)}</small></td><td>${esc(x.club_name||"")}</td><td>${x.ovr}</td><td>${x.goals}</td><td>${x.titles}</td></tr>`).join("")}</table></div>`:'<div class="card sub">Ninguém no ranking ainda. Seja o primeiro!</div>')}
+function cgWin(){const w=G.pend.window;if(!w){CGV="hub";return cgHub()}return `${G.years<=0&&!w.mid?"":cgBack}<h3>📨 ${w.mid?"Propostas":"Janela de transferências"}</h3>
+ ${w.renew?`<div class="card"><b>Renovar com o ${esc(G.club.name)}</b><p>${cgMoney(w.renew.wage)}/semana · ${w.renew.years} ano(s)</p>${cgB("Renovar","","renew","p sm")}</div>`:""}
+ ${w.offers.map((o,i)=>`<div class="card"><div class="cgt">${crest(o.club,40)}<div><b>${esc(o.club.name)}</b><div class="sub">${esc(o.club.league)} · nível ${o.club.tier}/5</div><div class="sub">Papel: ${esc(o.role)} · ${cgMoney(o.wage)}/sem · ${o.years} ano(s)</div></div></div>${cgB("Aceitar proposta","","accept:"+i,"p sm")}</div>`).join("")||'<div class="card sub">Nenhuma proposta no momento.</div>'}
+ ${w.years<=0?"":""}${G.years<=0&&!w.mid?'<p class="sub">Seu contrato acabou: renove ou escolha uma proposta.</p>':`<p>${cgB("Ficar no clube","","stay","sm")}</p>`}`}
+function cgRetire(){const s=G.st;return `<div class="card cgrep"><h2>🎖️ Aposentadoria</h2><p><b>${esc(G.name)}</b> pendurou as chuteiras aos ${G.age} anos.</p><p>${s.games} jogos · ${s.goals} gols · ${s.assists} assistências · ${s.titles} título(s) · ${s.awards} prêmio(s) de craque.</p><p class="sub">Último clube: ${esc(G.club.name)} · OVR final ${G.ovr}</p>${cgB("Começar nova carreira","","reset","p")}</div>`}
+function cgCreate(){if(!CGX.starts)CGX.starts=[...(CLUBS||[]).filter(c=>cgTier(c)<=2)].sort(()=>Math.random()-.5).slice(0,6);
+ if(!CGX.newAt)cgBase(CGX.newPos);const at=CGX.newAt,o=cgOvr(CGX.newPos,at);
+ return `<div class="card cgh"><h2>🎮 Sua carreira de craque</h2><p class="sub">Comece aos 16 anos num clube pequeno e chegue ao topo: treine, jogue, tome decisões dentro e fora de campo e suba de clube.</p>
+ <label class="f">Nome do jogador<input data-cg="name" maxlength="30" value="${esc(CGX.newName||(ME?ME.nick:""))}" placeholder="Seu nome de craque"></label>
+ <b>Aparência</b><div class="cgsw">${CGSK.map((c,i)=>`<button type="button" class="cgsk${CGX.skin===i?" on":""}" style="background:${c}" data-a="cg" data-id="cskin:${i}" aria-label="Tom de pele ${i+1}"></button>`).join("")}</div><div class="cgsw">${[0,1,2,3,5].map(i=>`<button type="button" class="btn sm${CGX.hair===i?" p":""}" data-a="cg" data-id="chair:${i}">${["Curto","Cacheado","Raspado","Loiro","","Moicano"][i]}</button>`).join("")}</div><b>Posição</b><div class="wzpos">${POS.map(p=>`<button type="button" data-a="cg" data-id="cpos:${p}" class="${CGX.newPos===p?"on":""}">${p}</button>`).join("")}</div>
+ <div class="row between"><b>Atributos</b><span>OVR <b>${o}</b> · pontos <b>${CGX.pts}</b></span></div>${CG_AT.map(a=>`<div class="cgat"><span>${a[2]} ${esc(a[0]==="defesa"&&CGX.newPos==="GOL"?"Reflexos":a[1])}</span><button class="btn sm" data-a="cg" data-id="cat:${a[0]}:-1" aria-label="menos">−</button><div class="cgb" style="flex:1"><div><i style="width:${at[a[0]]}%"></i></div></div><button class="btn sm" data-a="cg" data-id="cat:${a[0]}:1" aria-label="mais">+</button><b>${at[a[0]]}</b></div>`).join("")}
+ <b>Clube inicial</b><div class="grid">${CGX.starts.map(c=>`<button type="button" class="card cgclub${CGX.newClub===c.id?" on":""}" data-a="cg" data-id="cclub:${c.id}">${crest(c,36)}<div><b>${esc(c.name)}</b><div class="sub">${esc(c.league)}</div></div></button>`).join("")}</div>
+ <div class="err" id="fe"></div>${cgB("🚀 Começar carreira","","cstart","p")}${ME?"":'<p class="sub">Sem login o jogo salva só neste aparelho. Entre para salvar na conta e aparecer no ranking.</p>'}</div>`}
+function cgBase(pos){const w=CG_W[pos]||CG_W.CA;CGX.newAt={};for(const a of CG_AT)CGX.newAt[a[0]]=36+Math.round((w[a[0]]||.02)*40);CGX.pts=12;CGX.newAt0={...CGX.newAt}}
+Object.assign(CGA,{
+ cpos:p=>{if(!POS.includes(p))return;CGX.newPos=p;cgBase(p);crDraw()},
+ cat:s=>{const [k,d]=s.split(":"),n=+d;if(!(k in CGX.newAt)||!(n===1||n===-1))return;if(n>0&&CGX.pts<=0)return;if(n<0&&CGX.newAt[k]<=CGX.newAt0[k])return;CGX.newAt[k]+=n;CGX.pts-=n;crDraw()},
+ cclub:id=>{CGX.newClub=+id;crDraw()},cskin:i=>{CGX.skin=cgClamp(+i,0,5);crDraw()},chair:i=>{i=cgClamp(+i,0,5);CGX.hair=i;CGX.hairc=i===3?3:i===5?4:CGX.hairc===3||CGX.hairc===4?0:CGX.hairc;crDraw()},
+ cstart:()=>{const n=(CGX.newName||(ME?ME.nick:"")).trim();if(n.length<2)return fail("Dê um nome ao jogador.");const c=(CGX.starts||[]).find(x=>x.id===CGX.newClub);if(!c)return fail("Escolha o clube inicial.");cgNew(n.slice(0,30),CGX.newPos,CGX.newAt,c);CGX.starts=null;CGX.newAt=null;CGV="hub";crDraw()},
+ reset:()=>{if(!confirm("Apagar esta carreira e começar de novo?"))return;G=null;try{localStorage.removeItem(CRK())}catch(e){}if(ME)api("/rest/v1/careers?user_id=eq."+ME.id,{method:"DELETE"}).catch(()=>{});CGX.starts=null;CGX.newAt=null;CGV="hub";crDraw()}});
+function cgMatch(){const m=M,c=m.cur,my=cgSnap(G.club),pre=c&&c.stage==="anim"&&c.pre,sc=`<div class="cgsc"><div>${crest(G.club,44)}<small>${esc(G.club.short||G.club.name)}</small></div><div class="cgs">${pre?pre.my:m.my} × ${pre?pre.op:m.op}</div><div>${crest(m.opp,44)}<small>${esc(m.opp.short||m.opp.name)}</small></div></div>`;
+ let h=`<div class="card cgh">${sc}<p class="sub" style="text-align:center">${m.home?"Em casa":"Fora de casa"} · ${esc(G.club.league)}${m.tired?" · ⚠️ cansado":""}</p></div>`;
+ if(m.inj&&m.phase!=="end")h+=`<div class="card cgw">🩹 Você está lesionado e acompanha do banco.</div>`;
+ if(c){h+=`<div class="card cgmom"><div class="sub">⏱ ${c.m}'</div><h3>${c.ic} ${esc(c.tx)}</h3>`;
+  if(c.stage==="pick")h+=c.goal?`<p class="sub">${esc(c.tx2)}</p><div class="cgG" role="group" aria-label="Gol">${c.ch.map((o,i)=>`<button class="cgz2" data-a="cg" data-id="mpick:${i}" aria-label="${esc(o[0])}"><span>${i+1}</span></button>`).join("")}</div>`:`${c.tx2?`<p class="sub">${esc(c.tx2)}</p>`:""}<div class="cgch">${c.ch.map((o,i)=>`<button class="btn" data-a="cg" data-id="mpick:${i}"><b>${i+1}. ${esc(o[0])}</b>${o[1]?`<small>${esc(o[1])}</small>`:""}</button>`).join("")}</div>`;
+  else if(c.stage==="time")h+=`${c.goal?`<p class="sub">Mirando: <b>${esc(c.ch[c.sel][0])}</b></p>`:""}<p class="sub">${c.goal?"Força do chute":c.k==="passe"?"Força do passe":"Tempo"}: pare na zona verde.</p><div class="cgmt"><i class="cgz" style="left:${(c.center-c.green/2)*100}%;width:${c.green*100}%"></i><i id="cgm" class="cgk" style="left:${c.pos*100}%"></i></div><button class="btn p wide cgstop" data-a="cg" data-id="mstop">✋ PARAR! (espaço)</button>`;
+  else if(c.stage==="anim")h+=`<canvas id="cgc" class="cgcv" width="720" height="480" aria-label="Animação do lance"></canvas><button class="btn sm" data-a="cg" data-id="mreveal">Pular animação ⏭</button>`;
+  else h+=`${c.goal&&c.kz!=null?`<div class="cgG">${c.ch.map((o,i)=>`<div class="cgz2 ${i===c.sel?"me":""} ${i===c.kz?"gk":""}"><span>${i===c.sel&&i===c.kz?"⚽🧤":i===c.sel?"⚽":i===c.kz?"🧤":""}</span></div>`).join("")}</div>`:""}<div class="cgres ${c.res.c}"><b>${esc(c.res.t)}</b></div>${cgB("Continuar ▶","","mnext","p")}`;
+  h+=`</div>`}
+ if(m.phase==="end"){const r=m.res,t=r==="w"?"🏆 Vitória!":r==="l"?"😞 Derrota":"🤝 Empate";h+=`<div class="card cgrep"><h3>${t} ${m.my}×${m.op}</h3><p>Sua nota: <b>${m.rt.toFixed(1)}</b> · gols: ${m.goals} · assistências: ${m.ast}</p>${m.hurt?`<p class="cgw">🩹 Você se lesionou! Fora por ${m.hurt} jogo(s).</p>`:""}${cgB("Voltar ao clube","","mend","p")}</div>`}
+ h+=`<div class="card"><b>Lances da partida</b>${m.log.length?m.log.slice().reverse().map(l=>`<p class="cgl ${l.c}">${l.m}' ${esc(l.t)}</p>`).join(""):'<p class="sub">Aguardando...</p>'}</div>`;return h}
+function crView(){if(!G)return cgCreate();if(G.done)return cgRetire();if(CGV==="match"&&M)return cgMatch();
+ const body={hub:cgHub,train:cgTrain,life:cgLife,shop:cgShop,stats:cgStats,rank:cgRank,window:cgWin}[CGV]||cgHub;return cgHead()+body()}
+function crDraw(){const e=$("#cr");if(!e)return;const k=CGV+(M?"m":"")+(G&&G.done?"d":"")+(G?"":"c")+(G&&G.pend.report?"r":"");e.innerHTML=crView();if(M&&M.cur&&M.cur.stage==="anim")cgPlay();if(crDraw.k!==k){crDraw.k=k;try{e.scrollIntoView({block:"start"})}catch(x){}}}
+A.cg=(id)=>{const i=String(id).indexOf(":"),n=i<0?id:id.slice(0,i),a=i<0?"":id.slice(i+1),f=CGA[n]||CGM[n];if(f){try{const r=f(a);if(r&&r.catch)r.catch(fail)}catch(e){fail(e.message)}}};
+document.addEventListener("input",e=>{const t=e.target.closest&&e.target.closest("[data-cg]");if(t&&t.dataset.cg==="name")CGX.newName=t.value});
+document.addEventListener("keydown",e=>{if(CGV!=="match"||!M||!M.cur||!$("#cr")||/INPUT|TEXTAREA|SELECT/.test((e.target||{}).tagName||""))return;const c=M.cur;
+ if(e.code==="Space"){e.preventDefault();if(c.stage==="time")CGM.mstop();else if(c.stage==="res")CGM.mnext();else if(c.stage==="anim")CGM.mreveal()}else if(/^[1-6]$/.test(e.key)&&c.stage==="pick"&&+e.key<=c.ch.length)CGM.mpick(+e.key-1)});
+var pCarreira=async function(){await clubsLoad();const u=ME?ME.id:"g";if(CGU!==u){G=null;await crLoad();CGU=u}CGV=M&&CGV==="match"?"match":"hub";return `<div class="row between"><h2>🎮 Carreira</h2></div><div id="cr">${crView()}</div>`};
+{const _pg=page;page=async function(){if(CUR==="carreira")return pCarreira();return _pg()}}
+NAV.splice(NAV.findIndex(n=>n[0]==="campeonatos")+1,0,["carreira","Carreira","🎮"]);
+ATAL.push(["carreira","🎮","Carreira","Jogo de carreira de craque"]);
+</script>
 </body>
 </html>
