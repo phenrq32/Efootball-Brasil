@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>eFootball Brasil · Teste do Supabase</title>
+<style>
+:root{--bg:#07130d;--card:#0e2217;--line:#1f3a2a;--tx:#eaf5ee;--mu:#93aa9c;--ok:#4ade80;--bad:#f87171;--warn:#fbbf24;--g:#009739;--y:#ffdf00;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:max(16px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom))}
+main{max-width:640px;margin:auto}
+h1{font-size:1.35rem;margin:6px 0 2px}
+h2{font-size:1rem;margin:0 0 8px;color:var(--y)}
+p{margin:6px 0;color:var(--mu)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:14px 0}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+button{font:inherit;font-weight:600;border:1px solid var(--line);background:#16301f;color:var(--tx);border-radius:10px;padding:11px 16px;min-height:44px;cursor:pointer}
+button.p{background:var(--g);border-color:var(--g)}
+button:disabled{opacity:.5}
+input{font:inherit;width:100%;background:#0a1a11;color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:11px;min-height:44px;margin-top:8px}
+.it{display:grid;grid-template-columns:28px 1fr;gap:2px 8px;padding:8px 0;border-top:1px solid var(--line)}
+.it:first-of-type{border-top:0}
+.it .s{grid-row:span 2;font-size:1.1rem;text-align:center}
+.it b{font-weight:600}
+.it span.d{color:var(--mu);font-size:.88rem;word-break:break-word}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+#sum{font-weight:700;margin-top:6px}
+textarea{width:100%;min-height:120px;background:#0a1a11;color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:10px;font:12px/1.4 ui-monospace,monospace}
+small{color:var(--mu)}
+</style>
+</head>
+<body>
+<main>
+<h1>⚽ Teste do Supabase</h1>
+<p>Confere se a conexão, o banco e a segurança estão certos. Só lê e testa; não apaga nada.</p>
+
+<div class="card">
+  <h2>1. Conexão, banco e segurança</h2>
+  <div class="row"><button class="p" id="run">Rodar testes</button><button id="copy" disabled>Copiar relatório</button></div>
+  <div id="sum"></div>
+  <div id="res"></div>
+</div>
+
+<div class="card">
+  <h2>2. E-mail e login (opcional)</h2>
+  <p>Cria uma conta de teste e confere se o código chega por e-mail. Depois apague-a em <i>Authentication › Users</i>.</p>
+  <input id="em" type="email" placeholder="Seu e-mail" autocomplete="email" inputmode="email">
+  <div class="row"><button id="send">Enviar código</button></div>
+  <input id="cd" inputmode="numeric" maxlength="8" placeholder="Código recebido" autocomplete="one-time-code">
+  <div class="row"><button class="p" id="ver">Verificar código</button></div>
+  <div id="res2"></div>
+</div>
+
+<div class="card" id="repbox" hidden>
+  <h2>Relatório (copie e cole na conversa)</h2>
+  <textarea id="rep" readonly></textarea>
+</div>
+<small>As chaves aqui são públicas por design. Nunca coloque a chave service_role em nenhuma página.</small>
+</main>
+
+<script>
+const SB = "https://poxujpgrrsynvcnvxqkl.supabase.co";
+const KEY = "sb_publishable_bZSSuNdEOygQjNnwnhrsCg_PntBECjt";
+let TOKEN = null, UID = null;
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+// Só o apikey no acesso público; com login, o token do usuário.
+async function api(path, { method = "GET", body, headers = {} } = {}) {
+  const h = { apikey: KEY, "Content-Type": "application/json", ...(TOKEN ? { Authorization: "Bearer " + TOKEN } : {}), ...headers };
+  try {
+    const r = await fetch(SB + path, { method, headers: h, body: body ? JSON.stringify(body) : undefined });
+    let j = null; try { j = await r.json(); } catch (e) {}
+    return { status: r.status, ok: r.ok, json: j };
+  } catch (e) { return { status: 0, ok: false, json: null, net: String(e) }; }
+}
+const missing = (r) => r.status === 404 || (r.json && ["PGRST205", "42P01", "PGRST202"].includes(r.json.code));
+const msg = (r) => (r.json && (r.json.message || r.json.msg || r.json.error_description)) || ("HTTP " + r.status);
+
+const T = (name, fn) => ({ name, fn });
+const pub = (t, v) => T(`Tabela ${t}`, async () => {
+  const r = await api(`/rest/v1/${t}?select=*&limit=1`);
+  if (r.net) return [false, "sem conexão: " + r.net];
+  if (missing(r)) return [false, `não existe: rode o SQL ${v}`];
+  return r.ok ? [true, "existe"] : [false, msg(r)];
+});
+const priv = (t, v) => T(`${t} protegida`, async () => {
+  const r = await api(`/rest/v1/${t}?select=*&limit=1`);
+  if (r.net) return [false, "sem conexão: " + r.net];
+  if (missing(r)) return [false, `tabela não existe: rode o SQL ${v}`];
+  if ([401, 403].includes(r.status)) return [true, "acesso público negado"];
+  if (r.ok && Array.isArray(r.json) && r.json.length) return [false, "EXPOSTA: o público consegue ler dados! Revise as regras (RLS)"];
+  return r.ok ? [true, "nada visível ao público"] : [false, msg(r)];
+});
+const fn = (f, args, v) => T(`Função ${f}`, async () => {
+  const r = await api(`/rest/v1/rpc/${f}`, { method: "POST", body: args });
+  if (r.net) return [false, "sem conexão: " + r.net];
+  return missing(r) ? [false, `não existe: rode o SQL ${v}`] : [true, "existe"];
+});
+const noWrite = (t, row) => T(`Público não escreve em ${t}`, async () => {
+  const r = await api(`/rest/v1/${t}`, { method: "POST", body: row, headers: { Prefer: "return=minimal" } });
+  if (r.net) return [false, "sem conexão: " + r.net];
+  if (missing(r)) return [false, "tabela não existe"];
+  if (r.status === 201 || r.status === 204) return [false, "FALHA GRAVE: qualquer pessoa conseguiu gravar! Apague a linha criada e revise o RLS"];
+  return [true, "escrita bloqueada"];
+});
+
+const GROUPS = [
+  ["Conexão", [
+    T("Servidor do Supabase", async () => { const r = await api("/auth/v1/health"); return r.net ? [false, r.net] : r.ok ? [true, "no ar"] : [false, "HTTP " + r.status + ": " + msg(r)]; }),
+    T("Chave pública aceita", async () => { const r = await api("/rest/v1/settings?select=key&limit=1"); return r.net ? [false, r.net] : [![401].includes(r.status) && !(r.json && /Invalid API key/i.test(msg(r))), r.status === 401 ? "chave recusada: confira a chave copiada" : "ok"]; }),
+  ]],
+  ["SQL 1 · comunidade e marketplace", [
+    pub("settings", "1"), pub("content", "1"), pub("threads", "1"), pub("replies", "1"), pub("player_cards", "1"), pub("listings", "1"),
+    fn("create_order", { p_listing: "00000000-0000-0000-0000-000000000000" }, "1"),
+  ]],
+  ["SQL 2 · Batalha", [
+    pub("ratings", "2"), pub("queue_entries", "2"), fn("join_queue", { p_mode: "1v1" }, "2"),
+  ]],
+  ["SQL 3 · CEO, suporte e recibos", [
+    priv("support_threads", "3"), priv("receipts", "3"), fn("support_send", { p_body: "x" }, "3"),
+  ]],
+  ["Segurança: dados que o público NÃO pode ver", [
+    priv("profile_private", "1"), priv("seller_data", "1"), priv("orders", "1"), priv("audit_log", "1"), priv("battles", "2"), priv("battle_messages", "2"), priv("order_messages", "2"),
+  ]],
+  ["Segurança: o que o público NÃO pode fazer", [
+    noWrite("content", { kind: "noticia", category: "TESTE", title: "TESTE-RLS apagar", body: "Linha de teste: se existir, apague." }),
+    noWrite("ratings", { user_id: "00000000-0000-0000-0000-000000000000", mode: "1v1", elo: 9999 }),
+    T("Público não vira admin", async () => {
+      const r = await api("/rest/v1/rpc/admin_set_role", { method: "POST", body: { p_user: "00000000-0000-0000-0000-000000000000", p_role: "admin" } });
+      if (missing(r)) return [false, "função não existe: rode o SQL 1"];
+      return /permiss/i.test(msg(r)) || r.status >= 400 ? [true, "bloqueado"] : [false, "FALHA GRAVE: a chamada foi aceita"];
+    }),
+  ]],
+];
+
+let REPORT = [];
+async function runAll() {
+  $("#run").disabled = true; $("#res").innerHTML = ""; REPORT = []; let ok = 0, bad = 0;
+  for (const [title, list] of GROUPS) {
+    $("#res").insertAdjacentHTML("beforeend", `<p style="margin-top:14px"><b>${esc(title)}</b></p>`);
+    REPORT.push("— " + title);
+    for (const t of list) {
+      let res; try { res = await t.fn(); } catch (e) { res = [false, "erro: " + e]; }
+      res[0] ? ok++ : bad++;
+      $("#res").insertAdjacentHTML("beforeend", `<div class="it"><div class="s ${res[0] ? "ok" : "bad"}">${res[0] ? "✅" : "❌"}</div><b>${esc(t.name)}</b><span class="d">${esc(res[1])}</span></div>`);
+      REPORT.push((res[0] ? "OK   " : "FALHA ") + t.name + " — " + res[1]);
+    }
+  }
+  $("#sum").innerHTML = bad ? `<span class="bad">${bad} problema(s)</span> · ${ok} ok` : `<span class="ok">Tudo certo: ${ok} verificações ok</span>`;
+  REPORT.unshift("Projeto: poxujpgrrsynvcnvxqkl · " + new Date().toLocaleString("pt-BR"), bad ? bad + " problema(s), " + ok + " ok" : "Tudo certo (" + ok + " ok)");
+  showReport(); $("#run").disabled = false; $("#copy").disabled = false;
+}
+function showReport() { $("#repbox").hidden = false; $("#rep").value = REPORT.join("\n"); }
+
+/* ---- e-mail e login ---- */
+const line = (ok, name, d) => { $("#res2").insertAdjacentHTML("beforeend", `<div class="it"><div class="s ${ok ? "ok" : "bad"}">${ok ? "✅" : "❌"}</div><b>${esc(name)}</b><span class="d">${esc(d)}</span></div>`); REPORT.push((ok ? "OK   " : "FALHA ") + name + " — " + d); showReport(); };
+$("#send").onclick = async () => {
+  const email = $("#em").value.trim().toLowerCase(); if (!/^\S+@\S+\.\S+$/.test(email)) return line(false, "E-mail", "digite um e-mail válido");
+  $("#res2").innerHTML = "";
+  const r = await api("/auth/v1/otp", { method: "POST", body: { email, create_user: true, data: { nick: "teste_" + Math.random().toString(36).slice(2, 8), nome: "Teste Diagnostico", nasc: "1990-01-01", terms_version: "teste" } } });
+  if (r.ok) line(true, "Código enviado", "confira a caixa de entrada e o spam. Se vier um link em vez de código, edite o modelo do e-mail para usar {{ .Token }}");
+  else line(false, "Envio do código", msg(r) + (/Database error/i.test(msg(r)) ? " (o gatilho de criação de perfil falhou: rode o SQL 1)" : ""));
+};
+$("#ver").onclick = async () => {
+  const email = $("#em").value.trim().toLowerCase(), token = $("#cd").value.trim();
+  const r = await api("/auth/v1/verify", { method: "POST", body: { type: "email", email, token } });
+  if (!r.ok || !r.json || !r.json.access_token) return line(false, "Verificação do código", msg(r));
+  TOKEN = r.json.access_token; UID = r.json.user && r.json.user.id; line(true, "Código aceito e login feito", "conta de teste criada");
+  const p = await api(`/rest/v1/profiles?select=nick,role&id=eq.${UID}`);
+  line(p.ok && p.json && p.json[0] && p.json[0].role === "membro", "Perfil criado automaticamente", p.ok && p.json[0] ? "nick " + p.json[0].nick + ", papel " + p.json[0].role : msg(p));
+  const pp = await api("/rest/v1/profile_private?select=id");
+  line(pp.ok && pp.json.length === 1, "Dados privados: vejo só os meus", pp.ok ? pp.json.length + " linha(s) visível(is)" : msg(pp));
+  const up = await api("/rest/v1/rpc/admin_set_role", { method: "POST", body: { p_user: UID, p_role: "admin" } });
+  line(!up.ok, "Não consigo me promover a admin", up.ok ? "FALHA GRAVE: a promoção foi aceita" : msg(up));
+  const pr = await api(`/rest/v1/profiles?id=eq.${UID}`, { method: "PATCH", body: { role: "admin" }, headers: { Prefer: "return=representation" } });
+  line(!(pr.ok && Array.isArray(pr.json) && pr.json.length), "Não consigo editar meu papel direto", pr.ok && pr.json.length ? "FALHA GRAVE: o papel foi alterado" : "bloqueado");
+  TOKEN = null; UID = null;
+};
+$("#run").onclick = runAll;
+$("#copy").onclick = async () => {
+  try { await navigator.clipboard.writeText($("#rep").value); $("#copy").textContent = "Copiado ✓"; } catch (e) { $("#rep").select(); $("#copy").textContent = "Selecione e copie"; }
+};
+</script>
+</body>
+</html>
