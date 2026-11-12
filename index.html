@@ -283,7 +283,7 @@ async function loadMe(){ME=null;if(!SES)return;try{const r=await api("/rest/v1/p
 
 /* ---------- interface ---------- */
 const DISCORD="https://discord.gg/efootballbrasil";
-const NAV=[["inicio","Início","🏠"],["noticias","Notícias","📰"],["formacoes","Formações","📋"],["forum","Fórum","💬"],["fichas","Fichas","🃏"],["batalha","Batalha","⚔️"],["marketplace","Marketplace","🛒"]];
+const NAV=[["inicio","Início","🏠"],["noticias","Notícias","📰"],["formacoes","Formações","📋"],["forum","Fórum","💬"],["fichas","Fichas","🃏"],["batalha","Batalha","⚔️"],["campeonatos","Campeonatos","🏆"],["marketplace","Marketplace","🛒"]];
 const dlg=h=>{$("#dc").innerHTML='<button type="button" class="dx" data-a="close" aria-label="Fechar">✕</button>'+h;const d=$("#dg");if(!d.open)d.showModal();if($("#rs"))startRs(60)},closeDlg=()=>{const d=$("#dg");if(d.open)d.close()};
 const fail=m=>{const e=$("#fe");if(e&&$("#dg").open)e.textContent=m;else toast(m)};
 const fld=(id,l,x)=>`<label class="f">${l}<input id="${id}" ${x||'maxlength="80"'}></label>`;
@@ -292,7 +292,7 @@ const wait=()=>'<div class="card sub">Carregando…</div>';
 
 async function render(q){
  const nav=NAV.slice();if(isA())nav.push(["admin","Admin","🛡️"]);
- $("#nav").innerHTML=nav.map(n=>`<a href="#${n[0]}" class="${CUR===n[0]||(CUR.startsWith("t-")&&n[0]==="forum")||((CUR.startsWith("m-")||CUR.startsWith("c-"))&&n[0]==="marketplace")||(CUR.startsWith("b-")&&n[0]==="batalha")?"on":""}"><span class="ni" aria-hidden="true">${n[2]}</span> ${n[1]}</a>`).join("");
+ $("#nav").innerHTML=nav.map(n=>`<a href="#${n[0]}" class="${CUR===n[0]||(CUR.startsWith("t-")&&n[0]==="forum")||((CUR.startsWith("m-")||CUR.startsWith("c-"))&&n[0]==="marketplace")||(CUR.startsWith("b-")&&n[0]==="batalha")||(CUR.startsWith("camp-")&&n[0]==="campeonatos")?"on":""}"><span class="ni" aria-hidden="true">${n[2]}</span> ${n[1]}</a>`).join("");
  {const on=$("#nav a.on");if(on)$("#nav").scrollLeft=Math.max(0,on.offsetLeft-40)}
  $("#user").innerHTML=ME?`<button class="btn sm" data-a="perfil" aria-label="Meu perfil">${av(ME,24)}<span class="unick">${esc(ME.nick)}${isCeo()?" · CEO":isA()?" · admin":""}</span></button> <button class="btn sm" data-a="out">Sair</button>`:'<button class="btn sm p" data-a="auth">Entrar</button>';
  const p=$("#pg");if(!q)p.innerHTML=wait();const mine=++render.n;let h;
@@ -311,10 +311,12 @@ async function page(){
  if(CUR==="marketplace")return pMarket();
  if(CUR==="fichas")return pFichas();
  if(CUR==="batalha")return pBatalha();
+ if(CUR==="campeonatos")return pCamps();
+ if(CUR.startsWith("camp-"))return pCamp(CUR.slice(5));
  if(CUR.startsWith("b-"))return pMatchById(CUR.slice(2));
  if(CUR==="admin")return isA()?pAdmin3():'<div class="card">Sem permissão.</div>';
  const s=SOON[CUR];return s?`<div class="card"><h2>${s[0]}</h2><p>${s[1]}</p></div>`:'<div class="card">Página não encontrada.</div>'}
-const ATAL=[["noticias","📰","Notícias","Novidades do eFootball"],["formacoes","📋","Formações","Táticas da comunidade"],["forum","💬","Fórum","Converse e tire dúvidas"],["fichas","🃏","Fichas","Jogadores da comunidade"],["batalha","⚔️","Batalha","Fila 1v1, 2v2 e 3v3"],["marketplace","🛒","Marketplace","Contas e itens à venda"]];
+const ATAL=[["noticias","📰","Notícias","Novidades do eFootball"],["formacoes","📋","Formações","Táticas da comunidade"],["forum","💬","Fórum","Converse e tire dúvidas"],["fichas","🃏","Fichas","Jogadores da comunidade"],["batalha","⚔️","Batalha","Fila 1v1, 2v2 e 3v3"],["campeonatos","🏆","Campeonatos","Mata-mata de 8, 16 e 32 times"],["marketplace","🛒","Marketplace","Contas e itens à venda"]];
 async function pHome(){let n=[];try{n=await api("/rest/v1/content?kind=eq.noticia&select=id,title,created_at&order=created_at.desc&limit=3")}catch(e){}
  return `<div class="hero"><div class="logo" style="width:90px;height:116px;margin:auto"></div><h1>Bem-vindo ao eFootball Brasil</h1><p>Ranking 1v1 e 2v2 sem apostas, fórum, formações e fichas da comunidade brasileira de eFootball.</p><div class="row" style="justify-content:center">${ME?"":'<button class="btn p" data-a="auth" data-id="reg">Criar conta grátis</button>'}<a class="btn${ME?" p":""}" href="${DISCORD}" target="_blank" rel="noopener noreferrer">🎧 Entrar no Discord</a><a class="btn" href="#forum">Ir ao fórum</a></div></div>`+
  `<div class="atalhos">${ATAL.concat(isA()?[["admin","🛡️","Administração","Gerir o site"]]:[]).map(a=>`<a class="card atalho" href="#${a[0]}"><span class="e" aria-hidden="true">${a[1]}</span><b>${a[2]}</b><span class="sub">${a[3]}</span></a>`).join("")}</div>`+
@@ -1049,6 +1051,123 @@ Object.assign(A,{
   await rpc("admin_set_editor",{p_user:u[0].id,p_on:true});toast(n+" agora pode publicar notícias.");render(true)},
  rrem:async(id,el)=>{if(!isA()||!UUID.test(id)||!confirm("Remover "+el.dataset.n+" dos redatores? As notícias dele continuam publicadas."))return;await rpc("admin_set_editor",{p_user:id,p_on:false});toast("Redator removido.");render(true)}
 });
+</script>
+<script>
+"use strict";
+/* ---------- painel de métricas (admin) ---------- */
+let MTD=30;
+const mtBars=(rows,key,col)=>{const mx=Math.max(1,...rows.map(r=>r[key]));return `<div class="mtb" role="img" aria-label="Gráfico por dia">${rows.map(r=>`<i style="height:${Math.max(2,Math.round(r[key]/mx*100))}%;background:${col}" title="${esc(r.d.slice(8,10)+"/"+r.d.slice(5,7))}: ${r[key]}"></i>`).join("")}</div><div class="mtx"><span>${esc(rows.length?rows[0].d.slice(8,10)+"/"+rows[0].d.slice(5,7):"")}</span><span>${esc(rows.length?rows[rows.length-1].d.slice(8,10)+"/"+rows[rows.length-1].d.slice(5,7):"")}</span></div>`};
+const mtN=(n,l)=>`<div class="mtn"><b>${esc(n)}</b><small>${esc(l)}</small></div>`;
+async function pMetrics(){
+ let m;try{m=await rpc("admin_metrics",{p_days:MTD})}catch(e){return `<div class="card"><h3>📊 Métricas</h3><p class="sub">${esc(e.message||"Não foi possível carregar.")} Se aparecer “função não encontrada”, rode o arquivo efootball_brasil_metricas.sql no Supabase.</p></div>`}
+ const st=m.by_status||{},mo=m.by_mode||{},fin=(st.done||0)+(st.cancelled||0),canc=fin?Math.round((st.cancelled||0)/fin*100)+"%":"—";
+ const ST={ready:"Aguardando aceite",play:"Em andamento",dispute:"Em disputa",done:"Encerradas",cancelled:"Canceladas"};
+ return `<div class="card"><h3>📊 Métricas</h3><p class="sub">Dados reais do site. Sem e-mail, nome ou CPF.</p>
+ <div class="row" style="margin-bottom:8px">${[7,30,90].map(d=>`<button class="btn sm ${d===MTD?"p":""}" data-a="mtd" data-id="${d}">${d} dias</button>`).join("")}</div>
+ <div class="mtg">${mtN(m.players_total,"membros no total")}${mtN(m.players_new,"cadastros no período")}${mtN(m.players_active,"jogadores ativos")}${mtN(m.queue_now,"na fila agora")}${mtN(m.battles_total,"partidas no período")}${mtN(canc,"partidas canceladas (das finalizadas)")}${mtN(m.disputes_open,"disputas abertas")}${mtN(m.chat_reports_open,"denúncias de conversa abertas")}</div>
+ <h4>Cadastros por dia</h4>${mtBars(m.signups_daily||[],"n","#00c25a")}
+ <h4>Partidas por dia</h4>${mtBars(m.battles_daily||[],"n","#2d7bff")}
+ <h4>Partidas canceladas por dia</h4>${mtBars(m.battles_daily||[],"x","#e8334a")}
+ <h4>Por situação e modo</h4><p class="sub">${Object.keys(ST).map(k=>`${ST[k]}: <b>${st[k]||0}</b>`).join(" · ")}<br>${["1v1","2v2","3v3"].map(k=>`${k}: <b>${mo[k]||0}</b>`).join(" · ")}</p>
+ <h4>Mais faltas em partidas (${m.no_shows_total||0} no total)</h4>${(m.top_no_shows||[]).length?(m.top_no_shows).map(u=>`<div class="row between" style="padding:5px 0;border-top:1px solid var(--line)"><span>${esc(u.nick)}</span><span class="row"><b>${u.no_shows}</b><button class="btn sm" data-a="mtp" data-id="${esc(u.id)}">Ver ficha</button></span></div>`).join(""):'<p class="sub">Nenhuma falta registrada.</p>'}
+ <h4>Ficha de jogador</h4><div class="row" style="flex-wrap:nowrap"><label class="f" style="flex:1;margin:0"><input id="mtn" maxlength="20" placeholder="Nickname exato" aria-label="Nickname do jogador"></label><button class="btn p" data-a="mts">Ver ficha</button></div><div class="err" id="fe7"></div></div>`}
+Object.assign(A,{
+ mtd:id=>{if(!isA())return;const n=+id;if(![7,30,90].includes(n))return;MTD=n;render(true)},
+ mts:async()=>{if(!isA())return;const n=val("mtn"),er=$("#fe7");if(!/^[A-Za-z0-9_.]{3,20}$/.test(n))return er.textContent="Digite o nickname exato.";
+  const u=await api("/rest/v1/profiles?nick=eq."+encodeURIComponent(n)+"&select=id");if(!u.length)return er.textContent="Nenhum membro com esse nickname.";A.mtp(u[0].id)},
+ mtp:async id=>{if(!isA()||!UUID.test(id))return;const p=await rpc("admin_player_detail",{p_user:id});if(!p)return toast("Jogador não encontrado.");
+  const ST={ready:"aguardando",play:"em andamento",dispute:"disputa",done:"encerrada",cancelled:"cancelada"};
+  dlg(`<h3>${esc(p.nick)}</h3><p class="sub">${esc(p.role)} · membro desde ${esc(hm(p.created_at))} · ${p.battles_total} partida(s) · ${p.chat_reports_made} denúncia(s) de conversa feitas</p>
+  ${(p.ratings||[]).map(r=>`<div class="row between"><span>${esc(r.mode)}</span><span>${r.elo} ELO · ${r.wins}V ${r.losses}D · ${r.no_shows} falta(s)</span></div>`).join("")||'<p class="sub">Ainda sem ranking.</p>'}
+  <h4>Últimas partidas</h4><div style="max-height:40vh;overflow:auto">${(p.battles||[]).map(b=>{const w=b.winner?(b.winner===b.team?"venceu":"perdeu"):"";return `<div class="row between" style="padding:4px 0;border-top:1px solid var(--line)"><span>${esc(hm(b.created_at))} · ${esc(b.mode)} · ${esc(ST[b.status]||b.status)}${w?" · "+w:""}</span><span>${b.elo_delta!=null?(b.elo_delta>0?"+":"")+b.elo_delta+" ELO":"—"}</span></div>`}).join("")||'<p class="sub">Nenhuma partida.</p>'}</div>
+  <div class="row"><button class="btn" data-a="close">Fechar</button></div>`)}
+});
+const _pA3=pAdmin3;pAdmin3=async()=>(await pMetrics())+(await _pA3());
+(()=>{const s=document.createElement("style");s.textContent=".mtg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:8px 0}.mtn{background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:12px;padding:10px}.mtn b{display:block;font-size:24px;line-height:1.1;font-variant-numeric:tabular-nums}.mtn small{color:var(--mu);font-size:12px}.mtb{display:flex;align-items:flex-end;gap:2px;height:90px;border-bottom:1px solid var(--line)}.mtb i{flex:1;min-width:2px;border-radius:3px 3px 0 0}.mtx{display:flex;justify-content:space-between;font-size:11px;color:var(--mu)}";document.head.appendChild(s)})();
+</script>
+<script>
+"use strict";
+/* ---------- campeonatos (mata-mata de 8, 16 e 32 times) ---------- */
+let CLUBS=null,ORGC={u:null,v:false},CPK=null;
+const CRESTSB=/^https:\/\/poxujpgrrsynvcnvxqkl\.supabase\.co\/storage\//;
+async function clubsLoad(){if(!CLUBS)CLUBS=await api("/rest/v1/clubs?select=id,league,name,short,c1,c2,crest_url&order=league.asc,name.asc&limit=500");return CLUBS}
+const lum=h=>{const n=parseInt(String(h).slice(1),16);const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)};return .2126*f(n>>16&255)+.7152*f(n>>8&255)+.0722*f(n&255)};
+function crest(c,z){z=z||34;if(!c)return `<span class="cr" style="width:${z}px;height:${Math.round(z*1.2)}px"></span>`;
+ if(c.crest_url&&CRESTSB.test(c.crest_url))return `<img class="cr" src="${esc(c.crest_url)}" alt="" width="${z}" height="${Math.round(z*1.2)}" loading="lazy">`;
+ const tx=lum(c.c1)>.45?"#111":"#fff",fs=c.short.length>3?13:15;
+ return `<svg class="cr" width="${z}" height="${Math.round(z*1.2)}" viewBox="0 0 40 48" role="img" aria-label="Escudo ${esc(c.name)}"><path d="M20 2 L37 8 V24 C37 35 29 43 20 46 C11 43 3 35 3 24 V8 Z" fill="${esc(c.c1)}" stroke="${esc(c.c2)}" stroke-width="3"/><path d="M6 15 H34" stroke="${esc(c.c2)}" stroke-width="2" opacity=".85"/><text x="20" y="31" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="${fs}" fill="${tx}">${esc(c.short)}</text></svg>`}
+async function orgOk(){if(isA())return true;if(!ME)return false;if(ORGC.u===ME.id)return ORGC.v;let v=false;try{v=(await rpc("is_organizer"))===true}catch(e){}ORGC={u:ME.id,v};return v}
+const roundsOf=n=>n===8?3:n===16?4:5;
+const rname=(r,R)=>{const k=R-r;return k===0?"Final":k===1?"Semifinal":k===2?"Quartas de final":k===3?"Oitavas de final":"16 avos de final"};
+const CSTAT={draft:"Montando",running:"Em andamento",done:"Encerrado"};
+async function pCamps(){
+ let ts=[];try{ts=await api("/rest/v1/tournaments?select=id,title,size,status,created_at,profiles(nick)&order=created_at.desc&limit=60")}catch(e){return `<div class="card"><h2>🏆 Campeonatos</h2><p class="sub">Ainda não está disponível. ${esc(e.message||"")}</p></div>`}
+ const org=await orgOk();
+ return `<div class="row between"><h2>🏆 Campeonatos</h2>${org?'<button class="btn p" data-a="cnew">+ Novo campeonato</button>':""}</div><p class="sub">Mata-mata de 8, 16 ou 32 times, com clubes das principais ligas. Só o organizador lança os resultados.</p>`+
+ (ts.length?ts.map(t=>`<a class="card" href="#camp-${esc(t.id)}"><span class="tag">${esc(CSTAT[t.status]||t.status)}</span> <span class="tag">${t.size} times</span><h3>${esc(t.title)}</h3><div class="sub">Organizador: ${esc(t.profiles&&t.profiles.nick||"—")} · ${when(t.created_at)}</div></a>`).join(""):`<div class="card sub">Nenhum campeonato ainda.${org?" Crie o primeiro!":""}</div>`)}
+async function pCamp(id){
+ if(!UUID.test(id))return '<div class="card">Campeonato não encontrado.</div>';
+ const t=(await api(`/rest/v1/tournaments?id=eq.${id}&select=id,title,size,status,champion_slot,organizer_id,created_at,profiles(nick)`))[0];if(!t)return '<div class="card">Campeonato não encontrado.</div>';
+ const sl=await api(`/rest/v1/tournament_slots?tournament_id=eq.${id}&select=slot,player,clubs(id,name,short,c1,c2,crest_url,league)&order=slot.asc`);
+ const SM={};sl.forEach(s=>SM[s.slot]=s);
+ const can=isA()||(!!ME&&ME.id===t.organizer_id&&await orgOk());
+ const nm=s=>s?`<span class="cn">${esc(s.clubs.name)}${s.player?` <small>· ${esc(s.player)}</small>`:""}</span>`:'<span class="cn sub">A definir</span>';
+ const head=`<a href="#campeonatos" class="sub">← Todos os campeonatos</a><div class="card"><span class="tag">${esc(CSTAT[t.status])}</span> <span class="tag">${t.size} times</span><h2 style="margin:6px 0">${esc(t.title)}</h2><div class="sub">Organizador: ${esc(t.profiles&&t.profiles.nick||"—")} · ${when(t.created_at)}</div>${can?`<div class="row" style="margin-top:8px"><button class="btn sm d" data-a="cdel" data-id="${id}">Apagar campeonato</button></div>`:""}</div>`;
+ if(t.status==="draft"){
+  const cells=[];for(let i=1;i<=t.size;i++){const s=SM[i];cells.push(can?`<button class="cslot ${s?"on":""}" data-a="cpick" data-id="${id}" data-s="${i}">${s?crest(s.clubs,30)+nm(s):`<span class="cslotn">+ Vaga ${i}</span>`}</button>`:`<div class="cslot ${s?"on":""}">${s?crest(s.clubs,30)+nm(s):`<span class="cslotn">Vaga ${i}</span>`}</div>`)}
+  const lg=[...new Set((await clubsLoad()).map(c=>c.league))];
+  return head+`<div class="card"><h3>Times (${sl.length}/${t.size})</h3>${can?'<p class="sub">Toque numa vaga para escolher o clube e, se quiser, o participante.</p>':'<p class="sub">O organizador ainda está montando o campeonato.</p>'}<div class="cgrid">${cells.join("")}</div>${can?`<div class="row" style="margin-top:10px"><label class="f" style="margin:0">Completar vagas vazias com clubes sorteados de<select id="cfl"><option value="">Todas as ligas</option>${lg.map(l=>`<option>${esc(l)}</option>`).join("")}</select></label><button class="btn" data-a="cfill" data-id="${id}">Sortear clubes</button></div><div class="row" style="margin-top:10px"><label class="row" style="gap:6px"><input type="checkbox" id="csh" checked> Sortear os confrontos</label><button class="btn p" data-a="cstart" data-id="${id}" ${sl.length===t.size?"":"disabled"}>Iniciar campeonato</button></div>`:""}</div>`}
+ const ms=await api(`/rest/v1/tournament_matches?tournament_id=eq.${id}&select=round,pos,a_slot,b_slot,a_goals,b_goals,pen_winner,winner_slot,played&order=round.asc,pos.asc`);
+ const R=roundsOf(t.size),cols=[];
+ for(let r=1;r<=R;r++){const rm=ms.filter(m=>m.round===r);cols.push(`<div class="brc"><div class="brh">${rname(r,R)}</div>${rm.map(m=>{const a=SM[m.a_slot],b=SM[m.b_slot],ok=can&&a&&b;
+  const row=(s,g,side)=>`<div class="bt ${m.played&&m.winner_slot===(side==="A"?m.a_slot:m.b_slot)?"win":""}">${s?crest(s.clubs,24):crest(null,24)}${nm(s)}<span class="bs">${m.played?g:""}${m.played&&m.pen_winner===side?" <small>(p)</small>":""}</span></div>`;
+  return `<div class="bm ${ok?"clk":""}" ${ok?`role="button" tabindex="0" data-a="cmres" data-id="${id}" data-r="${m.round}" data-p="${m.pos}"`:""}>${row(a,m.a_goals,"A")}${row(b,m.b_goals,"B")}</div>`}).join("")}</div>`)}
+ const ch=t.status==="done"&&SM[t.champion_slot];
+ return head+(ch?`<div class="card champ">${crest(ch.clubs,64)}<div><div class="sub">Campeão</div><h2 style="margin:0">🏆 ${esc(ch.clubs.name)}</h2>${ch.player?`<div class="sub">${esc(ch.player)}</div>`:""}</div></div>`:"")+
+ (can?`<p class="sub">Toque em um jogo para lançar ou corrigir o resultado.</p>`:"")+`<div class="brkw"><div class="brk">${cols.join("")}</div></div>`}
+Object.assign(A,{
+ cnew:async()=>{if(!ME)return authDlg("login");if(!await orgOk())return toast("Só organizadores criam campeonatos.");
+  dlg(`<h3>Novo campeonato</h3>${fld("cn_t","Nome do campeonato",'maxlength="60"')}<label class="f">Quantidade de times<select id="cn_s"><option value="8">8 times</option><option value="16">16 times</option><option value="32">32 times</option></select></label><div class="err" id="fe"></div><div class="row"><button class="btn p" data-a="cnew2">Criar</button><button class="btn" data-a="close">Cancelar</button></div>`)},
+ cnew2:async()=>{const t=val("cn_t"),s=+$("#cn_s").value;if(t.length<3)return fail("Dê um nome ao campeonato (3+ letras).");const id=await rpc("create_tournament",{p_title:t,p_size:s});closeDlg();toast("Campeonato criado.");location.hash="#camp-"+id},
+ cpick:async(id,el)=>{const s=+el.dataset.s;if(!UUID.test(id)||!(s>=1&&s<=32))return;await clubsLoad();
+  const sl=await api(`/rest/v1/tournament_slots?tournament_id=eq.${id}&select=slot,club_id,player`);const mine=sl.find(x=>x.slot===s);
+  CPK={tid:id,slot:s,used:new Set(sl.filter(x=>x.slot!==s).map(x=>x.club_id))};
+  dlg(`<h3>Vaga ${s}</h3>${fld("cpl","Participante (opcional)",'maxlength="30" placeholder="Nickname ou nome"')}<label class="f">Buscar clube<input id="cq" maxlength="40" placeholder="Ex.: Flamengo, Real, Bayern" autocomplete="off"></label><div id="cl" class="clist"></div>${mine?`<div class="row" style="margin-top:8px"><button class="btn sm d" data-a="cclr">Esvaziar vaga</button></div>`:""}<div class="err" id="fe"></div>`);
+  if(mine&&mine.player)$("#cpl").value=mine.player;cpList("")},
+ cpset:async id=>{if(!CPK)return;await rpc("set_tournament_slot",{p_tid:CPK.tid,p_slot:CPK.slot,p_club:+id,p_player:val("cpl")});closeDlg();render(true)},
+ cclr:async()=>{if(!CPK)return;await rpc("set_tournament_slot",{p_tid:CPK.tid,p_slot:CPK.slot,p_club:null,p_player:null});closeDlg();render(true)},
+ cfill:async id=>{if(!UUID.test(id))return;const n=await rpc("fill_tournament_random",{p_tid:id,p_league:$("#cfl")?$("#cfl").value:""});toast(n+" vaga(s) preenchida(s).");render(true)},
+ cstart:async id=>{if(!UUID.test(id)||!confirm("Iniciar o campeonato? Depois disso os times não podem mais ser trocados."))return;await rpc("start_tournament",{p_tid:id,p_shuffle:!$("#csh")||$("#csh").checked});toast("Campeonato iniciado!");render(true)},
+ cdel:async id=>{if(!UUID.test(id)||!confirm("Apagar este campeonato e todos os resultados?"))return;await rpc("delete_tournament",{p_tid:id});toast("Campeonato apagado.");location.hash="#campeonatos"},
+ cmres:async(id,el)=>{const r=+el.dataset.r,p=+el.dataset.p;if(!UUID.test(id))return;
+  const t=(await api(`/rest/v1/tournaments?id=eq.${id}&select=size`))[0],R=roundsOf(t.size);
+  const m=(await api(`/rest/v1/tournament_matches?tournament_id=eq.${id}&round=eq.${r}&pos=eq.${p}&select=a_slot,b_slot,a_goals,b_goals,pen_winner,played`))[0];if(!m)return;
+  const sl=await api(`/rest/v1/tournament_slots?tournament_id=eq.${id}&slot=in.(${m.a_slot},${m.b_slot})&select=slot,player,clubs(name)`);const nA=sl.find(x=>x.slot===m.a_slot),nB=sl.find(x=>x.slot===m.b_slot),lab=s=>s?esc(s.clubs.name)+(s.player?" ("+esc(s.player)+")":""):"?";
+  CPK={tid:id,r,p};
+  dlg(`<h3>${rname(r,R)}</h3><p class="sub">Lance o placar final. Em caso de empate, escolha quem venceu nos pênaltis.</p>
+  <div class="row between"><b>${lab(nA)}</b><input id="ra" type="number" min="0" max="99" inputmode="numeric" style="width:70px" value="${m.played?m.a_goals:""}" aria-label="Gols do primeiro time"></div>
+  <div class="row between" style="margin-top:6px"><b>${lab(nB)}</b><input id="rb2" type="number" min="0" max="99" inputmode="numeric" style="width:70px" value="${m.played?m.b_goals:""}" aria-label="Gols do segundo time"></div>
+  <label class="f">Se empatar, vencedor nos pênaltis<select id="rp"><option value="">—</option><option value="A" ${m.pen_winner==="A"?"selected":""}>${lab(nA)}</option><option value="B" ${m.pen_winner==="B"?"selected":""}>${lab(nB)}</option></select></label>
+  <div class="err" id="fe"></div><div class="row"><button class="btn p" data-a="cmsave">Salvar resultado</button><button class="btn" data-a="close">Cancelar</button></div>`)},
+ cmsave:async()=>{if(!CPK)return;const a=$("#ra").value,b=$("#rb2").value;if(a===""||b==="")return fail("Informe os gols dos dois times.");const A_=+a,B_=+b;if(!(A_>=0&&A_<=99&&B_>=0&&B_<=99))return fail("Placar inválido.");
+  if(A_===B_&&!$("#rp").value)return fail("Empate: escolha quem venceu nos pênaltis.");
+  await rpc("report_match",{p_tid:CPK.tid,p_round:CPK.r,p_pos:CPK.p,p_a:A_,p_b:B_,p_pen:A_===B_?$("#rp").value:null});closeDlg();toast("Resultado salvo.");render(true)},
+ oadd:async()=>{if(!isA())return;const n=val("on_n"),er=$("#fe8");if(!/^[A-Za-z0-9_.]{3,20}$/.test(n))return er.textContent="Digite o nickname exato.";
+  const u=await api("/rest/v1/profiles?nick=eq."+encodeURIComponent(n)+"&select=id,role");if(!u.length)return er.textContent="Nenhum membro com esse nickname.";
+  await rpc("admin_set_organizer",{p_user:u[0].id,p_on:true});toast(n+" agora pode organizar campeonatos.");render(true)},
+ orem:async(id,el)=>{if(!isA()||!UUID.test(id)||!confirm("Remover "+el.dataset.n+" dos organizadores?"))return;await rpc("admin_set_organizer",{p_user:id,p_on:false});toast("Organizador removido.");render(true)}
+});
+function cpList(q){const el=$("#cl");if(!el||!CPK||!CLUBS)return;const s=q.trim().toLowerCase();let last="",h="";
+ CLUBS.filter(c=>!CPK.used.has(c.id)&&(!s||c.name.toLowerCase().includes(s)||c.league.toLowerCase().includes(s))).forEach(c=>{if(c.league!==last){last=c.league;h+=`<div class="clg">${esc(c.league)}</div>`}h+=`<button type="button" class="cli" data-a="cpset" data-id="${c.id}">${crest(c,26)}<span>${esc(c.name)}</span></button>`});
+ el.innerHTML=h||'<p class="sub">Nenhum clube encontrado.</p>'}
+document.addEventListener("input",e=>{if(e.target&&e.target.id==="cq")cpList(e.target.value)});
+document.addEventListener("keydown",e=>{const t=e.target;if((e.key==="Enter"||e.key===" ")&&t&&t.classList&&t.classList.contains("bm")&&t.dataset.a){e.preventDefault();t.click()}});
+async function pOrgs(){
+ let ls=[];try{ls=await api("/rest/v1/profiles?is_organizer=eq.true&select=id,nick,avatar_url&order=nick.asc")}catch(e){return ""}
+ return `<div class="card"><h3>🏆 Organizadores de campeonato</h3><p class="sub">Quem você autorizar aqui pode criar campeonatos e lançar resultados só nos campeonatos que criou.</p><div class="row" style="flex-wrap:nowrap"><label class="f" style="flex:1;margin:0"><input id="on_n" maxlength="20" placeholder="Nickname exato" aria-label="Nickname do organizador"></label><button class="btn p" data-a="oadd">Autorizar</button></div><div class="err" id="fe8"></div>
+ ${ls.length?ls.map(u=>`<div class="row between" style="padding:5px 0;border-top:1px solid var(--line)"><span>${av(u,26)}${esc(u.nick)}</span><button class="btn sm d" data-a="orem" data-id="${esc(u.id)}" data-n="${esc(u.nick)}">Remover</button></div>`).join(""):'<p class="sub">Nenhum organizador ainda. Administradores já podem organizar.</p>'}</div>`}
+const _pA3c=pAdmin3;pAdmin3=async()=>(await _pA3c())+(await pOrgs());
+(()=>{const s=document.createElement("style");s.textContent=".cr{flex:none;display:inline-block}.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-top:8px}.cslot{display:flex;align-items:center;gap:8px;min-height:48px;padding:8px 10px;border:1px dashed var(--line);border-radius:12px;background:rgba(0,0,0,.18);color:var(--tx);text-align:left;font-weight:600}.cslot.on{border-style:solid}.cslotn{color:var(--mu)}.cn{min-width:0;overflow-wrap:anywhere}.cn small{color:var(--mu);font-weight:400}.brkw{overflow-x:auto;padding-bottom:10px;margin-top:8px}.brk{display:flex;gap:14px;min-width:max-content;align-items:stretch}.brc{display:flex;flex-direction:column;justify-content:space-around;gap:10px;width:230px}.brh{font-weight:800;color:var(--y);font-size:.85rem;text-transform:uppercase;letter-spacing:.04em;text-align:center}.bm{border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.22);overflow:hidden}.bm.clk{cursor:pointer;border-color:rgba(255,223,0,.5)}.bm.clk:hover,.bm.clk:focus-visible{outline:2px solid var(--y)}.bt{display:flex;align-items:center;gap:8px;padding:6px 10px;min-height:44px}.bt+.bt{border-top:1px solid var(--line)}.bt .cn{flex:1;font-size:.9rem}.bt.win{background:rgba(0,194,90,.16)}.bt.win .cn{font-weight:800}.bs{font-weight:900;font-variant-numeric:tabular-nums;min-width:26px;text-align:right}.champ{display:flex;align-items:center;gap:14px;border-color:rgba(255,223,0,.6)}.clist{max-height:42vh;overflow:auto;margin-top:6px}.clg{font-size:.75rem;font-weight:800;color:var(--y);text-transform:uppercase;letter-spacing:.05em;margin:10px 0 4px}.cli{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin-bottom:4px;min-height:40px;padding:5px 10px}";document.head.appendChild(s)})();
 </script>
 </body>
 </html>
