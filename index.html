@@ -1903,14 +1903,14 @@ function cgShop(){return cgBack+`<h3>🛒 Loja</h3><p class="sub">💰 ${cgMoney
 function cgStats(){const s=G.st,avg=s.games?(s.ratS/s.games).toFixed(2):"–";return cgBack+`<h3>📊 Sua carreira</h3><div class="card"><div class="row between"><span>Jogos <b>${s.games}</b></span><span>Gols <b>${s.goals}</b></span><span>Assistências <b>${s.assists}</b></span></div><div class="row between"><span>Nota média <b>${avg}</b></span><span>Títulos <b>${s.titles}</b></span><span>Prêmios <b>${s.awards}</b></span></div></div>
  <div class="card"><b>Atributos</b>${CG_AT.map(a=>cgBar(a[2]+" "+(a[0]==="defesa"&&G.pos==="GOL"?"Reflexos":a[1]),(G.at[a[0]]||0)+(cgBonus().at[a[0]]||0))).join("")}<p class="sub">Potencial: ${G.pot>=90?"⭐⭐⭐ enorme":G.pot>=82?"⭐⭐ alto":"⭐ bom"}</p></div>
  <div class="card"><b>Temporadas</b>${s.seasons.length?`<div style="overflow-x:auto"><table class="cgtb"><tr><th>Temp.</th><th>Clube</th><th>Pos.</th><th>J</th><th>G</th><th>A</th><th>Nota</th><th>OVR</th></tr>${s.seasons.map(x=>`<tr><td>${x.s}</td><td>${esc(x.club)}</td><td>${x.pos}º</td><td>${x.g}</td><td>${x.go}</td><td>${x.as}</td><td>${x.avg}</td><td>${x.ovr}</td></tr>`).join("")}</table></div>`:'<p class="sub">Ainda sem temporadas completas.</p>'}</div>
- <p>${cgB("Recomeçar do zero","","reset","sm")}</p>`}
+ <div class="card"><b>Encerrar a carreira</b><p class="sub">Aposentar leva você ao Hall da Fama. Abandonar apaga tudo, sem Hall da Fama.</p><div class="cgg">${cgB("🏁 Aposentar","","retire","sm")}${cgB("🚪 Abandonar carreira","","abandon","sm")}${cgB("➕ Nova carreira","","newc","sm")}</div></div>${cgHall(G.hof)}`}
 async function cgBoard(){try{CGX.board=await rpc("career_board")}catch(e){CGX.board="err"}crDraw()}
 function cgRank(){const b=CGX.board;return cgBack+`<h3>🏆 Ranking da comunidade</h3><p class="sub">Só por diversão: os números vêm do próprio jogo. Mostra apenas apelido e resumo.</p>`+(b===null?'<div class="card sub">Carregando...</div>':b==="err"?'<div class="card sub">Ranking indisponível ainda.</div>':b.length?`<div class="card" style="overflow-x:auto"><table class="cgtb"><tr><th>#</th><th>Jogador</th><th>Clube</th><th>OVR</th><th>Gols</th><th>Títulos</th></tr>${b.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.player_name||"?")}<br><small>@${esc(x.nick)}</small></td><td>${esc(x.club_name||"")}</td><td>${x.ovr}</td><td>${x.goals}</td><td>${x.titles}</td></tr>`).join("")}</table></div>`:'<div class="card sub">Ninguém no ranking ainda. Seja o primeiro!</div>')}
 function cgWin(){const w=G.pend.window;if(!w){CGV="hub";return cgHub()}return `${G.years<=0&&!w.mid?"":cgBack}<h3>📨 ${w.mid?"Propostas":"Janela de transferências"}</h3>
  ${w.renew?`<div class="card"><b>Renovar com o ${esc(G.club.name)}</b><p>${cgMoney(w.renew.wage)}/semana · ${w.renew.years} ano(s)</p>${cgB("Renovar","","renew","p sm")}</div>`:""}
  ${w.offers.map((o,i)=>`<div class="card"><div class="cgt">${crest(o.club,40)}<div><b>${esc(o.club.name)}</b><div class="sub">${esc(o.club.league)} · nível ${o.club.tier}/5</div><div class="sub">Papel: ${esc(o.role)} · ${cgMoney(o.wage)}/sem · ${o.years} ano(s)</div></div></div>${cgB("Aceitar proposta","","accept:"+i,"p sm")}</div>`).join("")||'<div class="card sub">Nenhuma proposta no momento.</div>'}
  ${w.years<=0?"":""}${G.years<=0&&!w.mid?'<p class="sub">Seu contrato acabou: renove ou escolha uma proposta.</p>':`<p>${cgB("Ficar no clube","","stay","sm")}</p>`}`}
-function cgRetire(){const s=G.st;return `<div class="card cgrep"><h2>🎖️ Aposentadoria</h2><p><b>${esc(G.name)}</b> pendurou as chuteiras aos ${G.age} anos.</p><p>${s.games} jogos · ${s.goals} gols · ${s.assists} assistências · ${s.titles} título(s) · ${s.awards} prêmio(s) de craque.</p><p class="sub">Último clube: ${esc(G.club.name)} · OVR final ${G.ovr}</p>${cgB("Começar nova carreira","","reset","p")}</div>`}
+function cgRetire(){const s=G.st;return `<div class="card cgrep"><h2>🎖️ Aposentadoria</h2><p><b>${esc(G.name)}</b> pendurou as chuteiras aos ${G.age} anos.</p><p>${s.games} jogos · ${s.goals} gols · ${s.assists} assistências · ${s.titles} título(s) · ${s.awards} prêmio(s) de craque.</p><p class="sub">Último clube: ${esc(G.club.name)} · OVR final ${G.ovr}</p>${cgB("Começar nova carreira","","newc","p")}</div>${cgHall(cgHofNow())}`}
 const CGPD={GOL:["🧤","Goleiro","Pega tudo no gol"],ZAG:["🛡️","Zagueiro","Muralha da defesa"],LE:["⬅️","Lat. esquerdo","Corre o lado todo"],LD:["➡️","Lat. direito","Apoia o ataque"],VOL:["⚙️","Volante","Protege a zaga"],MC:["🎯","Meia central","Equilibra o time"],MEI:["🎩","Meia ofensivo","Cérebro do time"],ME:["◀️","Meia esquerda","Lado e criação"],MD:["▶️","Meia direita","Lado e criação"],PE:["🌪️","Ponta esquerda","Velocidade e drible"],PD:["💨","Ponta direita","Velocidade e drible"],SA:["🦊","2º atacante","Joga entre as linhas"],CA:["⚽","Centroavante","Faz gol na área"]};
 const CGPG=[["Goleiro",["GOL"]],["Defesa",["ZAG","LE","LD"]],["Meio-campo",["VOL","MC","MEI","ME","MD"]],["Ataque",["PE","PD","SA","CA"]]];
 const CGPN={GOL:"Goleiro! É aqui que nascem os heróis de pênalti.",ZAG:"Zagueiro! Quem passa por você, dança.",LE:"Lateral esquerdo! Pulmão de aço, hein?",LD:"Lateral direito! Defende e ainda apoia.",VOL:"Volante! O trabalho sujo que ninguém vê, mas todo técnico ama.",MC:"Meia central! O motor do time.",MEI:"Meia ofensivo! Camisa 10 é com você.",ME:"Meia esquerda! Visão de jogo pelo lado.",MD:"Meia direita! Passe e velocidade.",PE:"Ponta esquerda! Pronto para infernizar a lateral.",PD:"Ponta direita! Dribla e cruza.",SA:"Segundo atacante! Aparece onde ninguém espera.",CA:"Centroavante! Esse faz gol até dormindo."};
@@ -1985,6 +1985,26 @@ var pCarreira=async function(){await clubsLoad();const u=ME?ME.id:"g";if(CGU!==u
 {const _pg=page;page=async function(){if(CUR==="carreira")return pCarreira();return _pg()}}
 NAV.splice(NAV.findIndex(n=>n[0]==="campeonatos")+1,0,["carreira","Carreira","🎮"]);
 ATAL.push(["carreira","🎮","Carreira","Jogo de carreira de craque"]);
+</script>
+<script>
+/* ----- Carreira: nova carreira, aposentar, abandonar + Hall da Fama ----- */
+const cgSum=()=>{const s=G.st;return{n:G.name,p:G.pos,a:G.age,c:G.club.name,o:G.ovr,g:s.goals,j:s.games,as:s.assists,t:s.titles,aw:s.awards,s:G.season,v:G.vol?1:0}};
+const cgHofNow=()=>{const h=(G&&G.hof||[]).slice();if(G&&G.done)h.push(cgSum());return h.slice(-12)};
+function cgHall(h){h=(h||[]).slice();if(G&&G.done&&h.length&&false)return"";if(!h.length)return"";return `<div class="card"><b>🏛️ Hall da Fama</b><p class="sub">Carreiras aposentadas.</p>${h.slice().reverse().map(x=>`<p class="sub">🎖️ <b>${esc(x.n)}</b> (${esc(x.p)}) · ${esc(x.c)} · OVR ${x.o} · ${x.j} jogos, ${x.g} gols, ${x.as} assist. · ${x.t} título(s) · ${x.s} temporada(s)</p>`).join("")}</div>`}
+function cgStub(hof){const o={v:1,empty:true,hof:hof||[],t:Date.now()};try{localStorage.setItem(CRK(),JSON.stringify(o))}catch(e){}
+ if(ME)api("/rest/v1/careers?on_conflict=user_id",{method:"POST",body:{user_id:ME.id,data:o,ovr:0,goals:0,titles:0,season:1,club_name:null,player_name:null,updated_at:new Date().toISOString()},headers:{Prefer:"resolution=merge-duplicates,return=minimal"}}).catch(()=>{})}
+crLoad=async function(){let loc=null,srv=null;try{loc=JSON.parse(localStorage.getItem(CRK()))}catch(e){}
+ if(ME){try{const r=await api("/rest/v1/careers?user_id=eq."+ME.id+"&select=data");srv=r[0]&&r[0].data}catch(e){}}
+ const best=[loc,srv].filter(x=>x&&x.v===1&&(x.empty||(x.club&&x.at))).sort((a,b)=>(b.t||0)-(a.t||0))[0];
+ if(best&&best.empty){G=null;CGX.hof=best.hof||[]}else{G=best||null}};
+{const _n=cgNew;cgNew=function(name,pos,at,club){_n(name,pos,at,club);G.hof=CGX.hof||[];CGX.hof=null;crSave(true)}}
+{const _c=cgCreate;cgCreate=function(){return _c()+cgHall(CGX.hof)}}
+function cgEndReset(hof){clearTimeout(crSave.h);G=null;M=null;CGX.hof=hof;CGX.starts=null;CGX.newAt=null;CGX.step=1;CGX.nar=null;CGX.typed=null;CGX.newName="";CGX.newClub=null;CGV="hub";cgStub(hof);crDraw()}
+Object.assign(CGA,{
+ retire:()=>{if(!G||G.done)return;if(!confirm("Aposentar "+G.name+"? A carreira será encerrada e entrará no Hall da Fama."))return;G.done=true;G.vol=true;G.pend.window=null;G.pend.event=null;G.pend.report=null;CGV="hub";crSave(true);mascotSay("Que carreira, "+G.name+"! Obrigado por tudo, craque.",6000);crDraw()},
+ newc:()=>{if(G&&!G.done&&!confirm("Aposentar "+G.name+" agora e começar uma nova carreira? O jogador entra no Hall da Fama."))return;cgEndReset(G?cgHofNow():(CGX.hof||[]))},
+ abandon:()=>{if(!G)return;if(!confirm("Abandonar a carreira de "+G.name+"? Tudo será apagado e ele NÃO vai para o Hall da Fama. Não dá para desfazer."))return;cgEndReset((G.hof||[]).slice())},
+ reset:()=>CGA.abandon()});
 </script>
 </body>
 </html>
