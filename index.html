@@ -350,7 +350,7 @@ async function enter(j){setSes(j);await loadMe();closeDlg();toast(ME?"Bem-vindo,
 const A={
  close:closeDlg,
  auth:m=>authDlg(m==="reg"?"reg":"login"),
- doc:id=>{const d=DOCS[id];if(!d)return;dlg(`<h3>${d[0]}</h3><div class="doc">${d[1].map(s=>`<h4>${s[0]}</h4><p>${s[1]}</p>`).join("")}</div><div class="warn">Texto-modelo: precisa de revisão jurídica antes do lançamento.</div><button class="btn" data-a="close">Fechar</button>`)},
+ doc:id=>{const d=DOCS[id];if(!d)return;dlg(`<h3>${d[0]}</h3><div class="doc">${d[1].map(s=>`<h4>${s[0]}</h4><p>${s[1]}</p>`).join("")}</div><button class="btn" data-a="close">Fechar</button>`)},
  out:async()=>{try{await api("/auth/v1/logout",{method:"POST"})}catch(e){}store(null);ME=null;ACT=null;setBadge(0);LASTB=null;toast("Você saiu.");render()},
  lg:async()=>{const e=val("l_e").toLowerCase(),p=$("#l_p").value;if(!/^\S+@\S+\.\S+$/.test(e)||!p)return fail("Informe o e-mail e a senha.");
   try{await enter(await api("/auth/v1/token?grant_type=password",{method:"POST",body:{email:e,password:p},auth:false}))}
