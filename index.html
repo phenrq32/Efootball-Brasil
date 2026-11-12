@@ -137,6 +137,40 @@ main:not(.q) .bar i{animation:grow .9s ease both}@keyframes grow{from{width:0!im
 @media(max-width:759px){.top>.btn.ic{min-width:38px;padding:0 6px}#user .btn{padding:6px 9px}.brand{font-size:.9rem}header{padding-left:10px;padding-right:10px}#user>.btn:first-child{max-width:28vw}}
 @media(max-width:380px){.logo{width:28px;height:36px}.top{gap:4px}.brand{font-size:.82rem}#user>.btn:first-child{max-width:22vw}}
 @media(max-width:520px){.unick{display:none}#user>.btn:first-child{padding:4px 6px}.av{margin-right:0}}
+
+/* ===== Marketplace v2 ===== */
+.mkh{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.mkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin:12px 0}
+.lc{position:relative;border-radius:18px;overflow:hidden;background:linear-gradient(170deg,rgba(255,255,255,.1),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.14);box-shadow:0 10px 28px rgba(0,0,0,.3);transition:transform .25s,box-shadow .25s,border-color .25s}
+.lc:hover{transform:translateY(-5px);border-color:var(--y);box-shadow:0 16px 36px rgba(0,0,0,.45),0 0 0 1px rgba(255,223,0,.25)}
+.lc-img{position:relative;aspect-ratio:4/3;overflow:hidden;background:#07150d}.lc-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s}.lc:hover .lc-img img{transform:scale(1.06)}
+.lc-b{padding:12px 14px 14px}.lc-b h3{margin:0 0 6px;font-size:1.02rem;line-height:1.25}
+.lc-link{color:inherit;text-decoration:none}.lc-link::after{content:"";position:absolute;inset:0;z-index:1}
+.ovrb{position:absolute;left:10px;top:10px;z-index:2;min-width:48px;padding:6px 8px 8px;text-align:center;font-weight:900;font-size:1.15rem;line-height:1;color:#2b1f00;background:linear-gradient(160deg,#fff3a6,#ffd24a 45%,#d9a300);clip-path:polygon(50% 0,100% 12%,100% 70%,50% 100%,0 70%,0 12%);padding-bottom:12px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))}.ovrb small{display:block;font-size:.55rem;letter-spacing:.08em}
+.pill{position:absolute;z-index:2;background:rgba(6,19,12,.78);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:2px 9px;font-size:.72rem;font-weight:700}
+.pill.c{right:10px;bottom:10px}.pill.n{right:10px;top:10px;background:linear-gradient(90deg,#009739,#00b347);border-color:transparent}
+.lf{position:absolute;z-index:3;left:10px;bottom:10px;width:40px;height:40px;min-height:0;border-radius:50%;padding:0;font-size:1.1rem;background:rgba(6,19,12,.78);border:1px solid rgba(255,255,255,.2)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px}.chips span{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:99px;padding:1px 9px;font-size:.75rem;color:var(--mu)}
+.price{background:linear-gradient(90deg,#ffdf00,#fff3a6,#ffdf00);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;font-size:1.35rem;font-weight:900}
+main:not(.q) .price{animation:shimmer 4s ease-in-out infinite}@keyframes shimmer{0%,100%{background-position:0 0}50%{background-position:100% 0}}
+.lc-f{display:flex;justify-content:space-between;align-items:center;gap:8px}.sel{font-size:.78rem;color:var(--mu);display:flex;align-items:center;gap:2px;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.empty{text-align:center;padding:30px 10px}.empty .logo{width:110px;height:142px;margin:0 auto 8px}
+.mkbar{display:grid;grid-template-columns:2fr 1fr;gap:10px}.mkbar .f{margin:0}@media(max-width:520px){.mkbar{grid-template-columns:1fr}}
+.vchip{display:inline-flex;align-items:center;gap:4px;background:rgba(0,151,57,.2);border:1px solid var(--g);color:#9be7b5;border-radius:99px;padding:1px 9px;font-size:.72rem;font-weight:700}
+/* galeria */
+.dt{display:grid;gap:18px;grid-template-columns:1fr}@media(min-width:900px){.dt{grid-template-columns:1.25fr 1fr;align-items:start}}
+.galw{position:relative;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.14);background:#05110a}
+.gal{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}.gal::-webkit-scrollbar{display:none}
+.gs{flex:0 0 100%;scroll-snap-align:center;aspect-ratio:4/3;display:grid;place-items:center}.gs img{width:100%;height:100%;object-fit:contain;cursor:zoom-in}
+.gn{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;padding:0;font-size:1.6rem;line-height:1;background:rgba(6,19,12,.7);border:1px solid rgba(255,255,255,.25)}.gp{left:10px}.gx{right:10px}
+@media(hover:none){.gn{display:none}}
+.gc{position:absolute;right:12px;bottom:12px;background:rgba(6,19,12,.8);border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:2px 12px;font-size:.8rem;font-weight:700;z-index:2}
+.gth{display:flex;gap:8px;overflow-x:auto;margin:10px 0;padding-bottom:4px}.th{flex:none;width:72px;height:56px;padding:0;min-height:0;border-radius:10px;overflow:hidden;border:2px solid transparent;opacity:.65}.th.on{border-color:var(--y);opacity:1}.th img{width:100%;height:100%;object-fit:cover;display:block}
+.specs{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin:12px 0}.specs div{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:8px 10px}.specs span{display:block;font-size:.72rem;color:var(--mu);text-transform:uppercase;letter-spacing:.05em}.specs b{font-size:1.1rem}
+#lb{position:fixed;inset:0;z-index:250;background:rgba(0,0,0,.96);display:flex;flex-direction:column}
+.lbs{flex:1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}.lbs::-webkit-scrollbar{display:none}.lbi{flex:0 0 100%;scroll-snap-align:center;display:grid;place-items:center;padding:8px}.lbi img{max-width:100%;max-height:92vh;object-fit:contain}
+.lbx{position:absolute;top:calc(10px + env(safe-area-inset-top));right:12px;z-index:3;width:44px;height:44px;border-radius:50%;padding:0;font-size:1.2rem;background:rgba(255,255,255,.15);border:0}
+.prevs{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin:8px 0}.pv{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:2px solid transparent}.pv.cover{border-color:var(--y)}.pv img{width:100%;height:100%;object-fit:cover;display:block}.pv .x{position:absolute;right:2px;top:2px;width:26px;height:26px;min-height:0;padding:0;border-radius:50%;font-size:.8rem;background:rgba(0,0,0,.7);border:0}.pv .k{position:absolute;left:3px;bottom:3px;font-size:.62rem;background:var(--y);color:#000;border-radius:6px;padding:0 5px;font-weight:800}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;translate:none!important;rotate:none!important}}
 </style>
 </head>
@@ -199,7 +233,7 @@ const wait=()=>'<div class="card sub">A carregar…</div>';
 
 async function render(q){
  const nav=NAV.slice();if(isA())nav.push(["admin","Administração","🛡️"]);
- $("#nav").innerHTML=nav.map(n=>`<a href="#${n[0]}" class="${CUR===n[0]||(CUR.startsWith("t-")&&n[0]==="forum")?"on":""}"><span class="ni" aria-hidden="true">${n[2]}</span> ${n[1]}</a>`).join("");
+ $("#nav").innerHTML=nav.map(n=>`<a href="#${n[0]}" class="${CUR===n[0]||(CUR.startsWith("t-")&&n[0]==="forum")||(CUR.startsWith("m-")&&n[0]==="marketplace")||(CUR.startsWith("b-")&&n[0]==="batalha")?"on":""}"><span class="ni" aria-hidden="true">${n[2]}</span> ${n[1]}</a>`).join("");
  {const on=$("#nav a.on");if(on)$("#nav").scrollLeft=Math.max(0,on.offsetLeft-40)}
  $("#user").innerHTML=ME?`<button class="btn sm" data-a="perfil" aria-label="Meu perfil">${av(ME,24)}<span class="unick">${esc(ME.nick)}${isCeo()?" · CEO":isA()?" · admin":""}</span></button> <button class="btn sm" data-a="out">Sair</button>`:'<button class="btn sm p" data-a="auth">Entrar</button>';
  const p=$("#pg");if(!q)p.innerHTML=wait();const mine=++render.n;let h;
@@ -213,6 +247,7 @@ async function page(){
  if(CUR==="noticias")return pContent("noticia");
  if(CUR==="formacoes")return pContent("formacao");
  if(CUR==="forum")return pForum();
+ if(CUR.startsWith("m-"))return pListing(CUR.slice(2));
  if(CUR==="marketplace")return pMarket();
  if(CUR==="fichas")return pFichas();
  if(CUR==="batalha")return pBatalha();
@@ -486,7 +521,7 @@ async function pMarket(){
  `<div class="card row" style="flex-wrap:nowrap"><label class="f" style="flex:2;margin:0">Preço máximo: <b id="mxv">${BRL(MK.max*100)}</b><input id="mxs" type="range" min="100" max="10000" step="100" value="${MK.max}"></label><label class="f" style="flex:1;margin:0">Ordem<select id="mo"><option value="new" ${MK.ord==="new"?"selected":""}>Recentes</option><option value="asc" ${MK.ord==="asc"?"selected":""}>Menor preço</option><option value="desc" ${MK.ord==="desc"?"selected":""}>Maior preço</option></select></label></div>`+
  (MKR.length?`<div class="grid">${MKR.map(l=>`<article class="card" data-a="mview" data-id="${esc(l.id)}" style="cursor:pointer">${imgOk(l.image_urls[0])?`<img class="mkimg" src="${esc(l.image_urls[0])}" alt="" loading="lazy">`:""}<h3>${esc(l.title)}</h3><div class="sub">${l.ovr?esc(l.ovr)+" OVR":""}${l.ovr&&l.coins?" · ":""}${l.coins?esc(l.coins)+" moedas":""}</div><div class="row between"><span class="price">${BRL(l.price_cents)}</span><span class="sub">${fav.has(l.id)?"❤️":""}</span></div><div class="sub">${av(l,18)}${nk(l)}</div></article>`).join("")}</div>`:'<div class="card sub">Nenhum anúncio com esses filtros.</div>');
 }
-document.addEventListener("change",e=>{if(e.target.id==="mo"){MK.ord=e.target.value;render(true)}if(e.target.id==="mxs"){MK.max=+e.target.value;render(true)}});
+
 document.addEventListener("input",e=>{if(e.target.id==="mxs"){const v=$("#mxv");if(v)v.textContent=BRL(e.target.value*100)}});
 const UFS="AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO".split(" ");
 Object.assign(A,{
@@ -563,6 +598,110 @@ Object.assign(A,{
   const u=await api("/rest/v1/profiles?nick=eq."+encodeURIComponent(n)+"&select=id");if(!u.length)return er.textContent="Jogador não encontrado.";
   if(!confirm("Definir o ELO de "+n+" em "+$("#ae_m").value+" para "+e+"?"))return;await rpc("admin_set_elo",{p_user:u[0].id,p_mode:$("#ae_m").value,p_elo:e,p_reason:r});toast("ELO atualizado.");render(true)},
  aerev:async id=>{if(!isA()||!UUID.test(id))return;const r=reason();if(!r)return toast("Informe um motivo com 5+ caracteres.");if(!confirm("Desfazer o resultado desta partida? O ELO volta e a partida reabre como disputa."))return;await rpc("admin_revert_battle",{p_battle:id,p_reason:r});toast("Resultado desfeito. A partida voltou para disputa.");render(true)}
+});
+</script>
+<script>
+/* ===== Marketplace v2: página do anúncio, galeria com deslize, vendedores autorizados ===== */
+let MKL=null,MKIMGS=[],MKF=[];const MKNEW=48*3600e3;
+const cap=(x)=>x?`<span>${x}</span>`:"";
+const fcount=n=>n>1?`<span class="pill c">📷 ${n}</span>`:"";
+async function mkHtml(){
+ let q="";const sv=(MK.q||"").replace(/[^\p{L}\p{N} ._-]/gu,"").trim();if(sv)q+="&title=ilike.*"+encodeURIComponent(sv)+"*";
+ q+=MK.mine&&ME?`&seller_id=eq.${ME.id}&status=neq.removido`:"&status=eq.ativo";
+ const ord=MK.ord==="asc"?"price_cents.asc":MK.ord==="desc"?"price_cents.desc":"created_at.desc";
+ const rows=await api(`/rest/v1/listings?price_cents=lte.${MK.max*100}${q}&select=id,seller_id,title,ovr,coins,platform,acct_level,price_cents,image_urls,status,created_at,profiles(nick,avatar_url)&order=${ord}&limit=60`);
+ let fav=new Set();if(ME){try{fav=new Set((await api("/rest/v1/favorites?select=listing_id")).map(x=>x.listing_id))}catch(e){}}
+ if(!rows.length)return `<div class="card empty"><div class="logo" aria-hidden="true"></div><h3>Nada por aqui ainda</h3><p class="sub">${MK.mine?"Você ainda não publicou nada.":"Nenhum anúncio com esses filtros. Volte logo: novas contas aparecem toda hora!"}</p></div>`;
+ return `<div class="mkgrid">${rows.map(l=>{const im=l.image_urls.filter(imgOk),isNew=Date.now()-new Date(l.created_at)<MKNEW;
+  return `<article class="lc"><div class="lc-img">${im[0]?`<img src="${esc(im[0])}" alt="" loading="lazy">`:""}${l.ovr?`<span class="ovrb">${esc(l.ovr)}<small>OVR</small></span>`:""}${isNew?'<span class="pill n">NOVO</span>':""}${fcount(im.length)}${ME?`<button class="lf" data-a="mfav" data-id="${esc(l.id)}" data-fav="${esc(l.id)}" aria-label="Favoritar">${fav.has(l.id)?"❤️":"🤍"}</button>`:""}</div>
+  <div class="lc-b"><h3><a class="lc-link" href="#m-${esc(l.id)}">${esc(l.title)}</a></h3><div class="chips">${cap(esc(l.platform||""))}${l.coins?cap(esc(Number(l.coins).toLocaleString("pt-BR"))+" moedas"):""}${l.acct_level?cap("Nível "+esc(l.acct_level)):""}${l.status==="vendido"?cap("Vendido"):""}</div>
+  <div class="lc-f"><span class="price">${BRL(l.price_cents)}</span><span class="sel">${av(l,18)}${nk(l)}</span></div></div></article>`}).join("")}</div>`}
+async function mkList(){const e=$("#mkres");if(!e)return;try{e.innerHTML=await mkHtml()}catch(x){e.innerHTML='<div class="card">'+esc(x.message)+'</div>'}}
+async function pMarket(){
+ let box="",pend="",sellers="";
+ const canSell=ME&&(ME.role==="vendedor"||isA());
+ if(!ME)box='<p class="sub">Entre na sua conta para vender, favoritar e demonstrar interesse.</p>';
+ else if(canSell)box='<div class="row"><button class="btn p" data-a="mnew">+ Novo anúncio</button><button class="btn '+(MK.mine?"on p":"")+'" data-a="mmine">'+(MK.mine?"Ver todos":"Meus anúncios")+'</button></div>';
+ else{try{const rq=await api("/rest/v1/seller_requests?user_id=eq."+ME.id+"&select=user_id");box=rq.length?'<p class="sub">✅ Pedido enviado. Um administrador vai analisar.</p>':'<p class="sub">Quer vender? Só maiores de 18 anos. Um administrador precisa autorizar.</p><button class="btn p" data-a="mreq">Quero ser vendedor</button>'}catch(e){}}
+ if(isA()){try{
+  const rq=await api("/rest/v1/seller_requests?select=user_id,created_at,profiles(nick,avatar_url)&order=created_at.asc");
+  if(rq.length)pend=`<div class="card"><h3>Pedidos de vendedor</h3>${rq.map(r=>`<div class="row between" style="padding:4px 0"><span>${av(r,24)}${nk(r)}</span><span class="row"><button class="btn sm p" data-a="mappr" data-id="${esc(r.user_id)}">Aprovar</button><button class="btn sm d" data-a="mrej" data-id="${esc(r.user_id)}">Recusar</button></span></div>`).join("")}</div>`;
+  const sl=await api("/rest/v1/profiles?role=eq.vendedor&select=id,nick,avatar_url&order=nick.asc");
+  sellers=`<div class="card"><h3>Vendedores autorizados</h3><p class="sub">Digite o nickname exato para autorizar alguém a publicar anúncios.</p><div class="row" style="flex-wrap:nowrap"><label class="f" style="flex:1;margin:0"><input id="vn" maxlength="20" placeholder="Nickname exato" aria-label="Nickname do vendedor"></label><button class="btn p" data-a="vadd">Autorizar</button></div><div class="err" id="fe4"></div>${sl.length?sl.map(u=>`<div class="row between" style="padding:5px 0;border-top:1px solid var(--line)"><span>${av(u,26)}${esc(u.nick)} <span class="vchip">✓ Vendedor</span></span><button class="btn sm d" data-a="vrem" data-id="${esc(u.id)}" data-n="${esc(u.nick)}">Remover</button></div>`).join(""):'<p class="sub">Nenhum vendedor autorizado ainda.</p>'}</div>`}catch(e){}}
+ return `<div class="mkh"><h2>🛒 Marketplace</h2></div><div class="warn"><b>Compra e pagamento ainda não estão ativos.</b> Por enquanto você pode ver os anúncios, favoritar e demonstrar interesse. A Konami proíbe a venda de contas: leia os <a href="#" data-a="doc" data-id="vend" style="color:var(--y)">Termos do Vendedor</a>.</div><div class="card">${box}</div>${pend}${sellers}
+ <div class="card mkbar"><label class="f">Buscar<input id="mq" type="search" maxlength="40" placeholder="Nome do anúncio" value="${esc(MK.q||"")}"></label><label class="f">Ordem<select id="mo"><option value="new" ${MK.ord==="new"?"selected":""}>Recentes</option><option value="asc" ${MK.ord==="asc"?"selected":""}>Menor preço</option><option value="desc" ${MK.ord==="desc"?"selected":""}>Maior preço</option></select></label><label class="f" style="grid-column:1/-1">Preço máximo: <b id="mxv">${BRL(MK.max*100)}</b><input id="mxs" type="range" min="100" max="10000" step="100" value="${MK.max}"></label></div>
+ <div id="mkres">${await mkHtml()}</div>`}
+/* filtros atualizam só a lista (a busca não perde o foco) */
+let mkT=null;
+document.addEventListener("change",e=>{if(e.target.id==="mo"){MK.ord=e.target.value;mkList()}if(e.target.id==="mxs"){MK.max=+e.target.value;mkList()}});
+document.addEventListener("input",e=>{if(e.target.id==="mxs"){const v=$("#mxv");if(v)v.textContent=BRL(e.target.value*100)}if(e.target.id==="mq"){MK.q=e.target.value;clearTimeout(mkT);mkT=setTimeout(mkList,400)}});
+/* página do anúncio */
+async function pListing(id){
+ const back='<a href="#marketplace" class="sub" style="display:inline-block;margin:4px 0 10px">← Marketplace</a>';
+ if(!UUID.test(id))return back+'<div class="card">Anúncio não encontrado.</div>';
+ const l=(await api(`/rest/v1/listings?id=eq.${id}&select=id,seller_id,title,ovr,coins,acct_level,platform,highlights,price_cents,description,image_urls,status,created_at,profiles(nick,avatar_url)`))[0];
+ if(!l)return back+'<div class="card">Anúncio não encontrado ou removido.</div>';
+ MKL=l;const im=l.image_urls.filter(imgOk);MKIMGS=im;
+ let fav=false,intr=false,ic=null;const mine=ME&&ME.id===l.seller_id;
+ if(ME){try{fav=(await api(`/rest/v1/favorites?listing_id=eq.${id}&select=listing_id`)).length>0;intr=(await api(`/rest/v1/interests?listing_id=eq.${id}&user_id=eq.${ME.id}&select=listing_id`)).length>0;if(mine||isA())ic=(await api(`/rest/v1/interests?listing_id=eq.${id}&select=user_id`)).length}catch(e){}}
+ const gal=im.length?`<div class="galw"><div class="gal" id="gal" tabindex="0" aria-label="Fotos do anúncio. Deslize para o lado para ver mais.">${im.map((u,i)=>`<div class="gs"><img src="${esc(u)}" alt="Foto ${i+1} de ${im.length}" ${i?'loading="lazy"':""} data-a="mlb" data-id="${i}"></div>`).join("")}</div>${im.length>1?'<button class="gn gp" data-a="mnav" data-id="-1" aria-label="Foto anterior">‹</button><button class="gn gx" data-a="mnav" data-id="1" aria-label="Próxima foto">›</button>':""}<span class="gc" id="gc">1/${im.length}</span></div>${im.length>1?`<div class="gth">${im.map((u,i)=>`<button class="th ${i?"":"on"}" data-a="mgo" data-id="${i}" aria-label="Ver foto ${i+1}"><img src="${esc(u)}" alt=""></button>`).join("")}</div><p class="sub">Deslize para o lado ou toque numa foto para ampliar.</p>`:'<p class="sub">Toque na foto para ampliar.</p>'}`:'<div class="card empty sub">Sem fotos.</div>';
+ const sp=[["Preço",BRL(l.price_cents)],l.ovr?["OVR",l.ovr]:null,l.coins?["Moedas",Number(l.coins).toLocaleString("pt-BR")]:null,l.acct_level?["Nível",l.acct_level]:null,l.platform?["Plataforma",l.platform]:null].filter(Boolean);
+ return back+`<div class="dt"><div>${gal}</div><div>
+ <div class="chips">${l.platform?cap(esc(l.platform)):""}${l.status==="vendido"?cap("Vendido"):cap("Disponível")}<span>${when(l.created_at)}</span></div>
+ <h2 style="margin:0 0 6px">${esc(l.title)}</h2><div class="price" style="font-size:2rem">${BRL(l.price_cents)}</div>
+ <div class="specs">${sp.slice(1).map(x=>`<div><span>${x[0]}</span><b>${esc(x[1])}</b></div>`).join("")}</div>
+ ${l.highlights?`<div class="card"><h3>⭐ Destaques da conta</h3><p class="body">${esc(l.highlights)}</p></div>`:""}
+ ${l.description?`<div class="card"><h3>Descrição</h3><p class="body">${esc(l.description)}</p></div>`:""}
+ <div class="card"><div class="row between"><span>${av(l,34)}<b>${nk(l)}</b> <span class="vchip">✓ Vendedor autorizado</span></span></div></div>
+ <div class="row"><button class="btn" data-a="mfav" data-id="${esc(l.id)}" data-fav="${esc(l.id)}">${fav?"❤️ Favorito":"🤍 Favoritar"}</button><button class="btn" data-a="mint" data-id="${esc(l.id)}" id="mib">${intr?"✓ Tenho interesse":"🙋 Tenho interesse"}</button><button class="btn" data-a="mshare">🔗 Compartilhar</button></div>
+ ${ic!==null?`<p class="sub" style="margin-top:8px">👀 ${ic} ${ic===1?"pessoa demonstrou":"pessoas demonstraram"} interesse.</p>`:""}
+ ${mine||isA()?`<div class="row" style="margin-top:8px"><button class="btn" data-a="medit" data-id="${esc(l.id)}">✏️ Editar</button><button class="btn d" data-a="mdel" data-id="${esc(l.id)}">Remover anúncio</button></div>`:""}
+ <div class="warn" style="margin-top:12px"><b>Compra e pagamento ainda não estão ativos.</b> Nunca combine pagamentos fora do site e nunca envie senhas por mensagem. A venda de contas é proibida pela Konami: ao comprar ou vender você assume o risco.</div>
+ </div></div>`}
+/* deslizar: atualiza contador e miniatura */
+document.addEventListener("scroll",e=>{const t=e.target;if(!t||!t.id)return;
+ if(t.id==="gal"){const i=Math.round(t.scrollLeft/t.clientWidth),c=$("#gc");if(c)c.textContent=(i+1)+"/"+MKIMGS.length;document.querySelectorAll(".th").forEach((b,j)=>b.classList.toggle("on",j===i))}
+ if(t.id==="lbs"){const c=$("#lbc");if(c)c.textContent=(Math.round(t.scrollLeft/t.clientWidth)+1)+"/"+MKIMGS.length}},true);
+const closeLb=()=>{const d=$("#lb");if(d){d.remove();document.body.style.overflow=""}};
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeLb()});
+/* fotos do formulário */
+function prevs(){const e=$("#m_pv");if(!e)return;e.innerHTML=MKF.map((f,i)=>`<div class="pv ${i?"":"cover"}"><img src="${esc(URL.createObjectURL(f))}" alt=""><button class="x" data-a="mrmf" data-id="${i}" aria-label="Remover foto">✕</button>${i?`<button class="k" style="border:0;cursor:pointer;min-height:0" data-a="mcov" data-id="${i}">Capa</button>`:'<span class="k">CAPA</span>'}</div>`).join("")}
+document.addEventListener("change",e=>{if(e.target.id!=="m_f")return;MKF=MKF.concat([...e.target.files]).slice(0,8);e.target.value="";prevs()});
+const mForm=(l)=>{l=l||{};return `<div class="warn">Nunca coloque e-mail, senha ou códigos da conta no anúncio ou nas fotos.</div>${fld("m_t","Título (5 a 60)",'maxlength="60" value="'+esc(l.title||"")+'"')}
+ <div class="row" style="flex-wrap:nowrap"><label class="f" style="flex:1">Plataforma<select id="m_pl"><option value="">—</option>${["Mobile","PC","PlayStation","Xbox"].map(x=>`<option ${l.platform===x?"selected":""}>${x}</option>`).join("")}</select></label>${fld("m_o","OVR do time",'type="number" min="0" max="999" inputmode="numeric" value="'+esc(l.ovr||"")+'"')}</div>
+ <div class="row" style="flex-wrap:nowrap">${fld("m_c","Moedas",'type="number" min="0" inputmode="numeric" value="'+esc(l.coins||"")+'"')}${fld("m_lv","Nível da conta",'type="number" min="0" inputmode="numeric" value="'+esc(l.acct_level||"")+'"')}</div>
+ ${fld("m_p","Preço em R$ (1 a 10.000)",'type="number" min="1" max="10000" step="0.01" inputmode="decimal" value="'+(l.price_cents?l.price_cents/100:"")+'"')}
+ <label class="f">Destaques (jogadores e itens principais)<textarea id="m_h" maxlength="500">${esc(l.highlights||"")}</textarea></label><label class="f">Descrição<textarea id="m_d" maxlength="800">${esc(l.description||"")}</textarea></label>`};
+const mRead=()=>({title:val("m_t"),platform:$("#m_pl").value||null,ovr:parseInt(val("m_o"),10)||0,coins:parseInt(val("m_c"),10)||0,acct_level:parseInt(val("m_lv"),10)||null,price:Math.round(parseFloat(val("m_p").replace(",","."))*100),highlights:val("m_h")||null,description:val("m_d")||null});
+const mCheck=d=>d.title.length<5?"O título precisa de 5 a 60 caracteres.":!(d.price>=100&&d.price<=1000000)?"O preço deve ficar entre R$ 1,00 e R$ 10.000,00.":"";
+async function favSet(id){let on;try{await api("/rest/v1/favorites",{method:"POST",body:{user_id:ME.id,listing_id:id},headers:{Prefer:"return=minimal"}});on=true}catch(e){if(e.status===409){await api(`/rest/v1/favorites?listing_id=eq.${id}&user_id=eq.${ME.id}`,{method:"DELETE"});on=false}else throw e}return on}
+Object.assign(A,{
+ mmine:()=>{MK.mine=!MK.mine;render(true)},
+ vadd:async()=>{if(!isA())return;const n=val("vn"),er=$("#fe4");if(!/^[A-Za-z0-9_.]{3,20}$/.test(n))return er.textContent="Digite o nickname exato.";
+  const u=await api("/rest/v1/profiles?nick=eq."+encodeURIComponent(n)+"&select=id,role");if(!u.length)return er.textContent="Nenhum membro com esse nickname.";if(u[0].role==="admin")return er.textContent="Administradores já podem publicar.";
+  await rpc("admin_set_role",{p_user:u[0].id,p_role:"vendedor"});toast(n+" agora é vendedor autorizado.");render(true)},
+ vrem:async(id,el)=>{if(!isA()||!UUID.test(id)||!confirm("Remover "+el.dataset.n+" dos vendedores? Os anúncios dele continuam, mas ele não poderá publicar novos."))return;await rpc("admin_set_role",{p_user:id,p_role:"membro"});toast("Vendedor removido.");render(true)},
+ mnew:()=>{MKF=[];dlg(`<h3>Novo anúncio</h3>${mForm()}<label class="f">Fotos (até 8). A primeira é a capa.<input id="m_f" type="file" accept="image/jpeg,image/png,image/webp" multiple></label><div class="prevs" id="m_pv"></div><div class="err" id="fe"></div><div class="row"><button class="btn p" data-a="msave">Publicar</button><button class="btn" data-a="close">Cancelar</button></div>`)},
+ mrmf:id=>{MKF.splice(+id,1);prevs()},mcov:id=>{const f=MKF.splice(+id,1)[0];MKF.unshift(f);prevs()},
+ msave:async()=>{const d=mRead(),m=mCheck(d);if(m)return fail(m);if(MKF.length<1)return fail("Envie de 1 a 8 fotos.");
+  const bt=$("[data-a=msave]");bt.disabled=true;
+  try{const urls=[];for(let i=0;i<MKF.length;i++){toast("Enviando foto "+(i+1)+" de "+MKF.length+"...");urls.push(await upImg(await resizeImg(MKF[i],1400),ME.id+"/m-"+Date.now()+"-"+i+".jpg"))}
+   await api("/rest/v1/listings",{method:"POST",body:{seller_id:ME.id,title:d.title,platform:d.platform,ovr:d.ovr,coins:d.coins,acct_level:d.acct_level,price_cents:d.price,highlights:d.highlights,description:d.description,image_urls:urls},headers:{Prefer:"return=minimal"}});
+   MKF=[];closeDlg();toast("Anúncio publicado!");render(true)}catch(e){bt.disabled=false;fail(e.message)}},
+ medit:id=>{if(!MKL||MKL.id!==id)return;dlg(`<h3>Editar anúncio</h3>${mForm(MKL)}<p class="sub">As fotos não podem ser trocadas aqui. Para trocar as fotos, remova o anúncio e publique de novo.</p><div class="err" id="fe"></div><div class="row"><button class="btn p" data-a="meditsave" data-id="${esc(id)}">Salvar</button><button class="btn" data-a="close">Cancelar</button></div>`)},
+ meditsave:async id=>{const d=mRead(),m=mCheck(d);if(m)return fail(m);
+  await api("/rest/v1/listings?id=eq."+id,{method:"PATCH",body:{title:d.title,platform:d.platform,ovr:d.ovr,coins:d.coins,acct_level:d.acct_level,price_cents:d.price,highlights:d.highlights,description:d.description},headers:{Prefer:"return=minimal"}});closeDlg();toast("Anúncio atualizado.");render(true)},
+ mdel:async id=>{if(!UUID.test(id)||!confirm("Remover este anúncio?"))return;await api("/rest/v1/listings?id=eq."+id,{method:"PATCH",body:{status:"removido"},headers:{Prefer:"return=minimal"}});toast("Anúncio removido.");location.hash="#marketplace"},
+ mfav:async id=>{if(!ME)return authDlg("login");const on=await favSet(id);document.querySelectorAll('[data-fav="'+id+'"]').forEach(b=>{b.textContent=b.classList.contains("lf")?(on?"❤️":"🤍"):(on?"❤️ Favorito":"🤍 Favoritar")});toast(on?"Favoritado.":"Removido dos favoritos.")},
+ mint:async id=>{if(!ME)return authDlg("login");let on;try{await api("/rest/v1/interests",{method:"POST",body:{user_id:ME.id,listing_id:id},headers:{Prefer:"return=minimal"}});on=true}catch(e){if(e.status===409){await api(`/rest/v1/interests?listing_id=eq.${id}&user_id=eq.${ME.id}`,{method:"DELETE"});on=false}else throw e}
+  const b=$("#mib");if(b)b.textContent=on?"✓ Tenho interesse":"🙋 Tenho interesse";toast(on?"Interesse registrado. O vendedor poderá ver.":"Interesse removido.")},
+ mshare:()=>{const u=location.href;if(navigator.share)navigator.share({title:MKL?MKL.title:"eFootball Brasil",url:u}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(u).then(()=>toast("Link copiado!"),()=>toast(u))},
+ mnav:d=>{const g=$("#gal");if(g)g.scrollBy({left:(+d)*g.clientWidth,behavior:"smooth"})},
+ mgo:i=>{const g=$("#gal");if(g)g.scrollTo({left:(+i)*g.clientWidth,behavior:"smooth"})},
+ mlb:i=>{if(!MKIMGS.length)return;closeLb();const d=document.createElement("div");d.id="lb";d.setAttribute("role","dialog");d.setAttribute("aria-label","Fotos em tela cheia");
+  d.innerHTML=`<button class="lbx" data-a="mlbx" aria-label="Fechar">✕</button><div class="lbs" id="lbs">${MKIMGS.map(u=>`<div class="lbi"><img src="${esc(u)}" alt=""></div>`).join("")}</div><span class="gc" id="lbc">${(+i)+1}/${MKIMGS.length}</span>`;
+  document.body.appendChild(d);document.body.style.overflow="hidden";const s=$("#lbs");s.style.scrollBehavior="auto";s.scrollLeft=(+i)*s.clientWidth},
+ mlbx:()=>closeLb()
 });
 </script>
 </body>
