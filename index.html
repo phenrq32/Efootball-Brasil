@@ -46,7 +46,46 @@ footer{max-width:880px;margin:0 auto;padding:10px 14px 30px;color:var(--mu);font
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}.grid>.card{margin:0}
 .mb{position:fixed;right:max(14px,env(safe-area-inset-right));bottom:calc(16px + env(safe-area-inset-bottom));z-index:70;width:64px;height:84px;padding:0;border:0;background:var(--mas) center/contain no-repeat;filter:drop-shadow(0 10px 20px rgba(0,0,0,.55));cursor:pointer;transition:transform .2s;min-height:0}.mb:hover{transform:translateY(-4px) scale(1.04)}.mb .bb{position:absolute;left:-14px;top:2px;width:30px;height:30px;border-radius:50%;background:var(--y);color:#06130c;display:grid;place-items:center;font-size:15px;box-shadow:0 4px 12px rgba(0,0,0,.4)}.mb .bn{position:absolute;right:-2px;top:-6px;min-width:22px;height:22px;padding:0 5px;border-radius:99px;background:#e5484d;color:#fff;font:700 .75rem system-ui;display:none;place-items:center}.mb .bn.on{display:grid}
 #nav a[href="#batalha"] .ni{animation:bt 3.2s ease-in-out infinite}@keyframes bt{0%,80%,100%{transform:rotate(0)}88%{transform:rotate(-14deg) scale(1.2)}94%{transform:rotate(10deg) scale(1.2)}}
-@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ===== Visual v2: feixes de luz, vidro e mascote animado ===== */
+body{background:#06130c;position:relative}
+body::before{content:"";position:fixed;inset:-10% -30% 0 -30%;z-index:-2;pointer-events:none;
+background:
+ repeating-linear-gradient(100deg,transparent 0 70px,rgba(110,170,30,.34) 110px,rgba(40,120,30,.18) 170px,transparent 230px 300px),
+ radial-gradient(900px 420px at 50% -8%,rgba(150,190,20,.55),transparent 70%),
+ linear-gradient(180deg,#1f5a10 0%,#12380f 28%,#0c2012 60%,#07130c 100%);
+animation:beams 26s ease-in-out infinite alternate;will-change:transform}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(120% 80% at 50% 110%,rgba(0,0,0,.55),transparent 60%)}
+@keyframes beams{from{transform:translateX(-6%)}to{transform:translateX(6%)}}
+header{background:linear-gradient(180deg,rgba(20,60,15,.72),rgba(8,26,14,.55));-webkit-backdrop-filter:blur(16px) saturate(140%);backdrop-filter:blur(16px) saturate(140%);border:1px solid rgba(255,255,255,.12);border-top:0;border-radius:0 0 22px 22px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.card{background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.14);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 8px 24px rgba(0,0,0,.28);transition:transform .2s,border-color .2s}
+a.card:hover{transform:translateY(-3px);border-color:var(--y)}
+nav a.on{background:rgba(255,223,0,.14);border-color:rgba(255,223,0,.45);color:var(--y)}
+.btn.p{background:linear-gradient(180deg,#00b347,#008a35);box-shadow:0 6px 18px rgba(0,151,57,.4)}
+dialog{background:rgba(9,28,17,.92);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+main>*{animation:rise .45s ease both}@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+/* mascote: mais presença e movimento próprio */
+.hero{padding:30px 8px 22px}
+.hero h1{font-size:2rem;text-shadow:0 4px 18px rgba(0,0,0,.5)}
+.hero .logo{width:150px!important;height:192px!important;filter:drop-shadow(0 18px 22px rgba(0,0,0,.55));transform-origin:50% 90%;animation:idle 3.6s ease-in-out infinite,wave 7s ease-in-out infinite;cursor:pointer}
+.logo{transform-origin:50% 90%;transition:transform .2s}
+header .logo{animation:sway 5s ease-in-out infinite}
+.logo.jump{animation:jump .7s cubic-bezier(.3,1.6,.5,1) 1!important}
+@keyframes idle{0%,100%{translate:0 0}50%{translate:0 -10px}}
+@keyframes wave{0%,72%,100%{rotate:0deg}78%{rotate:-9deg}84%{rotate:8deg}90%{rotate:-6deg}95%{rotate:3deg}}
+@keyframes sway{0%,100%{rotate:-3deg}50%{rotate:3deg}}
+@keyframes jump{0%{transform:translateY(0) scale(1,1)}25%{transform:translateY(0) scale(1.12,.88)}55%{transform:translateY(-34px) scale(.95,1.08) rotate(-8deg)}80%{transform:translateY(0) scale(1.08,.92)}100%{transform:none}}
+main>h2::before{content:"";display:inline-block;width:46px;height:60px;margin-right:10px;vertical-align:middle;background:var(--mas) center/contain no-repeat;filter:drop-shadow(0 6px 8px rgba(0,0,0,.5));transform-origin:50% 90%;animation:sway 4.5s ease-in-out infinite}
+.mb{width:78px;height:100px;animation:idle 3.4s ease-in-out infinite}
+.mb:has(.bn.on){animation:idle 3.4s ease-in-out infinite,nudge 2.4s ease-in-out infinite}
+@keyframes nudge{0%,70%,100%{rotate:0deg}76%{rotate:-10deg}82%{rotate:9deg}88%{rotate:-7deg}94%{rotate:4deg}}
+.mb:active{transform:scale(.92)}
+
+#alerta{position:fixed;top:0;left:0;right:0;z-index:200;background:#c1121f;color:#fff;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;text-align:center;font-weight:700;display:none;animation:redp 1s ease-in-out infinite}
+#alerta.on{display:block}#alerta button{margin-left:8px;min-height:34px;padding:4px 12px;background:#fff;color:#c1121f;border:0}
+@keyframes redp{0%,100%{background:#c1121f}50%{background:#7a0a12}}
+.sm{padding:6px 10px;border-radius:10px;margin:4px 0;max-width:88%}.sm.u{background:rgba(0,151,57,.25);margin-left:auto}.sm.a{background:rgba(255,223,0,.14)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;translate:none!important;rotate:none!important}}
 </style>
 </head>
 <body>
@@ -57,6 +96,7 @@ footer{max-width:880px;margin:0 auto;padding:10px 14px 30px;color:var(--mu);font
 <main id="pg" aria-live="polite"></main>
 <footer>© eFootball Brasil · Comunidade independente, sem vínculo com a Konami · <a href="#" data-a="doc" data-id="termos">Termos</a> · <a href="#" data-a="doc" data-id="priv">Privacidade</a></footer>
 <button class="mb" data-a="inbox" aria-label="Mensagens"><span class="bb" aria-hidden="true">💬</span><span class="bn" id="bn"></span></button>
+<div id="alerta" role="alert"></div>
 <div id="toast" role="status"></div>
 <dialog id="dg"><div id="dc"></div></dialog>
 
@@ -239,8 +279,11 @@ async function pMatchBody(id){
 async function pMatchById(id){return UUID.test(id)?`<a href="#batalha" class="sub">← Batalha</a>`+await pMatchBody(id):'<div class="card">Partida não encontrada.</div>'}
 /* balão do mascote: avisa partida para aceitar e mensagens novas */
 const setBadge=n=>{const e=$("#bn");if(e){e.textContent=n>99?"99+":n;e.classList.toggle("on",n>0)}};
-async function bg(){if(!ME){ACT=null;return setBadge(0)}let n=0;try{const b=await myBattle();ACT=b;if(b){const view=CUR==="batalha"||CUR==="b-"+b.id;if(b.status==="ready"&&!view)n++;
-  const ms=await api(`/rest/v1/battle_messages?battle_id=eq.${b.id}&select=id,user_id&order=id.desc&limit=30`);let s=0;try{s=+localStorage.getItem("efb_seen_"+b.id)||0}catch(e){}if(!view)n+=ms.filter(m=>m.id>s&&m.user_id!==ME.id).length}}catch(e){}setBadge(n)}
+let LASTN=null;
+async function bg(){if(!ME){ACT=null;LASTN=null;return setBadge(0)}let n=0;try{const b=await myBattle();ACT=b;if(b){const view=CUR==="batalha"||CUR==="b-"+b.id;if(b.status==="ready"&&!view)n++;
+  const ms=await api(`/rest/v1/battle_messages?battle_id=eq.${b.id}&select=id,user_id&order=id.desc&limit=30`);let s=0;try{s=+localStorage.getItem("efb_seen_"+b.id)||0}catch(e){}if(!view)n+=ms.filter(m=>m.id>s&&m.user_id!==ME.id).length}}catch(e){}
+ try{n+=await supCount()}catch(e){}
+ if(LASTN!==null&&n>LASTN)sambaDing();LASTN=n;setBadge(n)}
 setInterval(async()=>{if(!ME||document.hidden||POLLING)return;POLLING=true;try{if(CUR==="batalha"||CUR.startsWith("b-"))await render(true);await bg()}catch(e){}finally{POLLING=false}},3500);
 Object.assign(A,{
  fnew:()=>{if(!ME)return authDlg("login");dlg(`<h3>Nova ficha de jogador</h3>${fld("f_n","Nome da ficha",'maxlength="60"')}<div class="row" style="flex-wrap:nowrap"><label class="f" style="flex:1">Posição<select id="f_p">${POS.map(p=>`<option>${p}</option>`).join("")}</select></label>${fld("f_o","OVR (40 a 130)",'type="number" min="40" max="130" inputmode="numeric"')}</div>${fld("f_e","Estilo de jogo",'maxlength="40"')}${fld("f_f","Pontos fortes",'maxlength="60"')}<label class="f">Descrição<textarea id="f_d" maxlength="400"></textarea></label><div class="err" id="fe"></div><div class="row"><button class="btn p" data-a="fsave">Publicar</button><button class="btn" data-a="close">Cancelar</button></div>`)},
@@ -269,6 +312,69 @@ document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.tagName==="
 const route=()=>{CUR=(location.hash||"#inicio").slice(1)||"inicio";render()};
 addEventListener("hashchange",route);
 (async()=>{if(SES&&SES.expires_at*1000<Date.now()+60000)await refresh();await loadMe();route()})();
+</script>
+<script>
+/* mascote: toque faz ele pular e dar uma dica */
+(()=>{const T=["Bora pra batalha? ⚔️","Monte sua formação na prancheta!","Já viu as fichas de jogadores?","Dúvidas? Toque no balão de mensagens."];let i=0;
+document.addEventListener("click",e=>{const l=e.target.closest(".hero .logo,header .logo");if(!l)return;l.classList.remove("jump");void l.offsetWidth;l.classList.add("jump");
+if(typeof toast==="function"&&l.closest(".hero"))toast(T[i++%T.length]);setTimeout(()=>l.classList.remove("jump"),800)})})();
+</script>
+<script>
+/* ===== Suporte (equipe humana, sem IA) · som de samba · alarme vermelho ===== */
+const SND={on:(()=>{try{return localStorage.getItem("efb_snd")!=="0"}catch(e){return true}})(),ctx:null};
+const actx=()=>{try{if(!SND.ctx)SND.ctx=new(window.AudioContext||window.webkitAudioContext)();if(SND.ctx.state==="suspended")SND.ctx.resume();return SND.ctx}catch(e){return null}};
+addEventListener("pointerdown",()=>actx(),{passive:true});
+function tone(c,t,f,d,type,v){const o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+d+.03)}
+function shaker(c,t,d,v){const n=Math.floor(c.sampleRate*d),b=c.createBuffer(1,n,c.sampleRate),x=b.getChannelData(0);for(let i=0;i<n;i++)x[i]=(Math.random()*2-1)*(1-i/n);const o=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();f.type="highpass";f.frequency.value=5000;g.gain.value=v;o.buffer=b;o.connect(f);f.connect(g);g.connect(c.destination);o.start(t)}
+function sambaDing(){if(!SND.on)return;const c=actx();if(!c)return;const t=c.currentTime+.02;
+ [[0,1175],[.15,1175],[.3,880],[.45,1175],[.6,880]].forEach(([d,f])=>{tone(c,t+d,f,.22,"triangle",.28);tone(c,t+d,f*2.76,.12,"sine",.08);shaker(c,t+d+.075,.05,.18)});
+ tone(c,t,110,.3,"sine",.5);tone(c,t+.45,110,.3,"sine",.5)}
+let SIREN=null;
+function siren(on){if(SIREN){clearInterval(SIREN.i);clearTimeout(SIREN.t);try{SIREN.o.stop()}catch(e){}SIREN=null}if(!on||!SND.on)return;const c=actx();if(!c)return;
+ const o=c.createOscillator(),g=c.createGain();o.type="sawtooth";g.gain.value=.18;o.connect(g);g.connect(c.destination);o.start();
+ const sw=()=>{const t=c.currentTime;o.frequency.cancelScheduledValues(t);o.frequency.setValueAtTime(600,t);o.frequency.linearRampToValueAtTime(1100,t+.6);o.frequency.linearRampToValueAtTime(600,t+1.2)};
+ sw();SIREN={o,i:setInterval(sw,1200),t:setTimeout(()=>siren(false),30000)}}
+/* alarme: o próprio site confere se o servidor responde */
+let HFAIL=0,DOWN=false;
+function alertBar(on){const a=$("#alerta");a.classList.toggle("on",on);a.innerHTML=on?'⚠️ Instabilidade detectada: o servidor não está respondendo.'+(isA()?' <button data-a="mute">Silenciar</button>':""):""}
+async function health(){if(document.hidden)return;let ok=false;try{const r=await fetch(SB+"/auth/v1/health",{headers:{apikey:KEY},cache:"no-store"});ok=r.ok}catch(e){}
+ if(ok){HFAIL=0;if(DOWN){DOWN=false;alertBar(false);siren(false);toast("Servidor normalizado.")}return}
+ if(!navigator.onLine)return;if(++HFAIL>=3&&!DOWN){DOWN=true;alertBar(true);if(isA())siren(true)}}
+setInterval(health,20000);
+/* suporte */
+const SUP={o:false,t:null,list:false};let SUPL=[];
+const supSeen=id=>{try{localStorage.setItem("efb_sup_seen",String(id))}catch(e){}};
+async function supThreads(){const th=await api("/rest/v1/support_threads?select=id,status,updated_at,profiles(nick)&status=neq.resolved&order=updated_at.desc&limit=50");if(!th.length)return[];
+ const ms=await api("/rest/v1/support_messages?select=thread_id,role,id&order=id.desc&limit=300"),last={};ms.forEach(m=>{if(!(m.thread_id in last))last[m.thread_id]=m});
+ return th.map(t=>({...t,wait:!!last[t.id]&&last[t.id].role==="user"}))}
+async function supCount(){
+ if(isA()){SUPL=await supThreads();if(SUP.o)supRefresh();return SUPL.filter(x=>x.wait).length}
+ const ms=await api("/rest/v1/support_messages?select=id,role&order=id.desc&limit=30");let s=0;try{s=+localStorage.getItem("efb_sup_seen")||0}catch(e){}
+ if(SUP.o){if(ms[0])supSeen(ms[0].id);supRefresh();return 0}
+ return ms.filter(m=>m.role==="admin"&&m.id>s).length}
+async function supRefresh(){if(!SUP.o)return;
+ if(SUP.list){const e=$("#sl");if(!e)return;e.innerHTML=SUPL.length?SUPL.map(t=>`<div class="card" data-a="sthread" data-id="${esc(t.id)}" style="cursor:pointer"><div class="row between"><b>@${esc(t.profiles&&t.profiles.nick||"?")}</b>${t.wait?'<span class="tag">aguardando resposta</span>':'<span class="sub">respondido</span>'}</div><div class="sub">${when(t.updated_at)}</div></div>`).join(""):'<div class="card sub">Nenhuma conversa em aberto.</div>';return}
+ const e=$("#sc");if(!e)return;const q=SUP.t?`&thread_id=eq.${SUP.t}`:"";const ms=await api(`/rest/v1/support_messages?select=id,role,body&order=id.asc&limit=100${q}`);
+ const near=e.scrollHeight-e.scrollTop-e.clientHeight<60;e.innerHTML=ms.length?ms.map(m=>`<div class="sm ${m.role==="admin"?"a":"u"}"><b>${m.role==="admin"?"Equipe":(isA()?"Usuário":"Você")}:</b> ${esc(m.body)}</div>`).join(""):'<p class="sub">Conte como podemos ajudar. Um administrador responde por aqui.</p>';
+ if(near||!e.dataset.i){e.scrollTop=e.scrollHeight;e.dataset.i=1}}
+const supChat=()=>`<div id="sc" style="height:260px;overflow:auto"></div><div class="row" style="flex-wrap:nowrap;margin-top:8px"><input id="sm" maxlength="500" placeholder="Escreva sua mensagem"><button class="btn p" data-a="ssend">Enviar</button></div><div class="err" id="fe"></div>`;
+$("#dg").addEventListener("close",()=>{SUP.o=false;SUP.t=null;SUP.list=false});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="sm"){e.preventDefault();const b=document.querySelector('[data-a="ssend"]');if(b)b.click()}});
+Object.assign(A,{
+ mute:()=>{siren(false)},
+ snd:()=>{SND.on=!SND.on;try{localStorage.setItem("efb_snd",SND.on?"1":"0")}catch(e){}if(SND.on)sambaDing();else siren(false);A.inbox()},
+ sopen:async()=>{if(isA()){SUP.o=true;SUP.list=true;SUP.t=null;dlg('<h3>🛟 Caixa de suporte</h3><div id="sl"></div><button class="btn" data-a="inbox">Voltar</button>');SUPL=await supThreads();supRefresh()}
+  else{SUP.o=true;SUP.list=false;SUP.t=null;dlg('<h3>🛟 Suporte</h3>'+supChat()+'<button class="btn" data-a="inbox" style="margin-top:8px">Voltar</button>');await supRefresh()}},
+ sthread:async id=>{if(!isA()||!UUID.test(id))return;SUP.o=true;SUP.list=false;SUP.t=id;dlg('<h3>🛟 Conversa</h3>'+supChat()+'<div class="row" style="margin-top:8px"><button class="btn" data-a="sopen">← Lista</button><button class="btn d" data-a="sres" data-id="'+id+'">Marcar como resolvida</button></div>');await supRefresh()},
+ ssend:async()=>{const t=val("sm");if(!t)return;$("#sm").value="";
+  if(isA()){if(!SUP.t)return;await rpc("support_admin_reply",{p_thread:SUP.t,p_body:t})}else await rpc("support_send",{p_body:t});await supRefresh();bg()},
+ sres:async id=>{if(!isA()||!UUID.test(id)||!confirm("Marcar esta conversa como resolvida?"))return;await rpc("support_resolve",{p_thread:id});toast("Conversa resolvida.");A.sopen()},
+ inbox:()=>{if(!ME)return authDlg("login");SUP.o=false;
+  const waiting=SUPL.filter(x=>x.wait).length;
+  dlg(`<h3>Mensagens</h3>${ACT?`<div class="card" data-a="gob" style="cursor:pointer">⚔️ <b>Partida ${esc(ACT.mode)}</b> em andamento<div class="sub">Toque para abrir a partida e o chat</div></div>`:'<div class="card sub">Nenhuma partida em andamento.</div>'}
+  <div class="card" data-a="sopen" style="cursor:pointer">🛟 <b>${isA()?"Caixa de suporte":"Falar com o suporte"}</b>${isA()&&waiting?` <span class="tag">${waiting} aguardando</span>`:""}<div class="sub">${isA()?"Conversas dos usuários":"Fale com a equipe"}</div></div>
+  <div class="card row between"><span>🔔 Som das notificações</span><button class="btn sm" data-a="snd">${SND.on?"Ligado":"Desligado"}</button></div><button class="btn" data-a="close">Fechar</button>`)}
+});
 </script>
 </body>
 </html>
