@@ -292,7 +292,7 @@ const wait=()=>'<div class="card sub">Carregando…</div>';
 
 async function render(q){
  const nav=NAV.slice();if(isA())nav.push(["admin","Admin","🛡️"]);
- $("#nav").innerHTML=nav.map(n=>`<a href="#${n[0]}" class="${CUR===n[0]||(CUR.startsWith("t-")&&n[0]==="forum")||((CUR.startsWith("m-")||CUR.startsWith("c-"))&&n[0]==="marketplace")||(CUR.startsWith("b-")&&n[0]==="batalha")||(CUR.startsWith("camp-")&&n[0]==="campeonatos")?"on":""}"><span class="ni" aria-hidden="true">${n[2]}</span> ${n[1]}</a>`).join("");
+ $("#nav").innerHTML=nav.map(n=>`<a href="#${n[0]}" class="${CUR===n[0]||(CUR.startsWith("t-")&&n[0]==="forum")||((CUR.startsWith("m-")||CUR.startsWith("c-"))&&n[0]==="marketplace")||(CUR.startsWith("b-")&&n[0]==="batalha")||(CUR.startsWith("camp-")&&n[0]==="campeonatos")||((CUR.startsWith("f-")||CUR.startsWith("cmp-"))&&n[0]==="fichas")?"on":""}"><span class="ni" aria-hidden="true">${n[2]}</span> ${n[1]}</a>`).join("");
  {const on=$("#nav a.on");if(on)$("#nav").scrollLeft=Math.max(0,on.offsetLeft-40)}
  $("#user").innerHTML=ME?`<button class="btn sm" data-a="perfil" aria-label="Meu perfil">${av(ME,24)}<span class="unick">${esc(ME.nick)}${isCeo()?" · CEO":isA()?" · admin":""}</span></button> <button class="btn sm" data-a="out">Sair</button>`:'<button class="btn sm p" data-a="auth">Entrar</button>';
  const p=$("#pg");if(!q)p.innerHTML=wait();const mine=++render.n;let h;
@@ -1279,6 +1279,169 @@ const _pA3c=pAdmin3;pAdmin3=async()=>(await _pA3c())+(await pOrgs());
 @keyframes pulse{50%{opacity:.55}}@keyframes glow{50%{box-shadow:0 0 16px rgba(255,223,0,.55)}}@keyframes bob{50%{transform:translateY(-6px) rotate(-5deg)}}@keyframes pop{from{opacity:0;transform:scale(.8) translateY(12px)}to{opacity:1;transform:none}}@keyframes cfall{to{transform:translateY(105vh) rotate(720deg)}}
 html.no-anim .fu,html.no-anim .drw .bm,html.no-anim .trophy,html.no-anim .bm.todo,html.no-anim .tg-live,html.no-anim .cslotn{animation:none!important}
 @media (prefers-reduced-motion:reduce){.fu,.drw .bm,.trophy,.bm.todo,.tg-live,.cslotn,.msay{animation:none!important}.cfx{display:none}}`;document.head.appendChild(s)})();
+</script>
+<script>
+/* ---------- fichas 2: busca, página da ficha, avaliação, comparar ---------- */
+(()=>{const s=document.createElement("style");s.textContent=`
+.f2bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:10px 0}.f2bar label{display:flex;flex-direction:column;gap:3px;font-size:.78rem;color:var(--mu)}
+.f2bar input,.f2bar select{font:inherit;min-height:40px;border-radius:10px;border:1px solid var(--line);background:#0d2217;color:var(--tx);padding:6px 10px;width:100%}
+.f2bar .f2w{grid-column:1/-1}.f2chk{grid-column:span 2;flex-direction:row!important;align-items:center;gap:8px!important;font-size:.88rem!important;color:var(--tx)!important;min-height:40px}.f2chk input{width:auto;min-height:0}
+.f2t{position:relative;display:flex;flex-direction:column;gap:6px;overflow:hidden}.f2t .f2ph{width:100%;height:140px;object-fit:cover;border-radius:10px;display:block}
+.f2t h3{margin:0;font-size:1.05rem}.f2t h3 a{color:inherit;text-decoration:none}.f2t h3 a:hover{text-decoration:underline}
+.f2ovr{font-weight:800;font-size:1.3rem;line-height:1}.f2ovr small{font-size:.6rem;font-weight:600;opacity:.7;margin-left:2px}
+.f2star{color:#ffcf40;letter-spacing:1px;white-space:nowrap}.f2star i{font-style:normal;color:var(--mu);font-size:.78rem;margin-left:4px}
+.f2cmpbar{padding-right:96px!important;position:sticky;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:5;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:14px 0 0;background:#0b3a1d;border:1px solid var(--g);border-radius:14px;padding:10px 14px;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.f2hero{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:14px;align-items:start}@media(max-width:640px){.f2hero{grid-template-columns:1fr}}
+.f2card{border-radius:18px;padding:14px;color:#fff;border:2px solid rgba(255,255,255,.35);box-shadow:0 10px 30px rgba(0,0,0,.4);display:flex;flex-direction:column;gap:8px}
+.f2card .f2ph{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:12px;background:rgba(0,0,0,.25);display:grid;place-items:center;font-size:3rem}
+.f2card .f2top{display:flex;justify-content:space-between;align-items:flex-end}.f2card .f2o{font-size:2.6rem;font-weight:800;line-height:.9}.f2card .f2n{font-size:1.25rem;font-weight:800;line-height:1.15;overflow-wrap:anywhere}
+.f2t0{background:linear-gradient(160deg,#4b5a52,#26322c)}.f2t1{background:linear-gradient(160deg,#c9a227,#6b5410)}.f2t2{background:linear-gradient(160deg,#1fb7a8,#0b4f57)}.f2t3{background:linear-gradient(160deg,#a35cff,#40206b)}
+.f2acts{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.f2rate{display:inline-flex;gap:2px;align-items:center}.f2rate button{background:none;border:0;min-height:40px;min-width:36px;font-size:1.5rem;color:var(--mu);padding:0;cursor:pointer}.f2rate button.on{color:#ffcf40}
+.f2g{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}.f2g .card{margin:0}
+.f2r{display:grid;grid-template-columns:minmax(0,1fr) 3ch;gap:2px 10px;align-items:center;font-size:.88rem;margin:6px 0}.f2r b{text-align:right;font-variant-numeric:tabular-nums}
+.f2r .f2b{grid-column:1/-1;height:5px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}.f2r .f2b i{display:block;height:100%;border-radius:99px}
+.v0{color:#ff6b6b}.v1{color:#ff9f43}.v2{color:#ffd23f}.v3{color:#4cd964}.v4{color:#38e0ff}.b0{background:#ff6b6b}.b1{background:#ff9f43}.b2{background:#ffd23f}.b3{background:#4cd964}.b4{background:#38e0ff}
+.f2avg{font-size:.8rem;color:var(--mu)}
+.f2in{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}.f2in label{font-size:.76rem;color:var(--mu);display:flex;flex-direction:column;gap:2px}.f2in input{min-height:38px;font:inherit;border-radius:8px;border:1px solid var(--line);background:#0d2217;color:var(--tx);padding:4px 8px;width:100%}
+.f2vs{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;text-align:center}.f2vs a{color:inherit}.f2vs .vs{font-weight:800;color:var(--mu)}
+.f2cr{display:grid;grid-template-columns:3ch minmax(0,1fr) 3ch;gap:8px;align-items:center;margin:6px 0;font-size:.85rem}.f2cr b{font-variant-numeric:tabular-nums}.f2cr b:last-child{text-align:right}.f2cr .lbl{grid-column:1/-1;color:var(--mu);font-size:.76rem;margin-bottom:-4px;text-align:center}
+.f2cb{display:flex;height:8px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,.08)}.f2cb i{display:block;height:100%}.cA{background:#2fd16f}.cB{background:#ffb020}.win{color:#fff;text-shadow:0 0 8px currentColor}
+.f2leg{display:flex;gap:14px;flex-wrap:wrap;font-size:.85rem;margin:6px 0}.f2leg span:before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}.f2leg .la:before{background:#2fd16f}.f2leg .lb:before{background:#ffb020}
+@media (prefers-reduced-motion:no-preference){.f2t,.f2card{animation:pop .35s both}}html.no-anim .f2t,html.no-anim .f2card{animation:none!important}
+`;document.head.appendChild(s)})();
+
+const F2G=[["Atacante","⚔️",[["off_aw","Comportamento Ofensivo"],["ball_ctrl","Controle de Bola"],["dribble","Drible"],["tight_pos","Posse de Bola Firme"],["low_pass","Passe Rasteiro"],["lob_pass","Passe Alto"],["finishing","Finalização"],["heading","Cabeceio"],["place_kick","Chute Colocado"],["curl","Curva"]]],
+["Defesa","🛡️",[["def_aw","Comportamento Defensivo"],["ball_win","Desarme"],["aggr","Agressividade"]]],
+["Atletismo","⚡",[["speed","Velocidade"],["accel","Aceleração"],["kick_pow","Força do Chute"],["jump","Impulsão"],["phys","Contato Físico"],["balance","Equilíbrio"],["stamina","Resistência"]]],
+["Goleiro","🧤",[["gk_aw","Comportamento do Goleiro"],["gk_catch","Firmeza do Goleiro"],["gk_clear","Afastamento do Goleiro"],["gk_react","Reflexos do Goleiro"],["gk_reach","Alcance do Goleiro"]]]];
+const F2SEL="id,nome,pos,ovr,estilo,fortes,descricao,skills,extras,image_url,author,created_at,profiles!author(nick,avatar_url),card_likes(count)";
+let FC=[],FL=new Set(),CMP=[],FF={q:"",pos:"",st:"",min:"",max:"",sk:"",foto:false,at:false,sort:"rec",n:24};
+const f2cls=v=>v>=95?4:v>=85?3:v>=75?2:v>=60?1:0;
+const f2tier=o=>o>=100?3:o>=90?2:o>=80?1:0;
+const f2norm=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+const f2likes=c=>c.card_likes&&c.card_likes[0]?c.card_likes[0].count:0;
+const f2rt=c=>{const r=c.card_ratings||[];return{n:r.length,a:r.length?r.reduce((t,x)=>t+x.stars,0)/r.length:0}};
+const f2stars=c=>{const r=f2rt(c);if(!r.n)return `<span class="f2star"><i>sem avaliações</i></span>`;const f=Math.round(r.a);return `<span class="f2star" aria-label="Nota ${r.a.toFixed(1)} de 5">${"★".repeat(f)}${"☆".repeat(5-f)}<i>${r.a.toFixed(1)} (${r.n})</i></span>`};
+const f2avg=(c,g)=>{const st=c.stats||{},v=g[2].map(a=>st[a[0]]).filter(x=>typeof x==="number");return v.length?Math.round(v.reduce((t,x)=>t+x,0)/v.length*10)/10:null};
+async function f2load(){let rows;
+ try{rows=await api(`/rest/v1/player_cards?select=${F2SEL},stats,card_ratings(stars)&order=created_at.desc&limit=300`)}
+ catch(e){rows=await api(`/rest/v1/player_cards?select=${F2SEL}&order=created_at.desc&limit=300`)}
+ FC=rows;FN=[...new Set(rows.map(c=>c.nome))].slice(0,80);FL=new Set();
+ if(ME){try{FL=new Set((await api("/rest/v1/card_likes?user_id=eq."+ME.id+"&select=card_id")).map(x=>x.card_id))}catch(e){}}}
+function f2filtered(){const q=f2norm(FF.q),mn=parseInt(FF.min,10),mx=parseInt(FF.max,10);
+ let r=FC.filter(c=>(!q||f2norm(c.nome).includes(q))&&(!FF.pos||c.pos===FF.pos)&&(!FF.st||c.estilo===FF.st)&&(isNaN(mn)||c.ovr>=mn)&&(isNaN(mx)||c.ovr<=mx)
+  &&(!FF.sk||(c.skills||[]).includes(FF.sk)||(c.extras||[]).includes(FF.sk))&&(!FF.foto||imgOk(c.image_url))&&(!FF.at||c.stats));
+ const by={ovr:(a,b)=>b.ovr-a.ovr,likes:(a,b)=>f2likes(b)-f2likes(a),nota:(a,b)=>f2rt(b).a-f2rt(a).a||f2rt(b).n-f2rt(a).n,rec:(a,b)=>String(b.created_at).localeCompare(String(a.created_at))};
+ return r.sort(by[FF.sort]||by.rec)}
+function f2tile(c){const sk=(c.skills||[]).slice(0,4),more=(c.skills||[]).length-sk.length,on=CMP.includes(c.id);
+ return `<article class="card f2t">${imgOk(c.image_url)?`<a href="#f-${esc(c.id)}"><img class="f2ph" src="${esc(c.image_url)}" alt="Foto de ${esc(c.nome)}" loading="lazy"></a>`:""}
+ <div class="row between"><span class="tag">${esc(c.pos)}</span><span class="f2ovr">${esc(c.ovr)}<small>OVR</small></span></div>
+ <h3><a href="#f-${esc(c.id)}">${esc(c.nome)}</a></h3>${c.estilo?`<p class="sub">${esc(ps(c.estilo))}</p>`:""}
+ ${sk.length?`<div class="sks">${skl(sk,"s")}${more>0?`<span class="sub">+${more}</span>`:""}</div>`:""}${f2stars(c)}
+ <div class="row between"><span class="sub">${av(c,22)} ${nk(c)}</span><span><button class="btn sm" data-a="flike2" data-id="${esc(c.id)}" aria-label="Curtir">${FL.has(c.id)?"♥":"♡"} ${f2likes(c)}</button> <button class="btn sm" data-a="fcmp" data-id="${esc(c.id)}" aria-pressed="${on}">${on?"✓ ":""}⚖</button></span></div></article>`}
+function f2list(){const all=f2filtered(),shown=all.slice(0,FF.n);
+ const cb=CMP.length?`<div class="f2cmpbar"><span>⚖ ${CMP.map(id=>esc((FC.find(c=>c.id===id)||{}).nome||"?")).join(" × ")}${CMP.length<2?" — escolha mais uma":""}</span><span>${CMP.length===2?`<button class="btn p sm" data-a="fcmpgo">Comparar agora</button> `:""}<button class="btn sm" data-a="fcmpclr">Limpar</button></span></div>`:"";
+ return `<p class="sub" aria-live="polite">${all.length} ficha${all.length===1?"":"s"}</p>`+(shown.length?`<div class="grid">${shown.map(f2tile).join("")}</div>`:'<div class="card sub">Nenhuma ficha com esses filtros.</div>')
+ +(all.length>shown.length?`<div style="text-align:center;margin:12px 0"><button class="btn" data-a="fmore">Carregar mais (${all.length-shown.length})</button></div>`:"")+cb}
+const f2draw=()=>{const e=$("#fl");if(e)e.innerHTML=f2list()};
+pFichas=async function(){await f2load();
+ const skopts=[...SK_ALL].sort((a,b)=>sn(a).localeCompare(sn(b),"pt"));
+ return `<div class="row between"><h2>🃏 Fichas</h2><button class="btn p" data-a="fnew">Nova ficha</button></div>
+ <div class="f2bar" role="search"><label class="f2w">Buscar jogador<input data-fi="q" type="search" maxlength="60" placeholder="Nome do jogador" value="${esc(FF.q)}" autocomplete="off"></label>
+ <label>Posição<select data-fi="pos"><option value="">Todas</option>${POS.map(p=>`<option${FF.pos===p?" selected":""}>${p}</option>`).join("")}</select></label>
+ <label>Estilo de jogo<select data-fi="st"><option value="">Todos</option>${PLAYSTYLES.map(x=>`<option value="${esc(x)}"${FF.st===x?" selected":""}>${esc(ps(x))}</option>`).join("")}</select></label>
+ <label>Habilidade<select data-fi="sk"><option value="">Qualquer</option>${skopts.map(x=>`<option value="${esc(x)}"${FF.sk===x?" selected":""}>${esc(sn(x))}</option>`).join("")}</select></label>
+ <label>OVR mínimo<input data-fi="min" type="number" inputmode="numeric" min="40" max="130" value="${esc(FF.min)}"></label>
+ <label>OVR máximo<input data-fi="max" type="number" inputmode="numeric" min="40" max="130" value="${esc(FF.max)}"></label>
+ <label>Ordenar por<select data-fi="sort">${[["rec","Mais recentes"],["ovr","Maior OVR"],["likes","Mais curtidas"],["nota","Melhor avaliadas"]].map(o=>`<option value="${o[0]}"${FF.sort===o[0]?" selected":""}>${o[1]}</option>`).join("")}</select></label>
+ <label class="f2chk"><input data-fi="foto" type="checkbox"${FF.foto?" checked":""}> Só com foto</label><label class="f2chk"><input data-fi="at" type="checkbox"${FF.at?" checked":""}> Só com atributos</label></div>
+ <div id="fl">${f2list()}</div>`};
+document.addEventListener("input",e=>{const t=e.target.closest&&e.target.closest("[data-fi]");if(!t)return;FF[t.dataset.fi]=t.type==="checkbox"?t.checked:t.value;FF.n=24;f2draw()});
+
+/* página da ficha */
+const f2one=async id=>{let r;try{r=await api(`/rest/v1/player_cards?id=eq.${id}&select=${F2SEL},stats,card_ratings(stars)`)}catch(e){r=await api(`/rest/v1/player_cards?id=eq.${id}&select=${F2SEL}`)}
+ if(!r.length)throw new Error("Ficha não encontrada.");return r[0]};
+const f2rows=(c,g)=>g[2].filter(a=>c.stats&&typeof c.stats[a[0]]==="number").map(a=>{const v=c.stats[a[0]],k=f2cls(v);return `<div class="f2r"><span>${esc(a[1])}</span><b class="v${k}">${v}</b><div class="f2b"><i class="b${k}" style="width:${Math.min(100,Math.round(v/110*100))}%"></i></div></div>`}).join("");
+async function pFicha(id){const c=await f2one(id);let mine=0;
+ if(ME){try{const r=await api(`/rest/v1/card_ratings?card_id=eq.${id}&user_id=eq.${ME.id}&select=stars`);mine=r[0]?r[0].stars:0}catch(e){}
+  try{FL=new Set((await api("/rest/v1/card_likes?user_id=eq."+ME.id+"&select=card_id")).map(x=>x.card_id))}catch(e){}}
+ if(!FC.find(x=>x.id===id))FC.push(c);
+ const own=ME&&(ME.id===c.author||isA()),has=c.stats&&Object.keys(c.stats).length;
+ const grp=F2G.filter(g=>g[2].some(a=>c.stats&&typeof c.stats[a[0]]==="number"));
+ return `<p><a href="#fichas">← Fichas</a></p><div class="f2hero"><div class="f2card f2t${f2tier(c.ovr)}">
+ ${imgOk(c.image_url)?`<img class="f2ph" src="${esc(c.image_url)}" alt="Foto de ${esc(c.nome)}">`:`<div class="f2ph" aria-hidden="true">⚽</div>`}
+ <div class="f2top"><span class="tag">${esc(c.pos)}</span><span class="f2o">${esc(c.ovr)}</span></div><div class="f2n">${esc(c.nome)}</div>${c.estilo?`<div>${esc(ps(c.estilo))}${c.fortes?" · "+esc(c.fortes):""}</div>`:""}
+ <small>Ficha da comunidade · por ${nk(c)}</small></div>
+ <div><div class="card">${f2stars(c)}
+ ${ME&&ME.id!==c.author?`<div class="f2rate" role="group" aria-label="Sua nota">${[1,2,3,4,5].map(n=>`<button class="${n<=mine?"on":""}" data-a="frate" data-id="${esc(id)}" data-s="${n}" aria-label="${n} estrela${n>1?"s":""}">★</button>`).join("")}</div><div class="sub">${mine?"Sua nota: "+mine:"Toque para avaliar"}</div>`:`<div class="sub">${ME?"Você não pode avaliar a sua própria ficha.":"Entre para avaliar."}</div>`}
+ <div class="f2acts"><button class="btn sm" data-a="flike2" data-id="${esc(id)}">${FL.has(id)?"♥":"♡"} ${f2likes(c)}</button><button class="btn sm" data-a="fshare" data-id="${esc(id)}">🔗 Compartilhar</button><button class="btn sm" data-a="fpng" data-id="${esc(id)}">⬇ Baixar carta</button><button class="btn sm" data-a="fcmp" data-id="${esc(id)}">⚖ Comparar</button>${own?`<button class="btn sm" data-a="fstats" data-id="${esc(id)}">✏️ Atributos</button> <a href="#" data-a="fdel2" data-id="${esc(id)}">apagar</a>`:""}</div></div>
+ ${(c.skills||[]).length?`<div class="card"><b>Habilidades</b><div class="sks">${skl(c.skills,"s")}</div></div>`:""}${(c.extras||[]).length?`<div class="card"><b>Extras (${c.extras.length}/5)</b><div class="sks">${skl(c.extras,"x")}</div></div>`:""}
+ ${c.descricao?`<div class="card"><p class="body">${esc(c.descricao)}</p></div>`:""}</div></div>
+ <h3>Atributos</h3>${has?`<p class="f2avg">Valores informados pelo autor. A média de cada grupo é a média simples dos atributos preenchidos (conta do site, não é nota oficial do jogo).</p><div class="f2g">${grp.map(g=>`<div class="card"><div class="row between"><b>${g[1]} ${g[0]}</b><span class="f2avg">média ${f2avg(c,g)}</span></div>${f2rows(c,g)}</div>`).join("")}</div>`
+ :`<div class="card sub">O autor ainda não preencheu os atributos.${own?' <button class="btn sm p" data-a="fstats" data-id="'+esc(id)+'">Preencher agora</button>':""}</div>`}`}
+
+/* comparar */
+const f2cm=a=>a.n;
+async function pCmp(a,b){const r=await api(`/rest/v1/player_cards?id=in.(${a},${b})&select=${F2SEL},stats,card_ratings(stars)`).catch(()=>api(`/rest/v1/player_cards?id=in.(${a},${b})&select=${F2SEL}`));
+ const A=r.find(x=>x.id===a),B=r.find(x=>x.id===b);if(!A||!B)throw new Error("Fichas não encontradas.");
+ const bar=(la,va,vb,lbl)=>{const t=(va||0)+(vb||0)||1,wa=va==null?"":va>vb?"win":"",wb=vb==null?"":vb>va?"win":"";
+  return `<div class="f2cr"><span class="lbl">${esc(lbl)}</span><b class="${wa}">${va==null?"–":va}</b><div class="f2cb"><i class="cA" style="width:${(va||0)/t*100}%"></i><i class="cB" style="width:${(vb||0)/t*100}%"></i></div><b class="${wb}">${vb==null?"–":vb}</b></div>`};
+ const head=c=>`<div><div class="tag">${esc(c.pos)}</div><h3 style="margin:4px 0"><a href="#f-${esc(c.id)}">${esc(c.nome)}</a></h3><div class="f2ovr">${esc(c.ovr)}<small>OVR</small></div>${c.estilo?`<div class="sub">${esc(ps(c.estilo))}</div>`:""}</div>`;
+ const grpA=F2G.map(g=>[g,f2avg(A,g),f2avg(B,g)]).filter(x=>x[1]!=null||x[2]!=null);
+ let radar="";if(grpA.length>=3){const n=grpA.length,R=90,cx=120,cy=115,pt=(i,v)=>{const an=-Math.PI/2+i*2*Math.PI/n,rr=R*Math.min(v,120)/120;return[cx+rr*Math.cos(an),cy+rr*Math.sin(an)]};
+  const poly=k=>grpA.map((x,i)=>pt(i,x[k]||0).map(z=>z.toFixed(1)).join(",")).join(" ");
+  radar=`<svg viewBox="0 0 240 230" role="img" aria-label="Gráfico radar das médias por grupo" style="max-width:320px;width:100%;display:block;margin:0 auto">${[.33,.66,1].map(f=>`<polygon points="${grpA.map((x,i)=>pt(i,120*f).map(z=>z.toFixed(1)).join(",")).join(" ")}" fill="none" stroke="currentColor" opacity=".2"/>`).join("")}
+  <polygon points="${poly(1)}" fill="#2fd16f" fill-opacity=".28" stroke="#2fd16f" stroke-width="2"/><polygon points="${poly(2)}" fill="#ffb020" fill-opacity=".25" stroke="#ffb020" stroke-width="2"/>
+  ${grpA.map((x,i)=>{const p=pt(i,128);return `<text x="${p[0].toFixed(1)}" y="${p[1].toFixed(1)}" text-anchor="middle" font-size="10" fill="currentColor">${esc(x[0][0])}</text>`}).join("")}</svg>`}
+ const sa=new Set([...(A.skills||[]),...(A.extras||[])]),sb=new Set([...(B.skills||[]),...(B.extras||[])]),both=[...sa].filter(x=>sb.has(x)),oa=[...sa].filter(x=>!sb.has(x)),ob=[...sb].filter(x=>!sa.has(x));
+ const attrs=F2G.map(g=>{const rows=g[2].filter(x=>(A.stats&&typeof A.stats[x[0]]==="number")||(B.stats&&typeof B.stats[x[0]]==="number")).map(x=>bar(0,A.stats&&A.stats[x[0]],B.stats&&B.stats[x[0]],x[1])).join("");return rows?`<div class="card"><b>${g[1]} ${g[0]}</b>${rows}</div>`:""}).join("");
+ return `<p><a href="#fichas">← Fichas</a></p><h2>⚖ Comparar fichas</h2><div class="card"><div class="f2vs">${head(A)}<span class="vs">VS</span>${head(B)}</div>
+ <div class="f2leg"><span class="la">${esc(A.nome)}</span><span class="lb">${esc(B.nome)}</span></div>
+ ${bar(0,A.ovr,B.ovr,"OVR")}${bar(0,f2likes(A),f2likes(B),"Curtidas")}${f2rt(A).n||f2rt(B).n?bar(0,Math.round(f2rt(A).a*10)/10,Math.round(f2rt(B).a*10)/10,"Nota (1 a 5)"):""}</div>
+ ${radar?`<div class="card"><b>Médias por grupo</b>${radar}</div>`:""}${attrs?`<div class="f2g">${attrs}</div>`:'<div class="card sub">Nenhuma das duas fichas tem atributos preenchidos ainda.</div>'}
+ <div class="card"><b>Habilidades</b><p class="sub">Em comum</p><div class="sks">${both.length?skl(both,"s"):'<span class="sub">nenhuma</span>'}</div><p class="sub">Só ${esc(A.nome)}</p><div class="sks">${oa.length?skl(oa,"s"):'<span class="sub">–</span>'}</div><p class="sub">Só ${esc(B.nome)}</p><div class="sks">${ob.length?skl(ob,"s"):'<span class="sub">–</span>'}</div></div>`}
+
+/* rotas e ações */
+{const _pg=page;page=async function(){const m=/^cmp-([0-9a-f-]{36})-([0-9a-f-]{36})$/.exec(CUR);
+ if(m&&UUID.test(m[1])&&UUID.test(m[2]))return pCmp(m[1],m[2]);
+ if(CUR.startsWith("f-")&&UUID.test(CUR.slice(2)))return pFicha(CUR.slice(2));
+ return _pg()}}
+Object.assign(A,{
+ flike2:async id=>{if(!ME)return authDlg("login");if(!UUID.test(id))return;const had=FL.has(id);
+  try{if(had)await api(`/rest/v1/card_likes?card_id=eq.${id}&user_id=eq.${ME.id}`,{method:"DELETE"});else await api("/rest/v1/card_likes",{method:"POST",body:{card_id:id,user_id:ME.id},headers:{Prefer:"return=minimal"}})}
+  catch(e){if(e.status===409)await api(`/rest/v1/card_likes?card_id=eq.${id}&user_id=eq.${ME.id}`,{method:"DELETE"});else throw e}
+  const c=FC.find(x=>x.id===id);if(c){const n=f2likes(c)+(had?-1:1);c.card_likes=[{count:Math.max(0,n)}]}
+  if(had)FL.delete(id);else FL.add(id);
+  if($("#fl"))f2draw();else render(true)},
+ fmore:()=>{FF.n+=24;f2draw()},
+ fcmp:id=>{if(!UUID.test(id))return;const i=CMP.indexOf(id);if(i>=0)CMP.splice(i,1);else{if(CMP.length>=2)CMP.shift();CMP.push(id)}
+  if($("#fl"))f2draw();else if(CMP.length===2)location.hash="cmp-"+CMP[0]+"-"+CMP[1];else{toast("Agora escolha a outra ficha na lista.");location.hash="fichas"}},
+ fcmpgo:()=>{if(CMP.length===2)location.hash="cmp-"+CMP[0]+"-"+CMP[1]},
+ fcmpclr:()=>{CMP=[];f2draw()},
+ frate:async(id,el)=>{if(!ME)return authDlg("login");await rpc("rate_card",{p_id:id,p_stars:parseInt(el.dataset.s,10)});toast("Obrigado pela nota!");render(true)},
+ fshare:async id=>{const u=location.origin+location.pathname+"#f-"+id;
+  try{if(navigator.share){await navigator.share({title:"Ficha no eFootball Brasil",url:u});return}}catch(e){if(e&&e.name==="AbortError")return}
+  try{await navigator.clipboard.writeText(u);toast("Link copiado!")}catch(e){toast(u)}},
+ fdel2:async id=>{if(!ME||!UUID.test(id)||!confirm("Apagar esta ficha?"))return;await api("/rest/v1/player_cards?id=eq."+id,{method:"DELETE"});toast("Ficha apagada.");location.hash="fichas"},
+ fstats:async id=>{const c=await f2one(id),st=c.stats||{};
+  dlg(`<h3>Atributos de ${esc(c.nome)}</h3><p class="sub">Digite os valores da carta (1 a 130). Deixe em branco o que não quiser informar. Para goleiros, preencha o grupo Goleiro.</p>
+  ${F2G.map(g=>`<div class="skbox" style="max-height:none"><b>${g[1]} ${g[0]}</b><div class="f2in">${g[2].map(a=>`<label>${esc(a[1])}<input type="number" inputmode="numeric" min="1" max="130" data-st="${a[0]}" value="${typeof st[a[0]]==="number"?st[a[0]]:""}"></label>`).join("")}</div></div>`).join("")}
+  <div class="err" id="fe"></div><div class="row"><button class="btn p" data-a="fstsave" data-id="${esc(id)}">Salvar</button><button class="btn" data-a="close">Cancelar</button></div>`)},
+ fstsave:async id=>{const o={};for(const i of document.querySelectorAll("#dc [data-st]")){if(i.value==="")continue;const v=parseInt(i.value,10);if(!(v>=1&&v<=130))return fail("Use números de 1 a 130.");o[i.dataset.st]=v}
+  await rpc("set_card_stats",{p_id:id,p_stats:Object.keys(o).length?o:null});closeDlg();toast("Atributos salvos!");render(true)},
+ fpng:async id=>{const c=await f2one(id),W=600,H=840,cv=document.createElement("canvas");cv.width=W;cv.height=H;const x=cv.getContext("2d"),T=[["#4b5a52","#26322c"],["#c9a227","#6b5410"],["#1fb7a8","#0b4f57"],["#a35cff","#40206b"]][f2tier(c.ovr)];
+  const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,T[0]);g.addColorStop(1,T[1]);x.fillStyle=g;x.fillRect(0,0,W,H);x.strokeStyle="rgba(255,255,255,.4)";x.lineWidth=6;x.strokeRect(10,10,W-20,H-20);
+  if(imgOk(c.image_url)){try{const im=await new Promise((ok,no)=>{const i=new Image();i.crossOrigin="anonymous";i.onload=()=>ok(i);i.onerror=no;i.src=c.image_url});
+   const bw=W-80,bh=470,s=Math.max(bw/im.width,bh/im.height),sw=bw/s,sh=bh/s;x.save();x.beginPath();x.roundRect(40,100,bw,bh,20);x.clip();x.drawImage(im,(im.width-sw)/2,(im.height-sh)/2,sw,sh,40,100,bw,bh);x.restore()}catch(e){}}
+  x.fillStyle="#fff";x.font="800 72px system-ui,sans-serif";x.textAlign="left";x.fillText(String(c.ovr),40,80);x.font="700 34px system-ui,sans-serif";x.textAlign="right";x.fillText(c.pos,W-40,76);
+  x.textAlign="left";x.font="800 44px system-ui,sans-serif";let nm=c.nome;while(x.measureText(nm).width>W-80&&nm.length>3)nm=nm.slice(0,-1);x.fillText(nm,40,640);
+  x.font="600 26px system-ui,sans-serif";if(c.estilo)x.fillText(ps(c.estilo),40,684);
+  x.font="500 22px system-ui,sans-serif";x.fillText(((c.skills||[]).length)+" habilidades · "+((c.extras||[]).length)+" extras",40,724);
+  x.globalAlpha=.85;x.font="600 20px system-ui,sans-serif";x.fillText("efootballbrasil.com.br · ficha da comunidade",40,H-52);x.font="500 18px system-ui,sans-serif";x.fillText("por "+((c.profiles&&c.profiles.nick)||"?"),40,H-26);
+  const b=await new Promise(r=>cv.toBlob(r,"image/png"));if(!b)return toast("Não foi possível gerar a imagem.");
+  const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="ficha-"+f2norm(c.nome).replace(/[^a-z0-9]+/g,"-")+".png";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+});
 </script>
 </body>
 </html>
