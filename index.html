@@ -1104,7 +1104,7 @@ async function pCamps(){
  let ts=[];try{ts=await api("/rest/v1/tournaments?select=id,title,size,status,created_at,profiles(nick)&order=created_at.desc&limit=60")}catch(e){return `<div class="card"><h2>🏆 Campeonatos</h2><p class="sub">Ainda não está disponível. ${esc(e.message||"")}</p></div>`}
  const org=await orgOk();
  return `<div class="row between"><h2>🏆 Campeonatos</h2>${org?'<button class="btn p" data-a="cnew">+ Novo campeonato</button>':""}</div><p class="sub">Mata-mata de 8, 16 ou 32 times, com clubes das principais ligas. Só o organizador lança os resultados.</p>`+
- (ts.length?ts.map(t=>`<a class="card" href="#camp-${esc(t.id)}"><span class="tag">${esc(CSTAT[t.status]||t.status)}</span> <span class="tag">${t.size} times</span><h3>${esc(t.title)}</h3><div class="sub">Organizador: ${esc(t.profiles&&t.profiles.nick||"—")} · ${when(t.created_at)}</div></a>`).join(""):`<div class="card sub">Nenhum campeonato ainda.${org?" Crie o primeiro!":""}</div>`)}
+ (isA()?await pOrgs():"")+(ts.length?ts.map(t=>`<a class="card" href="#camp-${esc(t.id)}"><span class="tag">${esc(CSTAT[t.status]||t.status)}</span> <span class="tag">${t.size} times</span><h3>${esc(t.title)}</h3><div class="sub">Organizador: ${esc(t.profiles&&t.profiles.nick||"—")} · ${when(t.created_at)}</div></a>`).join(""):`<div class="card sub">Nenhum campeonato ainda.${org?" Crie o primeiro!":""}</div>`)}
 async function pCamp(id){
  if(!UUID.test(id))return '<div class="card">Campeonato não encontrado.</div>';
  const t=(await api(`/rest/v1/tournaments?id=eq.${id}&select=id,title,size,status,champion_slot,organizer_id,created_at,profiles(nick)`))[0];if(!t)return '<div class="card">Campeonato não encontrado.</div>';
