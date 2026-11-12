@@ -254,6 +254,7 @@ const isA=()=>!!ME&&ME.role==="admin",isCeo=()=>!!ME&&!!ME.is_owner;
 /* ---------- comunicação com o Supabase (mesmos cabeçalhos validados no teste) ---------- */
 const ERR={"Invalid login credentials":"E-mail ou senha incorretos.","Email not confirmed":"Confirme o seu e-mail antes de entrar.","User already registered":"Já existe uma conta com esse e-mail.","Token has expired or is invalid":"Código inválido ou expirado.","New password should be different from the old password.":"A nova senha precisa ser diferente da anterior."};
 function msgOf(j,st){const m=j&&(j.msg||j.message||j.error_description||j.error)||"",c=j&&(j.code||j.error_code);
+ if(c==="PGRST202"||c==="PGRST205"||/Could not find the (function|table)/i.test(m))return "Este recurso ainda não está ativo no servidor. Avise a administração (falta rodar o SQL do chat no Supabase).";
  if(ERR[m])return ERR[m];
  if(c==="over_email_send_rate_limit"||c==="over_request_rate_limit"||st===429)return "Muitas tentativas. Espere um pouco e tente de novo.";
  if(/Database error saving new user/i.test(m))return "Não foi possível criar a conta. O nickname pode já estar em uso ou ter caracteres inválidos (use 3 a 20 letras, números, _ ou .).";
@@ -440,9 +441,14 @@ async function pMatchById(id){return UUID.test(id)?`<a href="#batalha" class="su
 /* balão do mascote: avisa partida para aceitar e mensagens novas */
 const setBadge=n=>{const e=$("#bn");if(e){e.textContent=n>99?"99+":n;e.classList.toggle("on",n>0)}};
 let LASTN=null;
+let CHU=0,CHR=0;
+async function chatUnread(){if(!ME)return 0;const r=await api(`/rest/v1/listing_chats?select=id,buyer_id,seller_id,last_sender,last_at,buyer_read_at,seller_read_at&or=(buyer_id.eq.${ME.id},seller_id.eq.${ME.id})&limit=100`);
+ return r.filter(c=>{if(!c.last_sender||c.last_sender===ME.id||CUR==="c-"+c.id)return false;const rd=c.buyer_id===ME.id?c.buyer_read_at:c.seller_read_at;return !rd||new Date(rd)<new Date(c.last_at)}).length}
 async function bg(){if(!ME){ACT=null;LASTN=null;return setBadge(0)}let n=0;try{const b=await myBattle();ACT=b;if(b){const view=CUR==="batalha"||CUR==="b-"+b.id;if(b.status==="ready"&&!view)n++;
   const ms=await api(`/rest/v1/battle_messages?battle_id=eq.${b.id}&select=id,user_id&order=id.desc&limit=30`);let s=0;try{s=+localStorage.getItem("efb_seen_"+b.id)||0}catch(e){}if(!view)n+=ms.filter(m=>m.id>s&&m.user_id!==ME.id).length}}catch(e){}
  try{n+=await supCount()}catch(e){}
+ try{CHU=await chatUnread();n+=CHU}catch(e){}
+ try{if(isA()){CHR=(await api("/rest/v1/chat_reports?status=eq.aberta&select=id&limit=50")).length;n+=CHR}else CHR=0}catch(e){}
  if(LASTN!==null&&n>LASTN)sambaDing();LASTN=n;setBadge(n)}
 setInterval(async()=>{if(!ME||document.hidden||POLLING)return;POLLING=true;try{if(CUR==="batalha"||CUR.startsWith("b-"))await render(true);await bg()}catch(e){}finally{POLLING=false}},3500);
 Object.assign(A,{
@@ -552,6 +558,7 @@ Object.assign(A,{
   const waiting=SUPL.filter(x=>x.wait).length;
   dlg(`<h3>Mensagens</h3>${ACT?`<div class="card" data-a="gob" style="cursor:pointer">⚔️ <b>Partida ${esc(ACT.mode)}</b> em andamento<div class="sub">Toque para abrir a partida e o chat</div></div>`:'<div class="card sub">Nenhuma partida em andamento.</div>'}
   <div class="card" data-a="sopen" style="cursor:pointer">🛟 <b>${isA()?"Caixa de suporte":"Falar com o suporte"}</b>${isA()&&waiting?` <span class="tag">${waiting} aguardando</span>`:""}<div class="sub">${isA()?"Conversas dos usuários":"Fale com a equipe"}</div></div>
+  <div class="card" data-a="gomsg" style="cursor:pointer">🛒 <b>Conversas do marketplace</b>${CHU?` <span class="tag">${CHU} nova${CHU>1?"s":""}</span>`:""}<div class="sub">Compradores e vendedores</div></div>${isA()&&CHR?`<div class="card" data-a="gorep" style="cursor:pointer">🚩 <b>Denúncias de conversas</b> <span class="tag">${CHR} aberta${CHR>1?"s":""}</span><div class="sub">Toque para ver no painel Admin</div></div>`:""}
   <div class="card row between"><span>🔔 Som das notificações</span><button class="btn sm" data-a="snd">${SND.on?"Ligado":"Desligado"}</button></div><button class="btn" data-a="close">Fechar</button>`)}
 });
 </script>
@@ -897,6 +904,8 @@ document.addEventListener("change",e=>{if(e.target.id!=="cfile")return;const f=e
  if(!/^image\/(jpeg|png|webp)$/.test(f.type)){const r=$("#cerr");if(r)r.textContent="Use uma foto JPG, PNG ou WebP.";return}
  CH.file=f;const v=$("#cpv");if(v)v.innerHTML='📎 '+esc(f.name).slice(0,40)+' <button class="btn sm" data-a="cdrop">✕ Remover</button>'});
 Object.assign(A,{
+ gomsg:()=>{closeDlg();if(!ME)return authDlg("login");MK.view="msg";MK.mine=false;if(CUR==="marketplace")render(true);else location.hash="#marketplace"},
+ gorep:()=>{closeDlg();location.hash="#admin"},
  mtab:id=>{if(id!=="all"&&!ME)return authDlg("login");MK.view=id;MK.mine=false;if(CUR==="marketplace")render(true);else location.hash="#marketplace"},
  cchat:async id=>{if(!ME)return authDlg("login");const cid=await rpc("open_listing_chat",{p_listing:id});location.hash="#c-"+cid},
  cdrop:()=>{CH.file=null;const v=$("#cpv");if(v)v.textContent=""},
