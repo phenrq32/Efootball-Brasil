@@ -729,14 +729,15 @@ async function mkHtml(){
  let favIds=null;if(MK.view==="fav"&&ME){favIds=(await api("/rest/v1/favorites?select=listing_id")).map(x=>x.listing_id).filter(x=>UUID.test(x))}
  if(favIds)q+="&status=neq.removido&id=in.("+(favIds.length?favIds.join(","):"00000000-0000-0000-0000-000000000000")+")";else q+=MK.mine&&ME?`&seller_id=eq.${ME.id}&status=neq.removido`:"&status=eq.ativo";
  const ord=MK.ord==="asc"?"price_cents.asc":MK.ord==="desc"?"price_cents.desc":"created_at.desc";
- const rows=await api(`/rest/v1/listings?price_cents=lte.${MK.max*100}${q}&select=id,seller_id,title,ovr,coins,platform,acct_level,price_cents,image_urls,status,created_at,profiles!seller_id(nick,avatar_url)&order=${ord}&limit=60`);
+ const rows=await api(`/rest/v1/listings?select=id,seller_id,title,ovr,coins,platform,acct_level,price_cents,image_urls,status,created_at,profiles!seller_id(nick,avatar_url)&order=${ord}&limit=60${favIds?"":"&price_cents=lte."+MK.max*100}${q}`);
  let fav=new Set();if(ME){try{fav=new Set((await api("/rest/v1/favorites?select=listing_id")).map(x=>x.listing_id))}catch(e){}}
  if(!rows.length)return `<div class="card empty"><div class="logo" aria-hidden="true"></div><h3>Nada por aqui ainda</h3><p class="sub">${MK.view==="fav"?"Você ainda não favoritou nenhuma conta. Toque no 🤍 de um anúncio para guardar aqui.":MK.mine?"Você ainda não publicou nada.":"Nenhum anúncio com esses filtros. Volte logo: novas contas aparecem toda hora!"}</p></div>`;
  return `<div class="mkgrid">${rows.map(l=>{const im=l.image_urls.filter(imgOk),isNew=Date.now()-new Date(l.created_at)<MKNEW;
   return `<article class="lc"><div class="lc-img">${im[0]?`<img src="${esc(im[0])}" alt="" loading="lazy">`:""}${l.ovr?`<span class="ovrb">${esc(l.ovr)}<small>OVR</small></span>`:""}${isNew?'<span class="pill n">NOVO</span>':""}${fcount(im.length)}${ME?`<button class="lf" data-a="mfav" data-id="${esc(l.id)}" data-fav="${esc(l.id)}" aria-label="Favoritar">${fav.has(l.id)?"❤️":"🤍"}</button>`:""}</div>
   <div class="lc-b"><h3><a class="lc-link" href="#m-${esc(l.id)}">${esc(l.title)}</a></h3><div class="chips">${cap(esc(l.platform||""))}${l.coins?cap(esc(Number(l.coins).toLocaleString("pt-BR"))+" moedas"):""}${l.acct_level?cap("Nível "+esc(l.acct_level)):""}${l.status==="vendido"?cap("Vendido"):""}</div>
   <div class="lc-f"><span class="price">${BRL(l.price_cents)}</span><span class="sel">${av(l,18)}${nk(l)}</span></div></div></article>`}).join("")}</div>`}
-async function mkList(){const e=$("#mkres");if(!e)return;try{e.innerHTML=await mkHtml()}catch(x){e.innerHTML='<div class="card">'+esc(x.message)+'</div>'}}
+async function mkSafe(){try{return await mkHtml()}catch(x){return `<div class="card">Não foi possível carregar a lista agora. ${esc(x.message||"")} <button class="btn sm" data-a="mretry">Tentar de novo</button></div>`}}
+async function mkList(){const e=$("#mkres");if(!e)return;e.innerHTML=await mkSafe()}
 async function pMarket(){
  let box="",pend="",sellers="";
  const canSell=ME&&(ME.role==="vendedor"||isA());
@@ -753,7 +754,7 @@ async function pMarket(){
  if(MK.view==="msg"&&ME)return `<div class="mkh"><h2>🛒 Marketplace</h2></div>${tabs}`+await chatsHtml();
  return `<div class="mkh"><h2>🛒 Marketplace</h2></div><div class="warn"><b>Compra e pagamento ainda não estão ativos.</b> Por enquanto você pode ver os anúncios, favoritar e conversar com o vendedor. A Konami proíbe a venda de contas: leia os <a href="#" data-a="doc" data-id="vend" style="color:var(--y)">Termos do Vendedor</a>.</div>${tabs}<div class="card">${box}</div>${pend}${sellers}
  <div class="card mkbar"><label class="f">Buscar<input id="mq" type="search" maxlength="40" placeholder="Nome do anúncio" value="${esc(MK.q||"")}"></label><label class="f">Ordem<select id="mo"><option value="new" ${MK.ord==="new"?"selected":""}>Recentes</option><option value="asc" ${MK.ord==="asc"?"selected":""}>Menor preço</option><option value="desc" ${MK.ord==="desc"?"selected":""}>Maior preço</option></select></label><label class="f" style="grid-column:1/-1">Preço máximo: <b id="mxv">${BRL(MK.max*100)}</b><input id="mxs" type="range" min="100" max="10000" step="100" value="${MK.max}"></label></div>
- <div id="mkres">${await mkHtml()}</div>`}
+ <div id="mkres">${await mkSafe()}</div>`}
 /* filtros atualizam só a lista (a busca não perde o foco) */
 let mkT=null;
 document.addEventListener("change",e=>{if(e.target.id==="mo"){MK.ord=e.target.value;mkList()}if(e.target.id==="mxs"){MK.max=+e.target.value;mkList()}});
@@ -935,6 +936,7 @@ document.addEventListener("change",e=>{if(e.target.id!=="cfile")return;const f=e
 Object.assign(A,{
  gomsg:()=>{closeDlg();if(!ME)return authDlg("login");MK.view="msg";MK.mine=false;if(CUR==="marketplace")render(true);else location.hash="#marketplace"},
  gorep:()=>{closeDlg();location.hash="#admin"},
+ mretry:()=>mkList(),
  mtab:id=>{if(id!=="all"&&!ME)return authDlg("login");MK.view=id;MK.mine=false;if(CUR==="marketplace")render(true);else location.hash="#marketplace"},
  cchat:async id=>{if(!ME)return authDlg("login");const cid=await rpc("open_listing_chat",{p_listing:id});location.hash="#c-"+cid},
  cdrop:()=>{CH.file=null;const v=$("#cpv");if(v)v.textContent=""},
