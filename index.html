@@ -43,6 +43,9 @@ dialog::backdrop{background:rgba(0,0,0,.7)}
 footer{max-width:880px;margin:0 auto;padding:10px 14px 30px;color:var(--mu);font-size:.8rem;text-align:center}footer a{color:var(--y)}
 #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(30px);background:#14301f;border:1px solid var(--g);padding:10px 16px;border-radius:12px;opacity:0;pointer-events:none;transition:.25s;z-index:99;max-width:90vw}
 #toast.on{opacity:1;transform:translateX(-50%)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}.grid>.card{margin:0}
+.mb{position:fixed;right:max(14px,env(safe-area-inset-right));bottom:calc(16px + env(safe-area-inset-bottom));z-index:70;width:64px;height:84px;padding:0;border:0;background:var(--mas) center/contain no-repeat;filter:drop-shadow(0 10px 20px rgba(0,0,0,.55));cursor:pointer;transition:transform .2s;min-height:0}.mb:hover{transform:translateY(-4px) scale(1.04)}.mb .bb{position:absolute;left:-14px;top:2px;width:30px;height:30px;border-radius:50%;background:var(--y);color:#06130c;display:grid;place-items:center;font-size:15px;box-shadow:0 4px 12px rgba(0,0,0,.4)}.mb .bn{position:absolute;right:-2px;top:-6px;min-width:22px;height:22px;padding:0 5px;border-radius:99px;background:#e5484d;color:#fff;font:700 .75rem system-ui;display:none;place-items:center}.mb .bn.on{display:grid}
+#nav a[href="#batalha"] .ni{animation:bt 3.2s ease-in-out infinite}@keyframes bt{0%,80%,100%{transform:rotate(0)}88%{transform:rotate(-14deg) scale(1.2)}94%{transform:rotate(10deg) scale(1.2)}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -53,6 +56,7 @@ footer{max-width:880px;margin:0 auto;padding:10px 14px 30px;color:var(--mu);font
 </header>
 <main id="pg" aria-live="polite"></main>
 <footer>© eFootball Brasil · Comunidade independente, sem vínculo com a Konami · <a href="#" data-a="doc" data-id="termos">Termos</a> · <a href="#" data-a="doc" data-id="priv">Privacidade</a></footer>
+<button class="mb" data-a="inbox" aria-label="Mensagens"><span class="bb" aria-hidden="true">💬</span><span class="bn" id="bn"></span></button>
 <div id="toast" role="status"></div>
 <dialog id="dg"><div id="dc"></div></dialog>
 
@@ -99,21 +103,24 @@ const fld=(id,l,x)=>`<label class="f">${l}<input id="${id}" ${x||'maxlength="80"
 const val=id=>($("#"+id)||{value:""}).value.trim();
 const wait=()=>'<div class="card sub">A carregar…</div>';
 
-async function render(){
+async function render(q){
  const nav=NAV.slice();if(isA())nav.push(["admin","Administração","🛡️"]);
  $("#nav").innerHTML=nav.map(n=>`<a href="#${n[0]}" class="${CUR===n[0]||(CUR.startsWith("t-")&&n[0]==="forum")?"on":""}"><span class="ni" aria-hidden="true">${n[2]}</span> ${n[1]}</a>`).join("");
  $("#user").innerHTML=ME?`<span class="sub">@${esc(ME.nick)}${isCeo()?" · CEO":isA()?" · admin":""}</span> <button class="btn sm" data-a="out">Sair</button>`:'<button class="btn sm p" data-a="auth">Entrar</button>';
- const p=$("#pg");p.innerHTML=wait();const mine=++render.n;let h;
+ const p=$("#pg");if(!q)p.innerHTML=wait();const mine=++render.n;let h;
  try{h=await page()}catch(e){h=`<div class="card">${esc(e.message)}</div>`}
- if(mine===render.n)p.innerHTML=h}
+ if(mine===render.n){const bm=$("#bm"),v=bm&&bm.value,fo=bm&&document.activeElement===bm,bc=$("#bc"),at=bc&&bc.scrollTop,bot=bc&&bc.scrollHeight-bc.scrollTop-bc.clientHeight<40;p.innerHTML=h;const n2=$("#bm");if(n2&&v){n2.value=v;if(fo)n2.focus()}const c2=$("#bc");if(c2)c2.scrollTop=(!q||bot)?c2.scrollHeight:at}if(!q&&typeof bg==="function")bg()}
 render.n=0;
-const SOON={fichas:["🃏 Fichas de jogadores","Em breve: crie fichas dos seus craques e receba likes da comunidade."],batalha:["⚔️ Batalha","Em breve: fila 1v1, 2v2 e 3v3 com ranking ELO e canal de voz no Discord."],marketplace:["🛒 Marketplace","Em breve. Antes de abrir, precisamos concluir a verificação de vendedores e o sistema de pagamento."]};
+const SOON={marketplace:["🛒 Marketplace","Em breve. Antes de abrir, precisamos concluir a verificação de vendedores e o sistema de pagamento."]};
 async function page(){
  if(CUR.startsWith("t-"))return pThread(CUR.slice(2));
  if(CUR==="inicio")return pHome();
  if(CUR==="noticias")return pContent("noticia");
  if(CUR==="formacoes")return pContent("formacao");
  if(CUR==="forum")return pForum();
+ if(CUR==="fichas")return pFichas();
+ if(CUR==="batalha")return pBatalha();
+ if(CUR.startsWith("b-"))return pMatchById(CUR.slice(2));
  if(CUR==="admin")return isA()?pAdmin():'<div class="card">Sem permissão.</div>';
  const s=SOON[CUR];return s?`<div class="card"><h2>${s[0]}</h2><p>${s[1]}</p></div>`:'<div class="card">Página não encontrada.</div>'}
 async function pHome(){let n=[];try{n=await api("/rest/v1/content?kind=eq.noticia&select=id,title,created_at&order=created_at.desc&limit=3")}catch(e){}
@@ -152,7 +159,7 @@ const A={
  close:closeDlg,
  auth:m=>authDlg(m==="reg"?"reg":"login"),
  doc:id=>{const d=DOCS[id];if(!d)return;dlg(`<h3>${d[0]}</h3><div class="doc">${d[1].map(s=>`<h4>${s[0]}</h4><p>${s[1]}</p>`).join("")}</div><div class="warn">Texto-modelo: precisa de revisão jurídica antes do lançamento.</div><button class="btn" data-a="close">Fechar</button>`)},
- out:async()=>{try{await api("/auth/v1/logout",{method:"POST"})}catch(e){}store(null);ME=null;toast("Sessão terminada.");render()},
+ out:async()=>{try{await api("/auth/v1/logout",{method:"POST"})}catch(e){}store(null);ME=null;ACT=null;setBadge(0);LASTB=null;toast("Sessão terminada.");render()},
  lg:async()=>{const e=val("l_e").toLowerCase(),p=$("#l_p").value;if(!/^\S+@\S+\.\S+$/.test(e)||!p)return fail("Informe o e-mail e a senha.");
   try{await enter(await api("/auth/v1/token?grant_type=password",{method:"POST",body:{email:e,password:p},auth:false}))}
   catch(x){if(/Confirme o seu e-mail/.test(x.message)){PEND={e};fail(x.message+" Toque em “Reenviar código” abaixo.");$("#fe").insertAdjacentHTML("afterend",'<button class="btn sm" data-a="resend">Reenviar código</button>')}else fail(x.message)}},
@@ -191,6 +198,71 @@ const A={
  arem:(id,el)=>{if(!isCeo())return;dlg(`<h3>Remover administrador?</h3><p class="sub">@${esc(el.dataset.n)} perde o acesso à administração. A conta continua existindo.</p><div class="row"><button class="btn d" data-a="arem2" data-id="${esc(id)}">Remover</button><button class="btn" data-a="close">Cancelar</button></div>`)},
  arem2:async id=>{if(!isCeo()||!UUID.test(id))return;await api("/rest/v1/rpc/admin_set_role",{method:"POST",body:{p_user:id,p_role:"membro"}});closeDlg();toast("Administrador removido.");render()}
 };
+/* ---------- Fichas, Batalha e balão do mascote (etapa 2) ---------- */
+const rpc=(f,b)=>api("/rest/v1/rpc/"+f,{method:"POST",body:b||{}});
+const POS=["GOL","ZAG","LE","LD","VOL","MC","MEI","PE","PD","SA","CA"],MODES={"1v1":2,"2v2":4,"3v3":6},TIER=e=>e<1000?"Bronze":e<1100?"Prata":e<1200?"Ouro":"Elite";
+let LB="1v1",POLLING=false,ACT=null,LASTB=null;
+const nk=x=>esc(x&&x.profiles&&x.profiles.nick||"?");
+async function pFichas(){
+ const rows=await api("/rest/v1/player_cards?select=id,nome,pos,ovr,estilo,fortes,descricao,author,created_at,profiles(nick),card_likes(count)&order=created_at.desc&limit=60");
+ let liked=new Set();if(ME){try{liked=new Set((await api("/rest/v1/card_likes?user_id=eq."+ME.id+"&select=card_id")).map(x=>x.card_id))}catch(e){}}
+ return `<div class="row between"><h2>🃏 Fichas</h2><button class="btn p" data-a="fnew">Nova ficha</button></div>`+(rows.length?`<div class="grid">`+rows.map(c=>`<article class="card"><div class="row between"><span class="tag">${esc(c.pos)}</span><b>${esc(c.ovr)} OVR</b></div><h3>${esc(c.nome)}</h3><p class="sub">${esc(c.estilo||"")}${c.fortes?" · "+esc(c.fortes):""}</p>${c.descricao?`<p class="body">${esc(c.descricao)}</p>`:""}<div class="row between"><span class="sub">@${nk(c)}</span><span><button class="btn sm" data-a="flike" data-id="${esc(c.id)}">${liked.has(c.id)?"♥":"♡"} ${c.card_likes&&c.card_likes[0]?c.card_likes[0].count:0}</button>${ME&&(isA()||ME.id===c.author)?` <a href="#" data-a="fdel" data-id="${esc(c.id)}">apagar</a>`:""}</span></div></article>`).join("")+`</div>`:'<div class="card sub">Nenhuma ficha ainda.</div>')}
+async function ratingBox(){const r=await api("/rest/v1/ratings?user_id=eq."+ME.id+"&select=mode,elo,wins,losses");return r.length?`<div class="card"><b>Seu ranking</b>${r.map(x=>`<div class="row between"><span>${esc(x.mode)}</span><span>${x.elo} ELO · ${TIER(x.elo)} · ${x.wins}V ${x.losses}D</span></div>`).join("")}</div>`:""}
+async function lbHtml(){const r=await api(`/rest/v1/ratings?mode=eq.${LB}&select=elo,wins,losses,profiles(nick)&order=elo.desc&limit=10`);
+ return `<div class="card"><h3>🏆 Ranking</h3><div class="tabs">${Object.keys(MODES).map(m=>`<button class="btn tab ${m===LB?"on":""}" data-a="lbm" data-id="${m}">${m}</button>`).join("")}</div>`+(r.length?r.map((x,i)=>`<div class="row between" style="padding:4px 0"><span>${i+1}. @${nk(x)} <span class="tag">${TIER(x.elo)}</span></span><span class="sub">${x.elo} ELO · ${x.wins}V ${x.losses}D</span></div>`).join(""):'<p class="sub">Ainda sem jogadores no ranking.</p>')+`</div>`}
+const myBattleQ="/rest/v1/battle_players?user_id=eq.%ID%&battles.status=in.(ready,play,dispute)&select=team,is_captain,accepted,battles!inner(id,mode,status,host_id,vc_name,ready_deadline,winner)";
+async function myBattle(){if(!ME)return null;const r=await api(myBattleQ.replace("%ID%",ME.id));return r&&r[0]?r[0].battles:null}
+async function pBatalha(){
+ let h=`<h2>⚔️ Batalha</h2><div class="warn">Sem apostas: aqui o foco é ranking e achar com quem jogar. O jogador sorteado cria a sala no eFootball e envia o código no chat da partida.</div>`;
+ if(ME){const b=await myBattle();if(b){LASTB=b.id;return h+await pMatchBody(b.id)}if(LASTB)return h+await pMatchBody(LASTB);
+  const q=(await api("/rest/v1/queue_entries?user_id=eq."+ME.id+"&select=mode,joined_at"))[0];
+  if(q){rpc("tick_queue",{p_mode:q.mode}).catch(()=>{});const all=await api("/rest/v1/queue_entries?mode=eq."+q.mode+"&select=user_id,elo,profiles(nick)&order=joined_at.asc");
+   return h+`<div class="card"><h3>Na fila ${esc(q.mode)} · ${all.length}/${MODES[q.mode]}</h3>${all.map(x=>`<div class="row between" style="padding:4px 0"><span>@${nk(x)}${ME.id===x.user_id?" (você)":""}</span><span class="sub">${x.elo} ELO</span></div>`).join("")}<p class="sub">Procurando jogadores de nível parecido. A faixa de ELO aumenta com o tempo.</p><button class="btn" data-a="bleave">Sair da fila</button></div>`+await lbHtml()}
+  h+=await ratingBox()}
+ const qs=await api("/rest/v1/queue_entries?select=mode"),cnt=m=>qs.filter(x=>x.mode===m).length;
+ h+=`<div class="grid">`+Object.keys(MODES).map(m=>`<div class="card"><h3>${m}</h3><p class="sub">${MODES[m]} jogadores${m==="1v1"?" · duelo direto":" · capitães por equipe"}<br>${cnt(m)} na fila agora</p><button class="btn p" data-a="bjoin" data-id="${m}">Entrar na fila</button></div>`).join("")+`</div>`;
+ return h+await lbHtml()}
+const seen=(id,ms)=>{if(ms.length&&(CUR==="batalha"||CUR==="b-"+id))try{localStorage.setItem("efb_seen_"+id,String(ms[ms.length-1].id))}catch(e){}};
+async function pMatchBody(id){
+ const b=(await api(`/rest/v1/battles?id=eq.${id}&select=id,mode,status,host_id,vc_name,ready_deadline,winner`))[0];if(!b)return '<div class="card">Partida não encontrada.</div>';
+ const ps=await api(`/rest/v1/battle_players?battle_id=eq.${id}&select=user_id,team,is_captain,accepted,elo_before,elo_delta,profiles(nick)`);
+ const ms=await api(`/rest/v1/battle_messages?battle_id=eq.${id}&select=id,user_id,body,created_at,profiles(nick)&order=id.asc&limit=150`);seen(id,ms);
+ const mine=ME&&ps.find(p=>p.user_id===ME.id),team=t=>ps.filter(p=>p.team===t).map(p=>`<div class="row between" style="padding:3px 0"><span>@${nk(p)} ${p.is_captain?"👑":""}${p.user_id===b.host_id?"🏠":""}${b.status==="ready"?(p.accepted?" ✅":" ⏳"):""}</span><span class="sub">${p.elo_delta!=null?(p.elo_delta>0?"+":"")+p.elo_delta+" · ":""}${esc(p.elo_before)}</span></div>`).join("");
+ const ST={ready:"Aguardando aceite",play:"Em andamento",dispute:"Em disputa",done:"Encerrada",cancelled:"Cancelada"},open=["ready","play","dispute"].includes(b.status);let act="";
+ if(b.status==="ready"&&mine)act=mine.accepted?'<p class="sub">Você aceitou. Aguardando os outros jogadores…</p>':`<div class="row"><button class="btn p" data-a="bacc" data-id="${id}">Aceitar partida</button><button class="btn" data-a="bdec" data-id="${id}">Recusar</button></div><p class="sub">Aceite até ${new Date(b.ready_deadline).toLocaleTimeString("pt-BR")}.</p>`;
+ if(b.status==="play"&&mine)act=(mine.is_captain?`<p class="sub">Você é capitão: informe quem venceu. O outro capitão confirma.</p><div class="row"><button class="btn p" data-a="bres" data-id="${id}" data-w="${mine.team}">Minha equipe venceu</button><button class="btn" data-a="bres" data-id="${id}" data-w="${mine.team==="A"?"B":"A"}">Minha equipe perdeu</button></div>`:'<p class="sub">Só os capitães informam o resultado.</p>')+`<div class="row" style="margin-top:8px"><button class="btn d sm" data-a="bquit" data-id="${id}">Abandonar (conta como derrota)</button></div>`;
+ if(b.status==="dispute")act='<div class="warn">Os capitães informaram resultados diferentes. Um administrador vai analisar a conversa.</div>';
+ if(isA()&&["play","dispute"].includes(b.status))act+=`<div class="card"><b>Decisão do administrador</b><div class="row" style="margin-top:6px"><button class="btn sm" data-a="bres2" data-id="${id}" data-w="A">Equipe A venceu</button><button class="btn sm" data-a="bres2" data-id="${id}" data-w="B">Equipe B venceu</button><button class="btn sm d" data-a="bres2" data-id="${id}" data-w="">Anular</button></div></div>`;
+ if(b.status==="done")act=`<div class="card"><b>Vitória da equipe ${esc(b.winner)}</b><div class="sub">O ELO foi atualizado.</div></div>`;
+ const mm=ms.map(m=>m.user_id?`<div style="margin:5px 0"><b>${nk(m)}:</b> ${esc(m.body)}</div>`:`<div class="sub" style="text-align:center;margin:6px 0">${esc(m.body)}</div>`).join("");
+ return `<div class="card"><div class="row between"><h3>Partida ${esc(b.mode)}</h3><span class="tag">${ST[b.status]||esc(b.status)}</span></div><div class="grid"><div><b>Equipe A</b>${team("A")}</div><div><b>Equipe B</b>${team("B")}</div></div>${b.vc_name?`<div class="warn">🔊 Entrem no canal de voz do Discord: <b>${esc(b.vc_name)}</b></div>`:""}${mine&&b.host_id===ME.id&&open?'<div class="warn"><b>Você foi sorteado para criar a sala</b> no eFootball. Envie o código no chat.</div>':""}</div>${act}<div class="card"><h3>Chat da partida</h3><div id="bc" style="height:220px;overflow:auto">${mm||'<p class="sub">Sem mensagens.</p>'}</div>${open&&mine?`<div class="row" style="flex-wrap:nowrap;margin-top:8px"><label class="f" style="flex:1;margin:0"><input id="bm" maxlength="500" placeholder="Mensagem ou código da sala…" autocomplete="off"></label><button class="btn p" data-a="bsend" data-id="${id}">Enviar</button></div>`:""}</div>${b.status==="done"||b.status==="cancelled"?'<button class="btn p" data-a="bback">Voltar à fila</button>':""}`}
+async function pMatchById(id){return UUID.test(id)?`<a href="#batalha" class="sub">← Batalha</a>`+await pMatchBody(id):'<div class="card">Partida não encontrada.</div>'}
+/* balão do mascote: avisa partida para aceitar e mensagens novas */
+const setBadge=n=>{const e=$("#bn");if(e){e.textContent=n>99?"99+":n;e.classList.toggle("on",n>0)}};
+async function bg(){if(!ME){ACT=null;return setBadge(0)}let n=0;try{const b=await myBattle();ACT=b;if(b){const view=CUR==="batalha"||CUR==="b-"+b.id;if(b.status==="ready"&&!view)n++;
+  const ms=await api(`/rest/v1/battle_messages?battle_id=eq.${b.id}&select=id,user_id&order=id.desc&limit=30`);let s=0;try{s=+localStorage.getItem("efb_seen_"+b.id)||0}catch(e){}if(!view)n+=ms.filter(m=>m.id>s&&m.user_id!==ME.id).length}}catch(e){}setBadge(n)}
+setInterval(async()=>{if(!ME||document.hidden||POLLING)return;POLLING=true;try{if(CUR==="batalha"||CUR.startsWith("b-"))await render(true);await bg()}catch(e){}finally{POLLING=false}},3500);
+Object.assign(A,{
+ fnew:()=>{if(!ME)return authDlg("login");dlg(`<h3>Nova ficha de jogador</h3>${fld("f_n","Nome da ficha",'maxlength="60"')}<div class="row" style="flex-wrap:nowrap"><label class="f" style="flex:1">Posição<select id="f_p">${POS.map(p=>`<option>${p}</option>`).join("")}</select></label>${fld("f_o","OVR (40 a 130)",'type="number" min="40" max="130" inputmode="numeric"')}</div>${fld("f_e","Estilo de jogo",'maxlength="40"')}${fld("f_f","Pontos fortes",'maxlength="60"')}<label class="f">Descrição<textarea id="f_d" maxlength="400"></textarea></label><div class="err" id="fe"></div><div class="row"><button class="btn p" data-a="fsave">Publicar</button><button class="btn" data-a="close">Cancelar</button></div>`)},
+ fsave:async()=>{const n=val("f_n"),o=parseInt($("#f_o").value,10);if(n.length<3)return fail("Dê um nome à ficha (3+ caracteres).");if(!(o>=40&&o<=130))return fail("O OVR deve estar entre 40 e 130.");
+  await api("/rest/v1/player_cards",{method:"POST",body:{author:ME.id,nome:n,pos:$("#f_p").value,ovr:o,estilo:val("f_e"),fortes:val("f_f"),descricao:val("f_d")},headers:{Prefer:"return=minimal"}});closeDlg();toast("Ficha publicada!");render()},
+ flike:async id=>{if(!ME)return authDlg("login");try{await api("/rest/v1/card_likes",{method:"POST",body:{card_id:id,user_id:ME.id},headers:{Prefer:"return=minimal"}})}catch(e){if(e.status===409)await api(`/rest/v1/card_likes?card_id=eq.${id}&user_id=eq.${ME.id}`,{method:"DELETE"});else throw e}render(true)},
+ fdel:async id=>{if(!ME||!UUID.test(id)||!confirm("Apagar esta ficha?"))return;await api("/rest/v1/player_cards?id=eq."+id,{method:"DELETE"});render()},
+ bjoin:async m=>{if(!ME)return authDlg("login");await rpc("join_queue",{p_mode:m});render(true);bg()},
+ bback:()=>{LASTB=null;render(true)},
+ bleave:async()=>{await rpc("leave_queue");render(true)},
+ lbm:m=>{LB=m;render(true)},
+ bacc:async id=>{await rpc("accept_battle",{p_battle:id});render(true)},
+ bdec:async id=>{await rpc("decline_battle",{p_battle:id});toast("Você recusou a partida.");render(true)},
+ bsend:async id=>{const t=val("bm");if(!t)return;$("#bm").value="";await rpc("send_battle_message",{p_battle:id,p_body:t});render(true)},
+ bres:async(id,el)=>{await rpc("report_result",{p_battle:id,p_winner:el.dataset.w});render(true)},
+ bquit:async id=>{if(!confirm("Abandonar conta como derrota. Continuar?"))return;await rpc("abandon_battle",{p_battle:id});render(true)},
+ bres2:async(id,el)=>{if(!isA())return;await rpc("admin_resolve_battle",{p_battle:id,p_winner:el.dataset.w||null});render(true)},
+ gob:()=>{closeDlg();location.hash="#batalha"},
+ inbox:()=>{if(!ME)return authDlg("login");dlg(`<h3>Mensagens</h3>${ACT?`<div class="card" data-a="gob" style="cursor:pointer">⚔️ <b>Partida ${esc(ACT.mode)}</b> em andamento<div class="sub">Toque para abrir a partida e o chat</div></div>`:'<div class="card sub">Nenhuma partida em andamento.</div>'}<div class="card sub">🛟 Suporte: em breve (assistente de IA e contato com a equipe).</div><button class="btn" data-a="close">Fechar</button>`)}
+});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="bm"){e.preventDefault();const b=document.querySelector('[data-a="bsend"]');if(b)b.click()}});
+
 document.addEventListener("click",async e=>{const t=e.target.closest("[data-a]");if(!t||!A[t.dataset.a])return;e.preventDefault();if(BUSY)return;BUSY=true;
  try{await A[t.dataset.a](t.dataset.id,t)}catch(x){fail(x.message||"Erro inesperado.")}finally{BUSY=false}});
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.tagName==="INPUT"&&e.target.type!=="checkbox"){const b=e.target.closest("#dc")&&$("#dc .btn.p");if(b){e.preventDefault();b.click()}}});
