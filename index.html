@@ -7,6 +7,8 @@
 <script>if(window.top!==window.self){document.documentElement.style.display="none";try{window.top.location=window.location}catch(e){}}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>eFootball Brasil · Comunidade</title>
+<meta name="description" content="Comunidade brasileira de eFootball: fichas de jogadores, formações, fórum, batalhas 1v1, campeonatos e o jogo Carreira. Sem apostas.">
+<meta property="og:title" content="eFootball Brasil · Comunidade"><meta property="og:description" content="Fichas, formações, fórum, batalhas, campeonatos e o jogo Carreira. Sem apostas."><meta property="og:type" content="website"><meta name="theme-color" content="#0b3d1e">
 <meta name="description" content="Comunidade brasileira de eFootball: notícias, formações e fórum.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⚽%3C/text%3E%3C/svg%3E">
 <style>
@@ -228,6 +230,12 @@ html[data-fest]:not(.hc) .avbar{background:linear-gradient(90deg,var(--g),var(--
 @keyframes avp{50%{opacity:.55}}.no-anim .avc.live{animation:none}
 .cin{display:flex;gap:8px;align-items:flex-end}.cin textarea{flex:1;min-height:48px;line-height:1.3;max-height:120px;border-radius:12px;border:1px solid var(--line);background:#07150d;color:var(--tx);padding:10px;font:inherit;resize:vertical}
 </style>
+<style>
+@media (max-width:700px){#cr .cgpvb{position:sticky;top:6px;z-index:6;max-width:150px;background:rgba(8,28,16,.82);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-radius:16px;padding:4px}#cr .cgpvb .cgcap{font-size:.72rem}}
+.cgsk{width:44px;height:44px;min-width:44px;min-height:44px}.cgat .btn{min-width:44px;min-height:44px}
+.cgnav{padding:6px 0;background:linear-gradient(to top,rgba(6,22,12,.92),transparent)}
+body:has(#cr) .msay{bottom:84px;pointer-events:none}
+</style>
 </head>
 <body>
 <a class="skip" href="#pg">Pular para o conteúdo</a>
@@ -236,7 +244,7 @@ html[data-fest]:not(.hc) .avbar{background:linear-gradient(90deg,var(--g),var(--
   <nav id="nav" aria-label="Menu principal"></nav>
 </header>
 <div id="avisos"></div>
-<main id="pg" aria-live="polite"></main>
+<main id="pg"></main>
 <footer>© eFootball Brasil · Comunidade independente, sem vínculo com a Konami · <a href="#" data-a="doc" data-id="termos">Termos</a> · <a href="#" data-a="doc" data-id="priv">Privacidade</a></footer>
 <button class="mb" data-a="inbox" aria-label="Mensagens"><span class="bb" aria-hidden="true">💬</span><span class="bn" id="bn"></span></button>
 <div id="alerta" role="alert"></div>
@@ -269,7 +277,7 @@ function msgOf(j,st){const m=j&&(j.msg||j.message||j.error_description||j.error)
  if(c==="23514"||c==="22001"){const k=(/constraint "(\w+)"/.exec(m)||[])[1],M={listings_ovr_max:"O OVR do time deve ficar entre 0 e 9999.",listings_desc_len:"A descrição passou de 800 caracteres.",listings_highlights_len:"Os destaques passaram de 500 caracteres.",listings_level_range:"O nível da conta deve ficar entre 0 e 9999.",listings_price_range:"O preço deve ficar entre R$ 1,00 e R$ 10.000,00.",listings_urls:"Alguma foto não foi aceita. Tente outras fotos.",listings_platform_chk:"Plataforma inválida."};return (k&&M[k])||"Algum campo está fora das regras de tamanho ou formato."+(k?" ("+k+")":"")}
  if(/password/i.test(m)&&/weak|should be/i.test(m))return "Senha fraca. Use 8 ou mais caracteres, com letras e números.";
  if(/sending (confirmation|recovery|magic link|email)|error sending/i.test(m))return "Não foi possível enviar o e-mail agora. O envio de e-mails do site ainda está sendo configurado. Tente mais tarde.";
- if(st>=500)return "Servidor indisponível. Tente de novo em instantes."+(m?" ("+String(m).slice(0,140)+")":"");
+ if(st>=500){try{console.warn(String(m).slice(0,200))}catch(e){}return "Servidor indisponível. Tente de novo em instantes."}
  return m||"Erro "+st}
 async function api(path,o){o=o||{};const auth=o.auth!==false;
  if(auth&&SES&&SES.expires_at*1000<Date.now()+60000)await refresh();
@@ -315,7 +323,7 @@ async function page(){
  if(CUR.startsWith("camp-"))return pCamp(CUR.slice(5));
  if(CUR.startsWith("b-"))return pMatchById(CUR.slice(2));
  if(CUR==="admin")return isA()?pAdmin3():'<div class="card">Sem permissão.</div>';
- const s=SOON[CUR];return s?`<div class="card"><h2>${s[0]}</h2><p>${s[1]}</p></div>`:'<div class="card">Página não encontrada.</div>'}
+ const s=SOON[CUR];return s?`<div class="card"><h2>${s[0]}</h2><p>${s[1]}</p></div>`:'<div class="card">Página não encontrada. <a href="#inicio">Ir para o início</a></div>'}
 const ATAL=[["noticias","📰","Notícias","Novidades do eFootball"],["formacoes","📋","Formações","Táticas da comunidade"],["forum","💬","Fórum","Converse e tire dúvidas"],["fichas","🃏","Fichas","Jogadores da comunidade"],["batalha","⚔️","Batalha","Fila 1v1, 2v2 e 3v3"],["campeonatos","🏆","Campeonatos","Mata-mata de 8, 16 e 32 times"],["marketplace","🛒","Marketplace","Contas e itens à venda"]];
 async function pHome(){let n=[];try{n=await api("/rest/v1/content?kind=eq.noticia&select=id,title,created_at&order=created_at.desc&limit=3")}catch(e){}
  return `<div class="hero"><div class="logo" style="width:90px;height:116px;margin:auto"></div><h1>Bem-vindo ao eFootball Brasil</h1><p>Ranking 1v1 e 2v2 sem apostas, fórum, formações e fichas da comunidade brasileira de eFootball.</p><div class="row" style="justify-content:center">${ME?"":'<button class="btn p" data-a="auth" data-id="reg">Criar conta grátis</button>'}<a class="btn${ME?" p":""}" href="${DISCORD}" target="_blank" rel="noopener noreferrer">🎧 Entrar no Discord</a><a class="btn" href="#forum">Ir ao fórum</a></div></div>`+
@@ -510,7 +518,7 @@ document.addEventListener("click",async e=>{const t=e.target.closest("[data-a]")
  try{await A[t.dataset.a](t.dataset.id,t)}catch(x){fail(x.message||"Erro inesperado.")}finally{BUSY=false}});
 document.addEventListener("click",e=>{const a=e.target.closest("#nav a");if(a&&a.getAttribute("href")==="#"+CUR)render()});
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.tagName==="INPUT"&&e.target.type!=="checkbox"){const b=e.target.closest("#dc")&&$("#dc .btn.p");if(b){e.preventDefault();b.click()}}});
-const route=()=>{CUR=(location.hash||"#inicio").slice(1)||"inicio";render()};
+const route=()=>{CUR=(location.hash||"#inicio").slice(1)||"inicio";const nv=NAV.find(x=>x[0]===CUR.split("-")[0]);document.title=(CUR==="carreira"?"Carreira · ":nv?nv[1]+" · ":"")+"eFootball Brasil";render()};
 addEventListener("hashchange",route);
 document.addEventListener("DOMContentLoaded",async()=>{if(SES&&SES.expires_at*1000<Date.now()+60000)await refresh();await loadMe();route()});
 </script>
@@ -666,7 +674,7 @@ Object.assign(A,{
   try{const urls=[];for(let i=0;i<fs.length;i++)urls.push(await upImg(await resizeImg(fs[i],1000),ME.id+"/m-"+Date.now()+"-"+i+".jpg"));
    await api("/rest/v1/listings",{method:"POST",body:{seller_id:ME.id,title:t,ovr:parseInt(val("m_o"),10)||0,coins:parseInt(val("m_c"),10)||0,price_cents:pr,description:val("m_d")||null,image_urls:urls},headers:{Prefer:"return=minimal"}});
    closeDlg();toast("Anúncio publicado!");render(true)}catch(e){bt.disabled=false;fail(e.message)}},
- mview:id=>{const l=MKR.find(x=>x.id===id);if(!l)return;const mine=ME&&(ME.id===l.seller_id),imgs=l.image_urls.filter(imgOk);
+ mview:id=>{const l=MKR.find(x=>x.id===id);if(!l)return;const mine=ME&&(ME.id===l.seller_id),imgs=(l.image_urls||[]).filter(imgOk);
   dlg(`<h3>${esc(l.title)}</h3><div class="mkgal">${imgs.map(u=>`<img src="${esc(u)}" alt="">`).join("")}</div><div class="price">${BRL(l.price_cents)}</div><div class="sub">${l.ovr?esc(l.ovr)+" OVR":""}${l.ovr&&l.coins?" · ":""}${l.coins?esc(l.coins)+" moedas":""}</div>${l.description?`<p class="body">${esc(l.description)}</p>`:""}<div class="sub">Vendedor: ${av(l,18)}${nk(l)}</div><div class="warn">Compra e pagamento ainda não estão ativos.</div><div class="row"><button class="btn" data-a="mfav" data-id="${esc(l.id)}">❤️ Favoritar</button>${mine||isA()?`<button class="btn d" data-a="mdel" data-id="${esc(l.id)}">Remover anúncio</button>`:""}<button class="btn" data-a="close">Fechar</button></div>`)},
  mfav:async id=>{if(!ME)return authDlg("login");try{await api("/rest/v1/favorites",{method:"POST",body:{user_id:ME.id,listing_id:id},headers:{Prefer:"return=minimal"}});toast("Favoritado.")}catch(e){if(e.status===409){await api(`/rest/v1/favorites?listing_id=eq.${id}&user_id=eq.${ME.id}`,{method:"DELETE"});toast("Removido dos favoritos.")}else throw e}render(true)},
  mdel:async id=>{if(!UUID.test(id)||!confirm("Remover este anúncio?"))return;await api("/rest/v1/listings?id=eq."+id,{method:"PATCH",body:{status:"removido"},headers:{Prefer:"return=minimal"}});closeDlg();toast("Anúncio removido.");render(true)}
@@ -737,7 +745,7 @@ async function mkHtml(){
  const rows=await api(`/rest/v1/listings?select=id,seller_id,title,ovr,coins,platform,acct_level,price_cents,image_urls,status,created_at,profiles!seller_id(nick,avatar_url)&order=${ord}&limit=60${favIds?"":"&price_cents=lte."+MK.max*100}${q}`);
  let fav=new Set();if(ME){try{fav=new Set((await api("/rest/v1/favorites?select=listing_id")).map(x=>x.listing_id))}catch(e){}}
  if(!rows.length)return `<div class="card empty"><div class="logo" aria-hidden="true"></div><h3>Nada por aqui ainda</h3><p class="sub">${MK.view==="fav"?"Você ainda não favoritou nenhuma conta. Toque no 🤍 de um anúncio para guardar aqui.":MK.mine?"Você ainda não publicou nada.":"Nenhum anúncio com esses filtros. Volte logo: novas contas aparecem toda hora!"}</p></div>`;
- return `<div class="mkgrid">${rows.map(l=>{const im=l.image_urls.filter(imgOk),isNew=Date.now()-new Date(l.created_at)<MKNEW;
+ return `<div class="mkgrid">${rows.map(l=>{const im=(l.image_urls||[]).filter(imgOk),isNew=Date.now()-new Date(l.created_at)<MKNEW;
   return `<article class="lc"><div class="lc-img">${im[0]?`<img src="${esc(im[0])}" alt="" loading="lazy">`:""}${l.ovr?`<span class="ovrb">${esc(l.ovr)}<small>OVR</small></span>`:""}${isNew?'<span class="pill n">NOVO</span>':""}${fcount(im.length)}${ME?`<button class="lf" data-a="mfav" data-id="${esc(l.id)}" data-fav="${esc(l.id)}" aria-label="Favoritar">${fav.has(l.id)?"❤️":"🤍"}</button>`:""}</div>
   <div class="lc-b"><h3><a class="lc-link" href="#m-${esc(l.id)}">${esc(l.title)}</a></h3><div class="chips">${cap(esc(l.platform||""))}${l.coins?cap(esc(Number(l.coins).toLocaleString("pt-BR"))+" moedas"):""}${l.acct_level?cap("Nível "+esc(l.acct_level)):""}${l.status==="vendido"?cap("Vendido"):""}</div>
   <div class="lc-f"><span class="price">${BRL(l.price_cents)}</span><span class="sel">${av(l,18)}${nk(l)}</span></div></div></article>`}).join("")}</div>`}
@@ -770,7 +778,7 @@ async function pListing(id){
  if(!UUID.test(id))return back+'<div class="card">Anúncio não encontrado.</div>';
  const l=(await api(`/rest/v1/listings?id=eq.${id}&select=id,seller_id,title,ovr,coins,acct_level,platform,highlights,price_cents,description,image_urls,status,created_at,profiles!seller_id(nick,avatar_url)`))[0];
  if(!l)return back+'<div class="card">Anúncio não encontrado ou removido.</div>';
- MKL=l;const im=l.image_urls.filter(imgOk);MKIMGS=im;
+ MKL=l;const im=(l.image_urls||[]).filter(imgOk);MKIMGS=im;
  let fav=false,intr=false,ic=null;const mine=ME&&ME.id===l.seller_id;
  if(ME){try{fav=(await api(`/rest/v1/favorites?listing_id=eq.${id}&select=listing_id`)).length>0;intr=(await api(`/rest/v1/interests?listing_id=eq.${id}&user_id=eq.${ME.id}&select=listing_id`)).length>0;if(mine||isA())ic=(await api(`/rest/v1/interests?listing_id=eq.${id}&select=user_id`)).length}catch(e){}}
  const gal=im.length?`<div class="galw"><div class="gal" id="gal" tabindex="0" aria-label="Fotos do anúncio. Deslize para o lado para ver mais.">${im.map((u,i)=>`<div class="gs"><img src="${esc(u)}" alt="Foto ${i+1} de ${im.length}" ${i?'loading="lazy"':""} data-a="mlb" data-id="${i}"></div>`).join("")}</div>${im.length>1?'<button class="gn gp" data-a="mnav" data-id="-1" aria-label="Foto anterior">‹</button><button class="gn gx" data-a="mnav" data-id="1" aria-label="Próxima foto">›</button>':""}<span class="gc" id="gc">1/${im.length}</span></div>${im.length>1?`<div class="gth">${im.map((u,i)=>`<button class="th ${i?"":"on"}" data-a="mgo" data-id="${i}" aria-label="Ver foto ${i+1}"><img src="${esc(u)}" alt=""></button>`).join("")}</div><p class="sub">Deslize para o lado ou toque numa foto para ampliar.</p>`:'<p class="sub">Toque na foto para ampliar.</p>'}`:'<div class="card empty sub">Sem fotos.</div>';
@@ -1652,14 +1660,14 @@ const CGA={
  evok:()=>{G.pend.res=null;crDraw()},
  view:v=>{CGV=v;if(v==="rank")cgBoard();crDraw()}};
 /* ----- semana, temporada ----- */
-function cgNextWeek(){G.week++;G.money+=G.wage;const bm=cgBonus();G.energy=cgClamp(G.energy+40+bm.regen,0,100);G.rested=false;G.life=false;if(G.inj>0)G.inj--;
- G.moral=cgClamp(G.moral+bm.moral+(G.moral>60?-1:G.moral<40?1:0),0,100);G.fama=cgClamp(G.fama+bm.fama*0,0,100);
+function cgNextWeek(){G.week++;G.money+=Math.round(G.wage*.75);const bm=cgBonus();G.energy=cgClamp(G.energy+40+bm.regen,0,100);G.rested=false;G.life=false;if(G.inj>0)G.inj--;
+ G.moral=cgClamp(G.moral+bm.moral+(G.moral>60?-1:G.moral<40?1:0),0,100);G.fama=cgClamp(G.fama-.6,0,100);
  if(bm.fama)G.fama=cgClamp(G.fama+Math.ceil(bm.fama/5),0,100);
  if([1,6,11,16].includes(G.week))G.role=cgRole();
  if(G.week>20){cgSeasonEnd();return}
- if(cgChance(.55))G.pend.event=cgPick(CGEV);
+ if(cgChance(.55))G.pend.event=cgEvPick();
  if(G.week===11&&cgChance(.6)){const o=cgOffers();if(o.length)G.pend.window={mid:true,offers:o,renew:null}}}
-function cgOffers(){const o=cgCurOvr(),avg=G.sg.g?G.sg.rs/G.sg.g:6.5,sc=o+G.fama/10+(avg-6)*3,cl=(CLUBS||[]).filter(c=>c.id!==G.club.id).map(c=>({c,t:cgTier(c)})).filter(x=>cgStr(x.t)-9<=sc);
+function cgOffers(){const o=cgCurOvr(),avg=G.sg.g?G.sg.rs/G.sg.g:6.5,sc=o+G.fama/10+(avg-6)*3,cl=(CLUBS||[]).filter(c=>c.id!==G.club.id).map(c=>({c,t:cgTier(c)})).filter(x=>cgStr(x.t)-9<=sc&&o>=cgStr(x.t)-20);
  const out=[],used=new Set();cl.sort(()=>Math.random()-.5);cl.sort((a,b)=>b.t-a.t+Math.random()*1.6-.8);
  for(const x of cl){if(out.length>=3)break;if(used.has(x.t)&&out.length>=2)continue;used.add(x.t);const d=o-(cgStr(x.t)-6);out.push({club:cgSnap(x.c),role:d>=4?"titular":d>=-4?"rotação":"reserva",wage:cgWage(x.t,o),years:cgRand(1,4)})}return out}
 const cgGauss=()=>{let s=0;for(let i=0;i<6;i++)s+=Math.random();return (s-3)/.7};
@@ -1688,7 +1696,7 @@ Object.assign(CGA,{
  refuse:()=>{G.pend.window=null;crSave();crDraw()},
  report:()=>{G.pend.report=null;crSave();crDraw()},
  vwin:()=>{CGV="window";crDraw()}});
-function cgNewSeason(w){G.pend.window=null;if(!w.mid){G.season++;G.week=1;G.energy=100;G.moral=cgClamp(G.moral+5,0,100);G.role=cgRole();G.rested=false;G.life=false;if(cgChance(.5))G.pend.event=cgPick(CGEV)}crSave(true);CGV="hub";crDraw()}
+function cgNewSeason(w){G.pend.window=null;if(!w.mid){G.season++;G.week=1;G.energy=100;G.moral=cgClamp(G.moral+5,0,100);G.role=cgRole();G.rested=false;G.life=false;if(cgChance(.5))G.pend.event=cgEvPick()}crSave(true);CGV="hub";crDraw()}
 
 /* ---------- animação dos lances ---------- */
 const CGCR=(()=>{let s=7;const o=[];for(let i=0;i<260;i++){s=(s*1103515245+12345)>>>0;const x=s%360;s=(s*1103515245+12345)>>>0;const y=6+s%56;s=(s*1103515245+12345)>>>0;o.push({x,y,c:["#e63946","#f1fa8c","#4cc9f0","#fff","#2fd16f","#ff9f1c","#b388ff"][s%7],p:(s>>8)%100/10})}return o})();
@@ -1753,7 +1761,7 @@ function cgFig(g,x,y,sc,face,P,kit,lk,keeper){P={lean:0,y:0,rot:0,a1:[12,22],a2:
   g.strokeStyle=back?soB:kit.so;g.lineWidth=6.8;g.beginPath();g.moveTo(k[0]+f[0]*.3,k[1]+f[1]*.3);g.lineTo(n[0],n[1]);g.stroke();
   g.strokeStyle=back?shB:kit.sh;g.lineWidth=9.2;g.beginPath();g.moveTo(0,0);g.lineTo(k[0]*.58,k[1]*.58);g.stroke();
   if(kit.pat!==0){g.strokeStyle=kit.j2;g.lineWidth=7.2;g.beginPath();g.moveTo(k[0]+f[0]*.3,k[1]+f[1]*.3);g.lineTo(k[0]+f[0]*.4,k[1]+f[1]*.4);g.stroke()}
-  const v=Lv(a[1]+90,1);g.save();g.translate(n[0]+v[0]*3.2,n[1]+v[1]*3.2+.6);g.rotate(Math.atan2(v[1],v[0]));g.fillStyle=back?cgShade(lk.bc||"#1b1b1b",.7):(lk.bc||"#1b1b1b");g.beginPath();g.ellipse(0,0,5.6,3,0,0,7);g.fill();g.fillStyle=kit.j2;g.fillRect(-1,-3,2,6);g.restore()};
+  const v=Lv(a[1]+90,1);g.save();g.translate(n[0]+v[0]*3.2,n[1]+v[1]*3.2+.6);g.rotate(Math.atan2(v[1],v[0]));g.fillStyle=back?cgShade(lk.bc||"#1b1b1b",.7):(lk.bc||"#1b1b1b");g.beginPath();g.ellipse(0,0,6.4,3.5,0,0,7);g.fill();g.strokeStyle="rgba(0,0,0,.6)";g.lineWidth=.9;g.stroke();g.fillStyle=kit.j2;g.fillRect(-1,-3.3,2,6.6);g.restore()};
  const arm=(a,back,sx,sy)=>{const u=Lv(a[0],10.5),f=Lv(a[1],9.5),e=[sx+u[0],sy+u[1]],h=[e[0]+f[0],e[1]+f[1]];
   if(keeper){g.strokeStyle=back?skB:sk}else g.strokeStyle=back?skB:sk;g.lineWidth=4.6;g.beginPath();g.moveTo(sx,sy);g.lineTo(e[0],e[1]);g.lineTo(h[0],h[1]);g.stroke();
   g.strokeStyle=back?cgShade(kit.v?kit.j2:kit.j1,.8):(kit.v?kit.j2:kit.j1);g.lineWidth=7.4;g.beginPath();g.moveTo(sx,sy);g.lineTo(sx+u[0]*.82,sy+u[1]*.82);g.stroke();
@@ -1767,24 +1775,25 @@ function cgFig(g,x,y,sc,face,P,kit,lk,keeper){P={lean:0,y:0,rot:0,a1:[12,22],a2:
  g.restore();g.fillStyle=kit.j2;g.beginPath();g.moveTo(-3,-25);g.quadraticCurveTo(0,-21,3,-25);g.lineTo(4.5,-24.5);g.quadraticCurveTo(0,-18.5,-4.5,-24.5);g.fill();
  /* cabeça */
  g.fillStyle=sk;g.fillRect(-2,-28,4.2,5);g.beginPath();g.arc(1,-32.5,6.9,0,7);g.fill();g.fillStyle=skB;g.beginPath();g.arc(-2.8,-31.9,1.9,0,7);g.fill();
- if(lk.bd&&lk.bd<3){g.save();g.globalAlpha=lk.bd===1?.4:1;g.fillStyle=lk.hr;g.beginPath();g.arc(1,-32.5,6.9,Math.PI*.02,Math.PI*.98);g.lineTo(-4,-33);g.quadraticCurveTo(1,-29.5,6,-33);g.closePath();g.fill();g.restore()}
+ if(lk.bd&&(lk.bd<3||lk.bd===5)){g.save();g.beginPath();g.arc(1,-32.5,6.9,0,7);g.clip();g.globalAlpha=lk.bd===1?.4:1;g.fillStyle=cgBcol(lk);g.beginPath();g.moveTo(-8,-36);g.lineTo(-3.4,-36);g.quadraticCurveTo(-1.5,-31.5,1.5,-30.6);g.quadraticCurveTo(3.6,-31.6,5.4,-31.4);g.quadraticCurveTo(7,-31.2,8.5,-32);g.lineTo(8.5,-20);g.lineTo(-8,-20);g.closePath();g.fill();g.restore()}
  g.fillStyle=lk.hr;const hs=lk.hs;if(hs===0||hs===3||hs===2){g.beginPath();g.arc(.6,-33.1,7.4,Math.PI*1.04,Math.PI*(hs===2?1.75:2.05));g.lineTo(hs===2?4:5.5,-34);g.closePath();g.fill()}
  else if(hs===1){for(const c of[[-4,-37],[0,-39],[4,-37],[-6,-33],[6,-34]]){g.beginPath();g.arc(c[0]+1,c[1],3,0,7);g.fill()}}
- else if(hs===5){g.beginPath();g.moveTo(-3,-37);g.lineTo(-1,-42);g.lineTo(2,-37.5);g.lineTo(5,-41);g.lineTo(6,-36);g.closePath();g.fill();g.beginPath();g.arc(1,-32.6,6.6,Math.PI*1.1,Math.PI*1.9);g.fill()}
+ else if(hs===5){g.beginPath();g.moveTo(-6,-34.5);g.lineTo(-5.6,-40.5);g.lineTo(-3.2,-37.4);g.lineTo(-2.2,-43);g.lineTo(.2,-38.6);g.lineTo(1.8,-44);g.lineTo(3.6,-38.8);g.lineTo(5.6,-42);g.lineTo(6.2,-36);g.quadraticCurveTo(0,-39,-6,-34.5);g.closePath();g.fill();g.save();g.globalAlpha=.55;g.beginPath();g.arc(.6,-33.1,7.4,Math.PI*1.04,Math.PI*2.05);g.lineTo(5.5,-34);g.closePath();g.fill();g.restore()}
  g.fillStyle="#1b1b1b";g.beginPath();g.arc(4.4,-32.6,1,0,7);g.fill();g.strokeStyle="rgba(0,0,0,.45)";g.lineWidth=.7;g.beginPath();g.arc(4,-30.4,1.7,.2,Math.PI-.3);g.stroke();
+ if(lk.bd&&(lk.bd<3||lk.bd===5)){g.strokeStyle="rgba(255,235,220,.8)";g.lineWidth=.7;g.beginPath();g.arc(4,-30.4,1.5,.25,Math.PI-.35);g.stroke()}
  if(hs>=6){g.fillStyle=lk.hr;g.strokeStyle=lk.hr;g.lineCap="round";const cap=()=>{g.beginPath();g.arc(.6,-33.1,7.4,Math.PI*1.04,Math.PI*2.05);g.lineTo(5.5,-34);g.closePath();g.fill()};
-  if(hs===6){g.beginPath();g.arc(-.5,-35,9.2,Math.PI*.78,Math.PI*2.12);g.lineTo(4.5,-35.5);g.closePath();g.fill()}
+  if(hs===6){g.save();g.beginPath();g.moveTo(-14,-50);g.lineTo(14,-50);g.lineTo(14,-36.4);g.lineTo(-3.8,-36.4);g.lineTo(-3.8,-18);g.lineTo(-14,-18);g.closePath();g.clip();g.beginPath();g.arc(-.8,-35,9.4,0,7);g.fill();g.restore()}
   else if(hs===7){cap();g.lineWidth=1.9;for(const o of[0,2.2,4.4,6.6]){g.beginPath();g.moveTo(-5.2+o*.1,-37+o*.5);g.quadraticCurveTo(-9.5,-30,-8+o*.5,-22+o);g.stroke()}}
   else if(hs===8){cap();g.beginPath();g.moveTo(-3,-38);g.quadraticCurveTo(-1,-47,6,-44);g.quadraticCurveTo(10,-43,8.6,-37);g.closePath();g.fill()}
   else if(hs===9){cap();g.beginPath();g.moveTo(-5,-38);g.quadraticCurveTo(-11,-31,-8,-21);g.lineTo(-3,-24);g.quadraticCurveTo(-5,-30,-2,-35);g.closePath();g.fill()}
-  else if(hs===10){g.beginPath();g.arc(.6,-33.1,7.4,Math.PI*1.2,Math.PI*1.95);g.closePath();g.fill();g.fillRect(-4,-41,10,3.2)}
+  else if(hs===10){g.beginPath();g.arc(.6,-33.1,7.4,Math.PI*1.12,Math.PI*1.98);g.closePath();g.fill();g.beginPath();g.moveTo(-5,-38.4);g.quadraticCurveTo(-4.6,-42.4,0,-42.4);g.quadraticCurveTo(5,-42.4,6.2,-38);g.closePath();g.fill()}
   else if(hs===11){cap();g.beginPath();g.arc(-3.2,-40.6,3.2,0,7);g.fill()}
   else if(hs===12){cap();g.beginPath();g.moveTo(-5.5,-36);g.quadraticCurveTo(-10,-30,-8.5,-25);g.lineTo(-4.5,-28);g.closePath();g.fill()}}
- if(lk.bd>=3){g.fillStyle=lk.hr;g.strokeStyle=lk.hr;g.lineCap="round";const bd=lk.bd;
-  if(bd===3||bd===6){g.beginPath();g.ellipse(3.3,-27.7,2.4,1.9,.3,0,7);g.fill()}
+ if(lk.bd>=3){g.fillStyle=cgBcol(lk);g.strokeStyle=cgBcol(lk);g.lineCap="round";const bd=lk.bd;
+  if(bd===3||bd===6){g.beginPath();g.moveTo(1.2,-28.6);g.quadraticCurveTo(3.4,-27.6,5.6,-29);g.quadraticCurveTo(5.6,-25.4,3.4,-24.8);g.quadraticCurveTo(1.2,-25.4,1.2,-28.6);g.fill()}
   if(bd===4||bd===6){g.lineWidth=1.5;g.beginPath();g.moveTo(2.6,-30.9);g.quadraticCurveTo(5.2,-31.8,7.1,-30.6);g.stroke()}
-  if(bd===5){g.beginPath();g.arc(1,-32.5,6.9,Math.PI*.02,Math.PI*.98);g.lineTo(-4,-33);g.quadraticCurveTo(1,-29.5,6,-33);g.closePath();g.fill();g.beginPath();g.moveTo(-3,-26);g.quadraticCurveTo(2,-17,7,-26);g.closePath();g.fill()}
-  if(bd===7){g.fillRect(-2,-36.5,2.4,6.6);g.lineWidth=1.2;g.beginPath();g.moveTo(.4,-30);g.lineTo(3,-27.5);g.stroke()}}
+  if(bd===5){g.beginPath();g.moveTo(-5,-27);g.quadraticCurveTo(0,-15,6.2,-26);g.closePath();g.fill()}
+  if(bd===7){g.beginPath();g.moveTo(-3.6,-36.6);g.lineTo(-.6,-36.6);g.lineTo(-.2,-30.4);g.lineTo(-2.4,-30);g.closePath();g.fill()}}
  g.restore();
  leg(P.l1,false);g.save();g.rotate(Rd(P.lean));arm(P.a1,false,0,-22);g.restore();g.restore()}
 
@@ -1832,9 +1841,9 @@ function cgPlay(){const c=M&&M.cur,cv=$("#cgc");if(!c||c.stage!=="anim"||!cv||c.
 /* ----- partida ----- */
 const cgPois=l=>{let L=Math.exp(-l),k=0,p=1;do{k++;p*=Math.random()}while(p>L);return k-1};
 function cgStartMatch(){const _o=M;const pool=(CLUBS||[]).filter(c=>Math.abs(cgTier(c)-G.club.tier)<=1&&c.id!==G.club.id),opp=cgSnap(pool.length?cgPick(pool):CLUBS[0]),home=cgChance(.5);
- const own=cgStr(G.club.tier)+(G.moral-50)/12+(home?2:-1),op=cgStr(opp.tier)+cgRand(-5,5),lam=(a,b)=>1.25*Math.exp((a-b)/38)*(a===own&&G.role==='titular'?.85:1);
- const role=G.role,n=G.inj>0?0:role==="titular"?5:role==="rotação"?3:2,ev=[];
- for(let i=cgPois(lam(own,op));i>0;i--)ev.push({m:cgRand(2,90),k:"mg"});for(let i=cgPois(lam(op,own));i>0;i--)ev.push({m:cgRand(2,90),k:"og"});
+ const own=cgStr(G.club.tier)+(G.moral-50)/12+(home?2:-1),op=cgStr(opp.tier)+cgRand(-5,5),lam=(a,b,o)=>1.25*Math.exp((a-b)/38)*(o&&G.role==='titular'?.95:1);
+ const role=G.role,n=G.inj>0?0:role==="titular"?(G.pos==="GOL"?3:5):role==="rotação"?3:2,ev=[];
+ for(let i=cgPois(lam(own,op,1));i>0;i--)ev.push({m:cgRand(2,90),k:"mg"});for(let i=cgPois(lam(op,own));i>0;i--)ev.push({m:cgRand(2,90),k:"og"});
  const lo=role==="titular"?5:role==="rotação"?45:65;for(let i=0;i<n;i++)ev.push({m:cgRand(lo,89),k:"mom"});ev.sort((a,b)=>a.m-b.m);
  M={opp,home,my:0,op:0,ev,i:0,rating:6+(G.moral-50)/60,goals:0,ast:0,log:[],cur:null,phase:"play",tired:G.energy<30,inj:G.inj>0,own,opS:op};
  CGV="match";mascotSay("Hoje: "+G.club.name+" x "+opp.name+(home?" em casa":" fora")+". Bola rolando!",4200);cgAdvance()}
@@ -1867,7 +1876,7 @@ function cgResolve(q){const my0=M.my,op0=M.op,cgSay=k=>{M.cur.say=k};const c=M.c
   else{cgRate(-.3);r.c="bad";if(cgChance(.12)){M.op++;L("Perdeu a bola e o adversário fez o gol.")}else L("O marcador desarmou.")}}
  else if(c.k==="defesa"){const p=cgClamp(.15+(a-40)/160+.55*q+fb*.6,.1,.95);
   if(cgChance(p)){cgRate(.5);cgXp("defesa",6);L("Desarme limpo! Perigo afastado.")}else{cgRate(-.3);r.c="bad";if(cgChance(.3)){M.op++;c.conc=true;L("Chegou atrasado e saiu o gol deles.")}else L("Chegou atrasado, mas a defesa se salvou.")}}
- else if(c.k==="goleiro"){const side=cgRand(0,2),ok=side===c.sel;c.side=side;const p=ok?cgClamp(.7+(a-50)/200+fb*.5,.5,.92):cgClamp(.16+(a-50)/300+fb*.5,.05,.45);
+ else if(c.k==="goleiro"){const side=c.side!=null?c.side:cgRand(0,2),ok=side===c.sel;c.side=side;const p=ok?cgClamp(.7+(a-50)/200+fb*.5,.5,.92):cgClamp(.16+(a-50)/300+fb*.5,.05,.45);
   if(cgChance(p)){cgRate(.8);cgXp("defesa",7);L("DEFESAÇA!");r.c="gol";cgSay("save")}else{cgRate(-.5);M.op++;r.c="bad";L("Não deu. É gol deles.")}}
  c.res=r;c.q=q;c.logE={m:c.m,t:(c.ic||"")+" "+r.t,c:r.c};if(r.chain)c.next=true;
  if(cgAnimOn()){c.an=cgSpec(c,r);c.stage="anim";c.pre={my:my0,op:op0}}else{c.stage="res";M.log.push(c.logE);if(c.say)cgSay0(c.say)}}
@@ -1876,20 +1885,20 @@ const cgSay0=k=>mascotSay(cgPick(CGMA[k]||CGMA.gol),3800);
 const CGM={
  mpick:i=>{const c=M&&M.cur;if(!c||c.stage!=="pick")return;c.sel=+i;if(!c.ch[c.sel])return;if(c.timing){c.stage="time";c.green=c.ch[c.sel][2]*cgClamp(1+(G.ovr-55)/160+cgForm().pts/200,.75,1.35);c.center=.25+Math.random()*.5;c.pos=0;c.dir=1;crDraw();cgMeter()}else{cgResolve(0);crDraw()}},
  mstop:()=>{const c=M&&M.cur;if(!c||c.stage!=="time")return;clearInterval(M.tm);const d=Math.abs(c.pos-c.center),hg=c.green/2,q=d<=hg?1-.3*d/hg:cgClamp(.7-(d-hg)/(c.green*1.2)*.7,0,.7);c.q=q;cgResolve(q);crDraw()},
- mnext:()=>{const c=M&&M.cur;if(c&&c.next){M.cur=cgMoment(c.m,"chute");M.cur.chain=true;crDraw();return}cgAdvance();crDraw()},
- mend:()=>{cgLeave()},mreveal:()=>{const c=M&&M.cur;if(!c||c.stage!=="anim")return;cancelAnimationFrame(c.raf);c.stage="res";M.log.push(c.logE);if(c.say)cgSay0(c.say);crDraw()}};
+ mnext:()=>{const c=M&&M.cur;if(!c||c.stage!=="res")return;if(c&&c.next){M.cur=cgMoment(c.m,"chute");M.cur.chain=true;crDraw();return}cgAdvance();crDraw()},
+ mend:()=>{if(!M||M.phase!=="end")return;cgLeave()},mreveal:()=>{const c=M&&M.cur;if(!c||c.stage!=="anim")return;cancelAnimationFrame(c.raf);c.stage="res";M.log.push(c.logE);if(c.say)cgSay0(c.say);crDraw()}};
 function cgMeter(){clearInterval(M.tm);const c=M.cur,sp=(.018+Math.random()*.01)*cgClamp(1.12-(G.ovr-50)/250,.85,1.2);M.tm=setInterval(()=>{if(!c||c.stage!=="time"){clearInterval(M.tm);return}c.pos+=sp*c.dir;if(c.pos>=1){c.pos=1;c.dir=-1}if(c.pos<=0){c.pos=0;c.dir=1}const m=$("#cgm");if(m)m.style.left=(c.pos*100)+"%";else clearInterval(M.tm)},16)}
 function cgFinish(){const my=M.my,op=M.op,res=my>op?"w":my<op?"l":"d";let rt=M.rating;if(res==="w")rt+=.3;if(res==="l")rt-=.2;rt=+cgClamp(rt,3,10).toFixed(1);
- G.energy=Math.max(0,G.energy-30);M.rt=rt;M.res=res;M.phase="end";const s=G.sg;s.g++;s.go+=M.goals;s.as+=M.ast;s.rs+=rt;s.pts+=res==="w"?3:res==="d"?1:0;s[res]++;
- G.st.games++;G.st.goals+=M.goals;G.st.assists+=M.ast;G.st.ratS+=rt;
+ if(!M.inj)G.energy=Math.max(0,G.energy-30);M.rt=rt;M.res=res;M.phase="end";const s=G.sg;if(!M.inj){s.g++;s.go+=M.goals;s.as+=M.ast;s.rs+=rt}s.pts+=res==="w"?3:res==="d"?1:0;s[res]++;
+ if(!M.inj){G.st.games++;G.st.goals+=M.goals;G.st.assists+=M.ast;G.st.ratS+=rt}
  cgFx({m:res==="w"?6:res==="l"?-5:0,fa:rt>=7.5?3:rt<5.5?-2:0,f:M.goals?1+M.goals:(rt>=8?1:0),c:rt>=7?2:rt<5.5?-3:0});
  if(res==="w")G.money+=Math.round(G.wage*.3);
  const bm=cgBonus(),risk=(.04+(G.energy<30?.06:0)+(M.tired?.02:0))*(bm.fisio?.5:1);M.hurt=0;if(!M.inj&&cgChance(risk)){M.hurt=cgRand(1,5)-(bm.fisio?1:0);M.hurt=Math.max(1,M.hurt);G.inj=M.hurt+1;setTimeout(()=>mascotSay("Aiai... lesão! Descanse e volte mais forte.",5000),1800)}
  G.ovr=cgCurOvr();cgSay(res==="w"?"win":res==="l"?"loss":"draw");
  cgNews((M.inj?"Você acompanhou do banco: ":"")+(res==="w"?"Vitória":res==="l"?"Derrota":"Empate")+" por "+my+"x"+op+" contra o "+M.opp.name+" (nota "+rt.toFixed(1)+").");
- G.ovr=cgCurOvr();crSave()}
-function cgLeave(){clearInterval(M&&M.tm);M=null;CGV="hub";cgNextWeek();crSave(true);crDraw()}
-Object.assign(CGA,{play:()=>{if(G.pend.event||G.pend.report||G.done)return;cgStartMatch();crDraw()}});
+ G.ovr=cgCurOvr();cgNextWeek();crSave(true)}
+function cgLeave(){clearInterval(M&&M.tm);M=null;CGV="hub";crSave(true);crDraw()}
+Object.assign(CGA,{play:()=>{if(M||G.pend.event||G.pend.report||G.done)return;cgStartMatch();crDraw()}});
 
 /* ----- telas ----- */
 const cgBar=(l,v,cl)=>`<div class="cgb"><span>${l}</span><div><i style="width:${cgClamp(v,0,100)}%" class="${cl||""}"></i></div><b>${Math.round(v)}</b></div>`;
@@ -1928,7 +1937,7 @@ const CGPD={GOL:["🧤","Goleiro","Pega tudo no gol"],ZAG:["🛡️","Zagueiro",
 const CGPG=[["Goleiro",["GOL"]],["Defesa",["ZAG","LE","LD"]],["Meio-campo",["VOL","MC","MEI","ME","MD"]],["Ataque",["PE","PD","SA","CA"]]];
 const CGPN={GOL:"Goleiro! É aqui que nascem os heróis de pênalti.",ZAG:"Zagueiro! Quem passa por você, dança.",LE:"Lateral esquerdo! Pulmão de aço, hein?",LD:"Lateral direito! Defende e ainda apoia.",VOL:"Volante! O trabalho sujo que ninguém vê, mas todo técnico ama.",MC:"Meia central! O motor do time.",MEI:"Meia ofensivo! Camisa 10 é com você.",ME:"Meia esquerda! Visão de jogo pelo lado.",MD:"Meia direita! Passe e velocidade.",PE:"Ponta esquerda! Pronto para infernizar a lateral.",PD:"Ponta direita! Dribla e cruza.",SA:"Segundo atacante! Aparece onde ninguém espera.",CA:"Centroavante! Esse faz gol até dormindo."};
 const CGNS={1:"Fala, craque! Eu sou o seu narrador. Bora montar o seu jogador? Primeiro: qual é o seu nome e em que posição você joga?",2:"Agora o visual! Craque que é craque tem estilo. Olha só como você tá ficando.",3:"Hora de distribuir os pontos! Quem aposta tudo em uma coisa brilha, mas pode sofrer em outra.",4:"Último passo: o clube onde tudo começa. Todo craque já foi garoto de clube pequeno!"};
-const CGBT=["#1b1b1b","#f5f5f5","#ff3b30","#2fd16f","#ffcf40","#3b82f6"],CGSTEPS=["Posição","Visual","Atributos","Clube"];
+const CGBT=["#1b1b1b","#f5f5f5","#ff3b30","#2fd16f","#ffcf40","#3b82f6","#ff5fa2","#ff8a1f","#8b5cf6","#22d3ee","#d4af37","#a3e635","#c0c7d1","#7c2d12"],CGSTEPS=["Posição","Visual","Atributos","Clube"];
 const cgNT=t=>{const typed=CGX.typed===t;return `<div class="mrow cgnar"><div class="logo" style="width:54px;height:70px"></div><div class="bub" id="cgn" data-t="${esc(t)}">${typed?esc(t):""}</div></div>`};
 function cgRadar(at,sz){const n=6,R=70,cx=100,cy=100,pt=(i,v)=>{const a=-Math.PI/2+i*2*Math.PI/n,r=R*v/99;return[cx+r*Math.cos(a),cy+r*Math.sin(a)]};
  const ring=f=>CG_AT.map((a,i)=>pt(i,99*f).map(x=>x.toFixed(1)).join(",")).join(" ");
@@ -1959,12 +1968,12 @@ Object.assign(CGA,{
   else if(id==="main"){const top=[...k0].sort((a,b)=>(w[b]||0)-(w[a]||0));for(let i=0;i<12;i++)CGX.newAt[top[i%2]]++;CGX.pts=0;cgNar("Foco total no que importa! Vai ser temido nessa posição.")}else cgNar("Tudo zerado. Distribua do seu jeito!");crDraw()},
  cclub:id=>{CGX.newClub=+id;const c=(CLUBS||[]).find(x=>x.id===+id);if(c)cgNar(c.name+"! Boa escolha. Aqui você tem chance de brilhar cedo.");crDraw()},
  cskin:i=>{CGX.skin=cgClamp(+i,0,5);crDraw()},chair:i=>{CGX.hair=cgClamp(+i,0,12);cgNar(CGX.hair===4?"Careca! Respeito, estilo de craque.":CGX.hair===5?"Moicano! Já chegou chamando atenção.":CGX.hair===6?"Black power! Que volume, que estilo!":CGX.hair===7?"Tranças! Visual de craque de capa de revista.":CGX.hair===8?"Topete! Nem o vento despenteia.":CGX.hair===11?"Coque! Prático e estiloso.":CGX.hair===12?"Mullet! Coragem de craque.":CGX.hair===9?"Cabelão! Vai voar no drible.":CGX.hair===10?"Degradê na régua!":"Esse cabelo combina com você!");crDraw()},chairc:i=>{CGX.hairc=cgClamp(+i,0,11);crDraw()},
- cbeard:i=>{CGX.beard=cgClamp(+i,0,7);if(CGX.beard===2)cgNar("Barba cheia! Cara de líder.");crDraw()},cboots:i=>{CGX.boots=cgClamp(+i,0,5);cgNar("Chuteira nova, pé de ouro!");crDraw()},
+ cbeard:i=>{CGX.beard=cgClamp(+i,0,7);if(CGX.beard===2)cgNar("Barba cheia! Cara de líder.");crDraw()},cboots:i=>{CGX.boots=cgClamp(+i,0,13);cgNar("Chuteira nova, pé de ouro!");crDraw()},
  cnext:()=>{const st=CGX.step||1;if(st===1&&(CGX.newName||(ME?ME.nick:"")).trim().length<2)return fail("Dê um nome ao jogador.");CGX.step=Math.min(4,st+1);CGX.nar=null;if(!CGX.nar)CGX.nar=CGNS[CGX.step];crDraw();try{$("#cr").scrollIntoView({block:"start"})}catch(e){}},
  cback:()=>{CGX.step=Math.max(1,(CGX.step||1)-1);CGX.nar=CGNS[CGX.step];crDraw()},
- cstart:()=>{const n=(CGX.newName||(ME?ME.nick:"")).trim();if(n.length<2)return fail("Dê um nome ao jogador.");const c=(CGX.starts||[]).find(x=>x.id===CGX.newClub);if(!c)return fail("Escolha o clube inicial.");const pos=CGX.newPos;cgNew(n.slice(0,30),pos,CGX.newAt,c);CGX.starts=null;CGX.newAt=null;CGX.step=1;CGX.nar=null;CGX.typed=null;CGV="hub";crDraw();cgSign(c,n,pos)},
+ cstart:()=>{const n=(CGX.newName||(ME?ME.nick:"")).trim();if(n.length<2)return fail("Dê um nome ao jogador.");const c=(CGX.starts||[]).find(x=>x.id===CGX.newClub);if(!c)return fail("Escolha o clube inicial.");const pos=CGX.newPos;cgNew(n.slice(0,30),pos,CGX.newAt,c);CGX.starts=null;CGX.newAt=null;CGX.step=1;CGX.nar=null;CGX.typed=null;CGV="hub";crDraw();cgSignPop(c,n,pos)},
  reset:()=>{if(!confirm("Apagar esta carreira e começar de novo?"))return;G=null;try{localStorage.removeItem(CRK())}catch(e){}if(ME)api("/rest/v1/careers?user_id=eq."+ME.id,{method:"DELETE"}).catch(()=>{});CGX.starts=null;CGX.newAt=null;CGX.step=1;CGX.nar=null;CGV="hub";crDraw()}});
-function cgSign(c,name,pos){const d=document.createElement("div");d.className="cgsign";d.innerHTML=`<div class="card"><div class="cgstamp">CONTRATO ASSINADO</div><canvas id="cgsc" width="440" height="300" aria-hidden="true"></canvas><h2>📝 Bem-vindo ao ${esc(c.name)}!</h2><div class="cgt">${crest(c,52)}<div><b>${esc(name)}</b> <span class="tag">${esc(pos)}</span><div class="sub">${cgMoney(G.wage)} por semana · ${G.years} anos de contrato</div></div></div><button class="btn p wide" id="cgsb">Entrar em campo ⚽</button></div>`;document.body.appendChild(d);
+function cgSignPop(c,name,pos){const d=document.createElement("div");d.className="cgsign";d.innerHTML=`<div class="card"><div class="cgstamp">CONTRATO ASSINADO</div><canvas id="cgsc" width="440" height="300" aria-hidden="true"></canvas><h2>📝 Bem-vindo ao ${esc(c.name)}!</h2><div class="cgt">${crest(c,52)}<div><b>${esc(name)}</b> <span class="tag">${esc(pos)}</span><div class="sub">${cgMoney(G.wage)} por semana · ${G.years} anos de contrato</div></div></div><button class="btn p wide" id="cgsb">Entrar em campo ⚽</button></div>`;document.body.appendChild(d);
  const cv=d.querySelector("#cgsc"),g=cv.getContext("2d"),kit=pos==="GOL"?cgKeeperKit([c.c1]):cgKit(c,false),lk=cgMe(),t0=performance.now(),iv=setInterval(()=>{if(!document.body.contains(cv)){clearInterval(iv);return}const u=((performance.now()-t0)/1000)%1.6,k=u/1.6;g.setTransform(1,0,0,1,0,0);const bg=g.createLinearGradient(0,0,0,300);bg.addColorStop(0,"#17335c");bg.addColorStop(.7,"#244a7d");bg.addColorStop(.7,"#0e5a2b");bg.addColorStop(1,"#0a431f");g.fillStyle=bg;g.fillRect(0,0,440,300);g.setTransform(2,0,0,2,0,0);cgFig(g,110,134,1.45,1,cgPose.jump(k),kit,lk,pos==="GOL")},33);
  d.querySelector("#cgsb").addEventListener("click",()=>{clearInterval(iv);d.remove();mascotSay("Vai começar a sua história, "+name+"! Treine, jogue e conquiste o mundo!",6000)});
  if(motionOk())confetti2(110);setTimeout(()=>mascotSay("Contrato assinado! Que começo, "+name+"!",6000),500)}
@@ -1987,12 +1996,12 @@ function cgMatch(){const m=M,c=m.cur,my=cgSnap(G.club),pre=c&&c.stage==="anim"&&
   h+=`</div>`}
  if(m.phase==="end"){const r=m.res,t=r==="w"?"🏆 Vitória!":r==="l"?"😞 Derrota":"🤝 Empate";h+=`<div class="card cgrep"><h3>${t} ${m.my}×${m.op}</h3><p>Sua nota: <b>${m.rt.toFixed(1)}</b> · gols: ${m.goals} · assistências: ${m.ast}</p>${m.hurt?`<p class="cgw">🩹 Você se lesionou! Fora por ${m.hurt} jogo(s).</p>`:""}${cgB("Voltar ao clube","","mend","p")}</div>`}
  h+=`<div class="card"><b>Lances da partida</b>${m.log.length?m.log.slice().reverse().map(l=>`<p class="cgl ${l.c}">${l.m}' ${esc(l.t)}</p>`).join(""):'<p class="sub">Aguardando...</p>'}</div>`;return h}
-function crView(){if(!G)return cgCreate();if(G.done)return cgRetire();if(CGV==="match"&&M)return cgMatch();
+function crView(){if(!G)return cgCreate();if(G.done&&G.pend.report)return cgHub();if(G.done)return cgRetire();if(CGV==="match"&&M)return cgMatch();
  const body={hub:cgHub,train:cgTrain,life:cgLife,shop:cgShop,stats:cgStats,rank:cgRank,window:cgWin}[CGV]||cgHub;return cgHead()+body()}
-function crDraw(){const e=$("#cr");if(!e)return;setTimeout(()=>{if(!G&&CGV!=="match")cgPreview();const n=$("#cgn");if(n){const t=n.dataset.t;if(CGX.typed!==t){CGX.typed=t;typeTo(n,t)}else n.textContent=t}},0);const k=CGV+(M?"m":"")+(G&&G.done?"d":"")+(G?"":"c")+(G&&G.pend.report?"r":"");e.innerHTML=crView();if(M&&M.cur&&M.cur.stage==="anim")cgPlay();if(crDraw.k!==k){crDraw.k=k;try{e.scrollIntoView({block:"start"})}catch(x){}}}
+function crDraw(){const e=$("#cr");if(!e)return;setTimeout(()=>{if(!G&&CGV!=="match")cgPreview();const n=$("#cgn");if(n){const t=n.dataset.t;if(CGX.typed!==t){CGX.typed=t;typeTo(n,t)}else n.textContent=t}},0);const k=CGV+(M?"m":"")+(G&&G.done?"d":"")+(G?"":"c")+(G&&G.pend.report?"r":"");e.innerHTML=crView();if(M&&M.cur&&M.cur.stage==="anim"){M.cur.playing=false;cgPlay()}if(crDraw.k!==k){crDraw.k=k;try{e.scrollIntoView({block:"start"})}catch(x){}}}
 A.cg=(id)=>{const i=String(id).indexOf(":"),n=i<0?id:id.slice(0,i),a=i<0?"":id.slice(i+1),f=CGA[n]||CGM[n];if(f){try{const r=f(a);if(r&&r.catch)r.catch(fail)}catch(e){fail(e.message)}}};
 document.addEventListener("input",e=>{const t=e.target.closest&&e.target.closest("[data-cg]");if(t&&t.dataset.cg==="name")CGX.newName=t.value});
-document.addEventListener("keydown",e=>{if(CGV!=="match"||!M||!M.cur||!$("#cr")||/INPUT|TEXTAREA|SELECT/.test((e.target||{}).tagName||""))return;const c=M.cur;
+document.addEventListener("keydown",e=>{if(e.ctrlKey||e.metaKey||e.altKey||e.repeat||CGV!=="match"||!M||!M.cur||!$("#cr")||/INPUT|TEXTAREA|SELECT/.test((e.target||{}).tagName||""))return;const c=M.cur;
  if(e.code==="Space"){e.preventDefault();if(c.stage==="time")CGM.mstop();else if(c.stage==="res")CGM.mnext();else if(c.stage==="anim")CGM.mreveal()}else if(/^[1-6]$/.test(e.key)&&c.stage==="pick"&&+e.key<=c.ch.length)CGM.mpick(+e.key-1)});
 var pCarreira=async function(){await clubsLoad();const u=ME?ME.id:"g";if(CGU!==u){G=null;await crLoad();CGU=u}CGV=M&&CGV==="match"?"match":"hub";return `<div class="row between"><h2>🎮 Carreira</h2></div><div id="cr">${crView()}</div>`};
 {const _pg=page;page=async function(){if(CUR==="carreira")return pCarreira();return _pg()}}
@@ -2014,7 +2023,7 @@ crLoad=async function(){let loc=null,srv=null;try{loc=JSON.parse(localStorage.ge
 {const _c=cgCreate;cgCreate=function(){return _c()+cgHall(CGX.hof)}}
 function cgEndReset(hof){clearTimeout(crSave.h);G=null;M=null;CGX.hof=hof;CGX.starts=null;CGX.newAt=null;CGX.step=1;CGX.nar=null;CGX.typed=null;CGX.newName="";CGX.newClub=null;CGV="hub";cgStub(hof);crDraw()}
 Object.assign(CGA,{
- retire:()=>{if(!G||G.done)return;if(!confirm("Aposentar "+G.name+"? A carreira será encerrada e entrará no Hall da Fama."))return;G.done=true;G.vol=true;G.pend.window=null;G.pend.event=null;G.pend.report=null;CGV="hub";crSave(true);mascotSay("Que carreira, "+G.name+"! Obrigado por tudo, craque.",6000);crDraw()},
+ retire:()=>{if(!G||G.done)return;if(!confirm("Aposentar "+G.name+"? A carreira será encerrada e entrará no Hall da Fama."))return;M=null;G.done=true;G.vol=true;G.pend.window=null;G.pend.event=null;G.pend.report=null;CGV="hub";crSave(true);mascotSay("Que carreira, "+G.name+"! Obrigado por tudo, craque.",6000);crDraw()},
  newc:()=>{if(G&&!G.done&&!confirm("Aposentar "+G.name+" agora e começar uma nova carreira? O jogador entra no Hall da Fama."))return;cgEndReset(G?cgHofNow():(CGX.hof||[]))},
  abandon:()=>{if(!G)return;if(!confirm("Abandonar a carreira de "+G.name+"? Tudo será apagado e ele NÃO vai para o Hall da Fama. Não dá para desfazer."))return;cgEndReset((G.hof||[]).slice())},
  reset:()=>CGA.abandon()});
@@ -2033,6 +2042,15 @@ const cgFmt=v=>(v>=0?"+":"")+v.toFixed(1).replace(".0","")+"%";
 function cgFormHtml(){const f=cgForm();return `<details class="card cgform"><summary><b>📈 Forma para o jogo: <span style="color:${f.pts>=0?"#2fd16f":"#ff6b6b"}">${cgFmt(f.pts)}</span></b> <span class="sub">(mexe nas chances dos lances)</span></summary>${f.parts.map(x=>`<p class="sub">${x.i} ${esc(x.l)}: <b style="color:${x.v>=0?"#2fd16f":"#ff6b6b"}">${cgFmt(x.v)}</b></p>`).join("")}<p class="sub">Treinar, descansar, eventos, vida fora de campo e vitórias mudam moral, torcida, técnico e energia.</p></details>`}
 {const _m=cgMatch;cgMatch=function(){const h=_m();return h.replace(/(<div class="card cgh">[\s\S]*?<\/p>)(<\/div>)/,"$1"+cgFormHtml().replace(/\$/g,"$$$$")+"$2")}}
 {const _h=cgHub;cgHub=function(){const h=_h();return G&&!G.pend.report?h+cgFormHtml():h}}
+
+/* ajustes da revisão */
+const cgBcol=lk=>{const i=CGHR.indexOf(lk.hr);return i>=8&&i<=10?"#2b1d14":lk.hr};
+{const _s=mascotSay;mascotSay=function(t,ms){if(document.getElementById("cr")&&document.getElementById("cgn"))return;return _s(t,document.getElementById("cr")?Math.min(ms||4000,3600):ms)}}
+{const _c=confetti2;confetti2=function(n){return _c(document.getElementById("cr")?Math.min(n||70,50):n)}}
+
+/* correções da auditoria */
+function cgEvPick(){const l=CGEV.filter(e=>!(e.t==="Negócio de um amigo"&&G.money<30000));return cgPick(l.length?l:CGEV)}
+{const _m=cgMoment;cgMoment=function(m,f){const c=_m(m,f);if(c.k==="goleiro"){c.side=cgRand(0,2);const a=cgEff("defesa"),h=cgChance(cgClamp(.55+(a-50)/150,.45,.85))?c.side:cgRand(0,2);c.tx+=" Pista: o atacante olha para "+["a esquerda","o meio","a direita"][h]+".";c.ic="🧤"}return c}}
 </script>
 </body>
 </html>
