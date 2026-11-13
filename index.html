@@ -2726,5 +2726,207 @@ NAV.splice(NAV.findIndex(n=>n[0]==="carreira")+1,0,["manager","Manager","📋"])
 ATAL.push(["manager","📋","Manager","Seja o técnico do seu clube"]);
 if(render.n)render();
 </script>
+<style>
+.rl-cd{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px;margin:0 0 10px;border-radius:12px;background:rgba(0,0,0,.55);border:1px solid var(--line);backdrop-filter:blur(6px);font-variant-numeric:tabular-nums}
+.rl-cd b{font-size:1.15rem}
+.rl-st{display:inline-block;border-radius:999px;padding:1px 9px;font-size:.74rem;font-weight:800;border:1px solid currentColor}
+.rl-st.y{color:#ffdf00}.rl-st.g{color:#2fd16f}.rl-st.r{color:#ff6b6b}.rl-st.m{color:var(--mu)}
+.rl-live{display:inline-block;background:#e11d48;color:#fff;font-weight:900;border-radius:6px;padding:1px 7px;font-size:.75rem;animation:rlp 1.4s infinite}
+@keyframes rlp{50%{opacity:.55}}
+@media (prefers-reduced-motion:reduce){.rl-live{animation:none}}
+.rl-form{display:grid;gap:8px;margin-top:8px}
+.rl-form label{display:grid;gap:4px;font-size:.88rem}
+.rl-form input,.rl-form select{min-height:44px}
+.rl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.rl-chat{max-height:260px;overflow:auto;display:grid;gap:4px;margin:8px 0}
+.rl-chat p{margin:0;font-size:.9rem}
+.rl-mini{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;font-size:.88rem;padding:5px 0;border-bottom:1px solid var(--line)}
+.rl-mini b{font-variant-numeric:tabular-nums}
+</style>
+<script>
+/* ---------- MODO REALISTA (online): um mundo compartilhado, 1 rodada por dia às 20h ---------- */
+let RL={st:null,v:"clube",sub:null,data:{},off:0,mk:{sort:"value"},tm:null,live:null,chatAfter:0,chat:[],lg:null,sel:null,err:null};
+let rlRpc=(f,b)=>rpc(f,b);
+const rlNow=()=>Date.now()+RL.off;
+const rlT=(iso,o)=>new Date(iso).toLocaleString("pt-BR",Object.assign({timeZone:"America/Sao_Paulo"},o||{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}));
+const rlCl=c=>{if(!c)return null;const x=(CLUBS||[]).find(k=>k.name===c.name);return x?{...c,crest_url:x.crest_url,id:x.id}:c};
+const rlCr=(c,z)=>crest(rlCl(c),z||22);
+const rlPos={G:"GOL",D:"DEF",M:"MEI",A:"ATA"};
+const rlKind={buy:"Compra",loan:"Empréstimo",loan_opt:"Empréstimo c/ opção de compra",loan_obl:"Empréstimo c/ obrigação de compra"};
+const rlMoney=n=>n==null?"—":cgMoney(n);
+function rlDur(ms){if(ms<0)ms=0;const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h>23?Math.floor(h/24)+"d ":"")+String(h%24).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(x).padStart(2,"0")}
+async function rlCall(f,b){try{return await rlRpc(f,b)}catch(e){const m=String(e.message||e);if(/não está ativo|PGRST|Could not find/i.test(m))throw new Error("O Modo Realista ainda não foi instalado no servidor. Avise a administração.");throw e}}
+async function rlLoad(){try{const st=await rlCall("rl_state");RL.st=st;RL.err=null;if(st&&st.now)RL.off=Date.parse(st.now)-Date.now()}catch(e){RL.err=e.message}}
+const rlB=(t,id,x)=>`<button class="btn ${x||""}" data-a="rl" data-id="${esc(id)}">${t}</button>`;
+async function pRealista(){await clubsLoad().catch(()=>{});await rlLoad();clearInterval(RL.tm);RL.tm=setInterval(rlTick,1000);setTimeout(()=>rlDrawAsync(),0);
+ return `<div class="row between"><h2>🌐 Realista <span class="tag">ONLINE</span></h2></div><div id="rl">${wait()}</div>`}
+let rlTickN=0;
+function rlTick(){const e=$("#rl");if(!e){clearInterval(RL.tm);return}rlTickN++;
+ const cd=$("#rlcd");if(cd&&RL.st&&RL.st.next_kick){const ms=Date.parse(RL.st.next_kick)-rlNow();cd.textContent=ms>0?rlDur(ms):"agora"}
+ if(RL.v==="aovivo"&&RL.live)rlLiveRender();
+ if(rlTickN%30===0)rlLoad().then(()=>{if(RL.v==="clube")rlDrawAsync(true)});
+ if(RL.v==="aovivo"&&rlTickN%15===0)rlLiveLoad();
+ if(RL.v==="aovivo"&&rlTickN%5===0)rlChatLoad()}
+async function rlDrawAsync(quiet){const e=$("#rl");if(!e)return;try{e.innerHTML=await rlView()}catch(x){e.innerHTML=`<div class="card cgw">${esc(x.message)} ${rlB("Tentar de novo","reload","sm")}</div>`}if(RL.v==="aovivo")rlLiveRender()}
+function rlTabs(){const st=RL.st,T=[["clube","🏟️ Clube"],["escalar","📋 Escalar"],["mercado","🛒 Mercado"],["propostas","📩 Propostas"+(st&&st.pending?` (${st.pending})`:"")],["aovivo","🔴 Ao vivo"],["tabela","📊 Tabela"],["copas","🏆 Copas"],["mais","☰ Mais"+(st&&st.unread?` (${st.unread})`:"")]];
+ return `<div class="mgtabs" role="tablist">${T.map(t=>`<button class="btn sm${RL.v===t[0]?" on":""}" role="tab" aria-selected="${RL.v===t[0]}" data-a="rl" data-id="tab:${t[0]}">${t[1]}</button>`).join("")}</div>`}
+function rlBar(){const st=RL.st;if(!st||!st.ok)return"";const k=st.next_kick?Date.parse(st.next_kick)-rlNow():null;
+ return `<div class="rl-cd" aria-label="Próximo jogo"><span>${st.phase==="off"?"🏖️ Férias · nova temporada em":st.locked?'<span class="rl-live">AO VIVO</span> rodada em andamento':"⏱ Próxima rodada (20h de Brasília)"}</span><b id="rlcd">${k!=null?rlDur(k):"--:--:--"}</b></div>`}
+async function rlView(){const st=RL.st;
+ if(RL.err)return `<div class="card cgw">${esc(RL.err)}</div>`;
+ if(!st||!st.ok)return `<div class="card"><h3 style="margin-top:0">🌐 Modo Realista</h3><p>${esc(st&&st.msg||"Carregando…")}</p></div>`;
+ const head=rlBar();
+ if(!st.club&&!["tabela","copas","aovivo","mais","jogador","clubev"].includes(RL.v))return head+await rlEntry();
+ return head+(st.club?`<div class="card"><div class="row" style="justify-content:flex-start;gap:10px">${rlCr(st.club,40)}<div><b>${esc(st.club.name)}</b> <span class="sub">· técnico ${esc(ME?ME.nick:"")} · reputação ${st.coach?st.coach.rep:0}</span><div class="sub">${esc(st.club.league)} · temporada ${st.season} · dia ${st.day}/47 · ${st.window?'<span class="rl-st g">janela aberta</span>':'<span class="rl-st m">janela fechada</span>'}</div></div></div></div>`:"")+rlTabs()+await ({clube:rlClube,escalar:rlEscalar,mercado:rlMercado,propostas:rlPropostas,aovivo:rlAoVivo,tabela:rlTabela,copas:rlCopas,mais:rlMais,jogador:rlJogador,clubev:rlClubeV}[RL.v]||rlClube)()}
+
+/* ----- entrada: escolher clube ----- */
+async function rlEntry(){const st=RL.st;let h=`<div class="card"><h3 style="margin-top:0">Um mundo, todos os técnicos.</h3><p>Assuma um clube real e enfrente os outros técnicos do site. <b>Uma rodada por dia às 20h (Brasília)</b>, simulada no servidor, igual para todos. Negocie jogadores com outros técnicos: compra, empréstimo e empréstimo com opção ou obrigação de compra.</p>
+ <p class="sub">Novatos começam em clubes menores; os gigantes são liberados conforme sua reputação de técnico sobe. Ficou 14 dias sem entrar? O clube volta para a IA. Seu Manager e sua Carreira offline continuam separados.</p>
+ ${ME?"":`<p class="cgw">Entre na sua conta para assumir um clube. Sem login dá para assistir aos jogos, ver tabelas e copas.</p><button class="btn p" data-a="auth">Entrar</button>`}</div>`;
+ if(!ME)return h+rlTabs();
+ if(!RL.data.clubs)RL.data.clubs=await rlCall("rl_clubs_list");const L=RL.data.clubs,lgs=[...new Set(L.clubs.map(c=>c.league))];if(!RL.lg||!lgs.includes(RL.lg))RL.lg=lgs.find(l=>/Série B/.test(l))||lgs[0];
+ const cl=L.clubs.filter(c=>c.league===RL.lg),free=L.clubs.filter(c=>!c.human).length;
+ h+=`<div class="card"><div class="row between"><b>Sua reputação: ${L.rep}</b><span class="sub">${free} clubes livres</span></div><div class="mgsel"><label>Liga <select data-rl="lg">${lgs.map(l=>`<option${l===RL.lg?" selected":""}>${esc(l)}</option>`).join("")}</select></label></div>${st.coach&&st.coach.cooldown&&Date.parse(st.coach.cooldown)>rlNow()?`<p class="cgw">Você poderá assumir outro clube a partir de ${rlT(st.coach.cooldown)}.</p>`:""}</div>`;
+ h+=`<div class="rl-grid">${cl.map(c=>{const lock=c.req>L.rep,own=c.human;return `<div class="card" style="${lock||own?"opacity:.6":""}"><div class="row" style="justify-content:flex-start;gap:8px">${rlCr(c,30)}<div><b>${esc(c.name)}</b><div class="sub">${"⭐".repeat(c.tier)} · força ${c.str}${c.stars?` · ${c.stars}★`:""}</div></div></div>
+  <div class="sub" style="margin:6px 0">${own?"👤 Técnico: "+esc(c.owner):lock?"🔒 Requer reputação "+c.req:"Livre (IA)"}</div>${!own&&!lock?rlB("Assumir o comando","claim:"+c.id,"p sm"):rlB("Ver elenco","club:"+c.id,"sm")}</div>`}).join("")}</div>`;
+ return h+rlTabs()}
+
+/* ----- painel do clube ----- */
+async function rlClube(){const st=RL.st,c=st.club,nx=st.next,t=c.tab||{p:0,j:0,v:0,e:0,d:0,gp:0,gc:0};
+ let h=`<div class="mgk"><div><span class="sub">Caixa</span><b>${rlMoney(c.balance)}</b></div><div><span class="sub">Posição</span><b>${c.pos||"–"}º · ${t.p} pts</b></div><div><span class="sub">Meta da diretoria</span><b>até ${c.goal||"–"}º</b></div><div><span class="sub">Folha / dia de liga</span><b>${rlMoney(c.wages)}</b></div></div>`;
+ if(nx){const op=nx.opp,H=nx.home?c:op,A=nx.home?op:c;h+=`<div class="card cgrep"><b>${nx.comp.startsWith("C:")?"🏆 "+esc(nx.comp.slice(2)):"Próximo jogo"} · ${esc(nx.stage||"")}</b><div class="mgsc" style="margin:10px 0"><div>${rlCr(H,40)}<div>${esc(H.name)}</div></div><div class="sub">×</div><div>${rlCr(A,40)}<div>${esc(A.name)}</div></div></div>
+  <p class="sub" style="text-align:center">${rlT(nx.kick,{weekday:"long",day:"2-digit",month:"2-digit"})} · 20h de Brasília · ${nx.home?"🏟️ em casa":"✈️ fora"}${op.owner?" · técnico "+esc(op.owner):" · IA"}</p>
+  <p class="sub" style="text-align:center">Escalação fecha às 19h55. ${c.lineup?"✅ Escalação salva "+(c.lineup_at?rlT(c.lineup_at):""):"⚠️ Você ainda não escalou: valerá a escalação automática."}</p>${rlB("📋 Escalar agora","tab:escalar","p wide")}</div>`}
+ h+=`<div class="card"><b>Pendências</b>${st.pending?`<p class="cgl">📩 ${st.pending} proposta(s) aguardando você · ${rlB("Abrir","tab:propostas","sm")}</p>`:""}${st.unread?`<p class="cgl">🔔 ${st.unread} notificação(ões) · ${rlB("Ver","sub:notas","sm")}</p>`:""}${!st.pending&&!st.unread?'<p class="sub">Tudo em dia.</p>':""}<p class="sub">Forma: ${(c.form||[]).map(r=>`<span class="rl-st ${r==="V"?"g":r==="D"?"r":"m"}">${r}</span>`).join(" ")||"—"}</p></div>`;
+ h+=`<div class="card"><b>📰 Resumo do mundo</b>${(st.news||[]).map(n=>`<p class="cgl">${esc(n)}</p>`).join("")||'<p class="sub">Nada ainda.</p>'}</div>`;
+ return h}
+
+/* ----- escalação ----- */
+async function rlEscalar(){const st=RL.st,c=st.club;const d=RL.data.sq=await rlCall("rl_squad",{p_club:c.id});const P=d.players.filter(p=>p.club===c.id);
+ if(!RL.xi||RL.xiClub!==c.id){RL.xi=c.lineup?c.lineup.slice():rlAutoXI(P,c.formation);RL.xiClub=c.id;RL.form=c.formation;RL.tac=c.tactic}
+ const sel=new Set(RL.xi),cnt={G:0,D:0,M:0,A:0};P.filter(p=>sel.has(p.id)).forEach(p=>cnt[p.pos]++);const f=RL.form.split("-").map(Number);
+ return `<div class="card">${st.locked?'<p class="cgw">Escalação travada: a rodada das 20h está em andamento.</p>':""}<div class="mgsel"><label>Formação <select data-rl="form">${["4-4-2","4-3-3","3-5-2","4-5-1","5-3-2","3-4-3","4-2-4"].map(x=>`<option${x===RL.form?" selected":""}>${x}</option>`).join("")}</select></label><label>Tática <select data-rl="tac">${[["def","🛡️ Defensiva"],["eq","⚖️ Equilibrada"],["of","⚔️ Ofensiva"]].map(x=>`<option value="${x[0]}"${x[0]===RL.tac?" selected":""}>${x[1]}</option>`).join("")}</select></label></div>
+ <p>Titulares <b>${sel.size}/11</b> · GOL ${cnt.G}/1 · DEF ${cnt.D}/${f[0]} · MEI ${cnt.M}/${f[1]} · ATA ${cnt.A}/${f[2]}</p><div class="row" style="justify-content:flex-start">${rlB("Escalar automaticamente","xiauto","sm")}${rlB("✅ Confirmar escalação","xisave","p")}</div></div>
+ <div class="card mgtw"><table class="mgtb"><thead><tr><th></th><th>Pos</th><th>Nome</th><th>Idade</th><th>OVR</th><th>Energia</th><th>Situação</th></tr></thead><tbody>${P.map(p=>`<tr class="${sel.has(p.id)?"on":""}"><td>${rlB(sel.has(p.id)?"★":"☆","xi:"+p.id,"sm")}</td><td><span class="mgp ${p.pos}">${rlPos[p.pos]}</span></td><td>${esc(p.name)}${efbStarH(p.star)}${p.loan?' <span class="tag">emprestado</span>':""}</td><td>${p.age}</td><td><b>${p.ovr}</b></td><td><div class="mgbar"><i style="width:${p.energy}%"></i></div></td><td>${p.inj?"🚑 "+p.inj+"d":p.sus?"🟥 suspenso":p.yc?"🟨×"+p.yc:"✅"}</td></tr>`).join("")}</tbody></table></div>`}
+function rlAutoXI(P,form){const f=form.split("-").map(Number),ok=P.filter(p=>!p.inj&&!p.sus),eff=p=>p.ovr*(.75+.25*p.energy/100),by=(k,n)=>ok.filter(p=>p.pos===k).sort((a,b)=>eff(b)-eff(a)).slice(0,n);
+ let xi=[...by("G",1),...by("D",f[0]),...by("M",f[1]),...by("A",f[2])];if(xi.length<11)xi=xi.concat(ok.filter(p=>p.pos!=="G"&&!xi.includes(p)).sort((a,b)=>eff(b)-eff(a)).slice(0,11-xi.length));return xi.map(p=>p.id)}
+
+/* ----- mercado e jogador ----- */
+async function rlMercado(){const m=RL.mk,r=await rlCall("rl_market",{p:Object.fromEntries(Object.entries(m).filter(([k,v])=>v!==""&&v!=null))});RL.data.mk=r;const lgs=[...new Set((RL.data.clubs||await rlCall("rl_clubs_list")).clubs.map(c=>c.league))];
+ return `<div class="card">${RL.st.window?'<span class="rl-st g">Janela aberta</span>':'<p class="cgw">Janela de transferências fechada. Você pode observar e estudar o mercado; as propostas abrem na próxima janela.</p>'}
+ <div class="rl-form" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))"><label>Buscar<input data-rl="mk:q" value="${esc(m.q||"")}" placeholder="Nome ou clube"></label>
+ <label>Posição<select data-rl="mk:pos"><option value="">Todas</option>${Object.entries(rlPos).map(([k,v])=>`<option value="${k}"${m.pos===k?" selected":""}>${v}</option>`).join("")}</select></label>
+ <label>Valor até<select data-rl="mk:maxv"><option value="">Qualquer</option>${[500e3,1e6,3e6,10e6,30e6,100e6].map(v=>`<option value="${v}"${+m.maxv===v?" selected":""}>${rlMoney(v)}</option>`).join("")}</select></label>
+ <label>OVR mínimo<select data-rl="mk:minovr"><option value="">Qualquer</option>${[60,70,75,80,85].map(v=>`<option${+m.minovr===v?" selected":""}>${v}</option>`).join("")}</select></label>
+ <label>Liga<select data-rl="mk:league"><option value="">Todas</option>${lgs.map(l=>`<option${m.league===l?" selected":""}>${esc(l)}</option>`).join("")}</select></label>
+ <label>Dono<select data-rl="mk:own"><option value="">Todos</option><option value="h"${m.own==="h"?" selected":""}>Técnicos</option><option value="ai"${m.own==="ai"?" selected":""}>IA</option></select></label>
+ <label>Ordenar<select data-rl="mk:sort"><option value="value">Valor</option><option value="ovr"${m.sort==="ovr"?" selected":""}>OVR</option><option value="age"${m.sort==="age"?" selected":""}>Mais jovens</option></select></label>
+ <label style="align-content:end"><span><input type="checkbox" data-rl="mk:listed"${m.listed?" checked":""} style="min-height:0"> Só à venda</span></label></div>
+ <p class="sub">${r.total} jogadores · ${efbStarH(1)} craque · ${efbStarH(2)} Bola de Ouro</p></div>
+ <div class="card mgtw"><table class="mgtb"><thead><tr><th>Pos</th><th>Jogador</th><th>Clube</th><th>Idade</th><th>OVR</th><th>Valor</th><th></th></tr></thead><tbody>${r.items.map(p=>`<tr><td><span class="mgp ${p.pos}">${rlPos[p.pos]}</span></td><td>${esc(p.name)}${efbStarH(p.star)}${p.listed?' <span class="rl-st y">à venda</span>':""}</td><td>${esc(p.cshort||p.cname)}${p.human?" 👤":""}</td><td>${p.age}</td><td><b>${p.ovr}</b></td><td>${rlMoney(p.value)}</td><td>${rlB("Ver","pl:"+p.id,"sm")}</td></tr>`).join("")||'<tr><td colspan="7">Nenhum jogador com esses filtros.</td></tr>'}</tbody></table>
+ <div class="row">${(m.off||0)>0?rlB("← Anteriores","mkpg:-30","sm"):""}${(m.off||0)+30<r.total?rlB("Próximos →","mkpg:30","sm"):""}</div></div>`}
+async function rlJogador(){const p=await rlCall("rl_player",{p_id:RL.sel});RL.data.pl=p;const st=RL.st,f=RL.of||(RL.of={kind:"buy",amount:Math.round(p.value*1.1/1000)*1000,wage:60,opt:Math.round(p.value*1.2/1000)*1000,half:false});
+ let h=`<p>${rlB("← Voltar","back","sm")}</p><div class="card"><div class="row between"><div><b style="font-size:1.15rem">${esc(p.name)}${efbStarH(p.star)}</b><div class="sub"><span class="mgp ${p.pos}">${rlPos[p.pos]}</span> ${p.age} anos · ${esc(p.cname)}${p.human?" (técnico "+esc(p.cowner)+")":" (IA)"}${p.loan?" · emprestado ao "+esc(p.plays_for):""}</div></div><div class="cgo">${p.ovr}<small>OVR</small></div></div>
+ <div class="mgk"><div><span class="sub">Valor de mercado</span><b>${rlMoney(p.value)}</b></div><div><span class="sub">Salário / dia de liga</span><b>${rlMoney(p.wage)}</b></div><div><span class="sub">Temporada</span><b>${p.apps} j · ${p.g} g · ${p.a} a</b></div><div><span class="sub">Observado por</span><b>${p.watchers} técnico(s)</b></div></div>
+ <div class="row" style="justify-content:flex-start">${ME?rlB(p.watch?"★ Observando":"☆ Observar","watch:p:"+p.id+":"+(p.watch?0:1),"sm"):""}${rlB("Ver clube","club:"+p.owner_club,"sm")}${p.mine&&!p.loan?rlB(p.listed?"Tirar da venda":"Colocar à venda","list:"+p.id+":"+(p.listed?0:1),"sm"):""}</div></div>`;
+ if(!st.club||p.mine)return h;
+ if(p.loan)return h+'<div class="card"><p class="sub">Jogador emprestado: não pode ser negociado agora.</p></div>';
+ const lo=Math.round(p.value*.5),hi=Math.round(p.value*2.5),bal=st.club.balance;
+ h+=`<div class="card"><b>Fazer proposta</b>${st.window?"":'<p class="cgw">Janela fechada: propostas só na próxima janela.</p>'}${p.locked?'<p class="cgw">Jogador recém-contratado: compra bloqueada por 14 dias (empréstimo é permitido).</p>':""}
+ <div class="rl-form"><label>Tipo<select data-rl="of:kind">${Object.entries(rlKind).map(([k,v])=>`<option value="${k}"${f.kind===k?" selected":""}>${v}</option>`).join("")}</select></label>
+ <label>${f.kind==="buy"?"Valor da compra (de "+rlMoney(lo)+" a "+rlMoney(hi)+")":"Taxa de empréstimo (até "+rlMoney(p.value*.5)+")"}<input inputmode="numeric" data-rl="of:amount" value="${f.kind==="buy"?f.amount:(f.fee||0)}"></label>
+ ${f.kind!=="buy"?`<label>Você paga quanto do salário<select data-rl="of:wage">${[50,60,75,100].map(v=>`<option value="${v}"${+f.wage===v?" selected":""}>${v}%</option>`).join("")}</select></label><label>Duração<select data-rl="of:half"><option value="0">Até o fim da temporada</option><option value="1"${f.half?" selected":""}>Meia temporada (24 dias)</option></select></label>`:""}
+ ${f.kind==="loan_opt"||f.kind==="loan_obl"?`<label>${f.kind==="loan_opt"?"Valor da opção de compra":"Valor da obrigação de compra (vale se ele jogar 10+ jogos)"}<input inputmode="numeric" data-rl="of:opt" value="${f.opt}"></label>`:""}</div>
+ <div class="card" style="margin-top:8px"><p class="sub">Você paga agora: <b>${rlMoney(f.kind==="buy"?f.amount:(f.fee||0))}</b> · Caixa depois: <b>${rlMoney(bal-(f.kind==="buy"?f.amount:(f.fee||0)))}</b>${f.kind!=="buy"?" · Salário por sua conta: "+f.wage+"%":""}</p><p class="sub">Prazo de resposta: 48h · O vendedor recebe 92% (taxa de 8%). Contas com menos de 7 dias só negociam com a IA.</p></div>
+ ${rlB("📨 Enviar proposta","offer","p wide")}</div>`;return h}
+async function rlClubeV(){const d=await rlCall("rl_squad",{p_club:RL.selc});const c=d.club;
+ return `<p>${rlB("← Voltar","back","sm")}</p><div class="card"><div class="row" style="justify-content:flex-start;gap:10px">${rlCr(c,40)}<div><b>${esc(c.name)}</b><div class="sub">${esc(c.league)} · ${c.pos||"–"}º · ${c.owner?"técnico "+esc(c.owner)+" (rep. "+(c.rep||0)+")":"IA"}</div></div></div><div class="row" style="justify-content:flex-start">${ME?rlB(c.watch?"★ Observando":"☆ Observar time","watch:c:"+c.id+":"+(c.watch?0:1),"sm"):""}</div>
+ ${d.results.length?`<p class="sub">Últimos: ${d.results.map(r=>`${esc(r.h)} ${r.hg}×${r.ag} ${esc(r.a)}`).join(" · ")}</p>`:""}</div>
+ <div class="card mgtw"><table class="mgtb"><thead><tr><th>Pos</th><th>Nome</th><th>Idade</th><th>OVR</th><th>Valor</th><th></th></tr></thead><tbody>${d.players.map(p=>`<tr><td><span class="mgp ${p.pos}">${rlPos[p.pos]}</span></td><td>${esc(p.name)}${efbStarH(p.star)}${p.listed?' <span class="rl-st y">à venda</span>':""}${p.loan?' <span class="tag">emprest.</span>':""}</td><td>${p.age}</td><td><b>${p.ovr}</b></td><td>${rlMoney(p.value)}</td><td>${rlB("Ver","pl:"+p.id,"sm")}</td></tr>`).join("")}</tbody></table></div>`}
+
+/* ----- propostas ----- */
+async function rlPropostas(){const r=await rlCall("rl_offers_list"),L=await rlCall("rl_loans_mine"),it=r.items,mine=it.filter(o=>o.status==="pending"&&o.mine_turn),wait=it.filter(o=>o.status==="pending"&&!o.mine_turn),hist=it.filter(o=>o.status!=="pending");
+ const card=o=>{const p=o.player,stl={pending:o.mine_turn?["Aguardando você","y"]:["Aguardando o outro clube","m"],accepted:["Aceita","g"],rejected:["Recusada","r"],cancelled:["Cancelada","r"],expired:["Expirada","r"],countered:["Contraproposta","y"]}[o.status]||[o.status,"m"];
+  return `<div class="card"><div class="row between"><b>${o.buying?"Você quer":"Querem o seu"} ${esc(p.name)}${efbStarH(p.star)}</b><span class="rl-st ${stl[1]}">${stl[0]}</span></div>
+  <p class="sub">${o.buying?"Do "+esc(o.to):"Pelo "+esc(o.from)}${o.human?" 👤":" (IA)"} · ${rlKind[o.kind]} · <b>${rlMoney(o.amount)}</b>${o.kind!=="buy"?" · salário "+o.wage_pct+"% por conta de quem recebe"+(o.half?" · meia temporada":""):""}${o.option?" · opção "+rlMoney(o.option):""} · valor de mercado ${rlMoney(p.value)}</p>
+  ${o.status==="pending"?`<p class="sub">⏳ Expira ${rlT(o.expires)} · ${o.rounds}/3 contrapropostas</p>`:""}
+  ${o.status==="pending"&&o.mine_turn?`<div class="row" style="justify-content:flex-start">${rlB("✅ Aceitar","acc:"+o.id,"p sm")}${o.rounds<3?`<input inputmode="numeric" id="ct${o.id}" value="${o.amount}" aria-label="Valor da contraproposta" style="max-width:150px;min-height:36px">${rlB("🔁 Contrapropor","ctr:"+o.id,"sm")}`:""}${rlB("Recusar","rej:"+o.id,"sm")}</div>`:o.status==="pending"?rlB("Retirar proposta","rej:"+o.id,"sm"):""}</div>`};
+ return `<div class="card"><b>📥 Aguardando você (${mine.length})</b>${mine.length?"":'<p class="sub">Nenhuma proposta para responder.</p>'}</div>${mine.map(card).join("")}
+ <div class="card"><b>📤 Aguardando o outro clube (${wait.length})</b>${wait.length?"":'<p class="sub">Nenhuma. Explore o Mercado.</p>'}</div>${wait.map(card).join("")}
+ ${L.length?`<div class="card"><b>🔄 Empréstimos ativos</b>${L.map(l=>`<p class="cgl">${esc(l.pname)}: ${esc(l.fname)} → ${esc(l.tname)} · até o dia ${l.until_day}${l.option_price?" · "+(l.obligation?"obrigação":"opção")+" "+rlMoney(l.option_price):""} ${l.option_price&&!l.obligation&&RL.st.club&&l.to_club===RL.st.club.id?rlB("Exercer opção","exer:"+l.id,"sm"):""}</p>`).join("")}</div>`:""}
+ <div class="card"><b>🗂️ Histórico</b></div>${hist.slice(0,15).map(card).join("")||""}`}
+
+/* ----- ao vivo ----- */
+async function rlLiveLoad(){try{RL.live=await rlCall("rl_day",{p_day:null});RL.off=Date.parse(RL.live.now)-Date.now()}catch(e){}}
+async function rlChatLoad(){try{const n=await rlCall("rl_chat_get",{p_after:RL.chatAfter});if(n.length){RL.chat=RL.chat.concat(n).slice(-80);RL.chatAfter=n[n.length-1].id;const c=$("#rlchat");if(c){c.innerHTML=rlChatHtml();c.scrollTop=c.scrollHeight}}}catch(e){}}
+const rlChatHtml=()=>RL.chat.map(m=>`<p><b>${esc(m.nick)}:</b> ${esc(m.t)}</p>`).join("")||'<p class="sub">Ninguém falou ainda. Comente a rodada!</p>';
+async function rlAoVivo(){await rlLiveLoad();await rlChatLoad();return `<div id="rllive">${wait()}</div><div class="card"><b>💬 Sala da rodada</b><div class="rl-chat" id="rlchat">${rlChatHtml()}</div>${ME?`<div class="row"><input id="rlmsg" maxlength="200" placeholder="Escreva (máx. 200)" style="flex:1;min-width:0"> ${rlB("Enviar","chat","p sm")}</div>`:'<p class="sub">Entre para conversar.</p>'}<p class="sub">Respeite os outros técnicos. Mensagens somem em 7 dias.</p></div>`}
+function rlMin(kick){return Math.max(0,Math.min(90,Math.floor((rlNow()-Date.parse(kick))/(600000/90))))}
+function rlLiveRender(){const e=$("#rllive"),L=RL.live;if(!e||!L)return;const k=Date.parse(L.kick),pre=rlNow()<k,mn=rlMin(L.kick),fin=mn>=90;
+ const sc=m=>{if(!m.events)return null;let h=0,a=0;for(const v of m.events){if(v.m>mn)break;if(v.k==="g"){v.s==="h"?h++:a++}}return[h,a]};
+ const my=L.matches.find(m=>m.mine);let h=`<div class="card"><div class="row between"><b>Dia ${L.day} · ${rlT(L.kick,{day:"2-digit",month:"2-digit"})} às 20h</b>${pre?'<span class="rl-st m">Em breve</span>':fin?'<span class="rl-st g">Encerrado</span>':'<span class="rl-live">AO VIVO · '+mn+"'</span>"}</div>${pre?`<p class="sub">Os jogos começam às 20h (Brasília). Faltam <b>${rlDur(k-rlNow())}</b>.</p>`:""}</div>`;
+ if(my){const s=pre?["–","–"]:(sc(my)||["…","…"]);h+=`<div class="card cgrep"><p class="sub" style="text-align:center">${esc(my.comp.replace("L:","").replace("C:","🏆 "))} · ${esc(my.stage||"")}</p><div class="mgsc"><div>${rlCr(my.home,44)}<div><b>${esc(my.home.name)}</b></div></div><div><div class="s" aria-live="polite">${s[0]} × ${s[1]}</div><div class="mgmin">${pre?"20:00":fin?"Fim"+(my.pen?" · pên. "+my.pen:""):mn+"'"}</div></div><div>${rlCr(my.away,44)}<div><b>${esc(my.away.name)}</b></div></div></div><div class="mgbar" style="margin-top:8px"><i style="width:${pre?0:mn/90*100}%"></i></div>
+  <div class="mglog">${pre||!my.events?'<p class="sub">Aguardando o início.</p>':my.events.filter(v=>v.m<=mn).slice().reverse().map(v=>`<p class="${v.k==="g"?(v.s==="h"?"mgw":"mgl"):""}">${v.m}' ${esc(v.t)}</p>`).join("")}</div></div>`}
+ const others=L.matches.filter(m=>!m.mine),byc={};others.forEach(m=>(byc[m.comp]=byc[m.comp]||[]).push(m));
+ h+=`<div class="card"><b>Outros jogos do dia (${others.length})</b>${Object.entries(byc).map(([cp,ms])=>`<details${cp===(my&&my.comp)?" open":""}><summary>${esc(cp.replace("L:","").replace("C:","🏆 "))} (${ms.length})</summary>${ms.map(m=>{const s=pre?null:sc(m);return `<div class="rl-mini"><span>${esc(m.home.short||m.home.name)}${m.home.human?" 👤":""}</span><b>${s?s[0]+" × "+s[1]:"20:00"}</b><span style="text-align:right">${esc(m.away.short||m.away.name)}${m.away.human?" 👤":""}</span></div>`}).join("")}</details>`).join("")||'<p class="sub">Nenhum.</p>'}</div>`;
+ e.innerHTML=h}
+
+/* ----- tabela, copas, mais ----- */
+async function rlTabela(){const t=await rlCall("rl_table",{p_league:RL.tlg||null});RL.tlg=t.league;
+ return `<div class="card"><div class="mgsel"><label>Liga <select data-rl="tlg">${(t.leagues||[]).sort().map(l=>`<option${l===t.league?" selected":""}>${esc(l)}</option>`).join("")}</select></label></div></div>
+ <div class="card mgtw"><table class="mgtb"><thead><tr><th>#</th><th>Clube</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>SG</th></tr></thead><tbody>${t.rows.map((r,i)=>`<tr class="${RL.st.club&&r.club===RL.st.club.id?"me":""}"><td>${i+1}</td><td style="white-space:nowrap">${rlCr(r,18)} ${esc(r.short||r.name)}${r.human?" 👤":""}</td><td><b>${r.p}</b></td><td>${r.j}</td><td>${r.v}</td><td>${r.e}</td><td>${r.d}</td><td>${r.gp-r.gc}</td></tr>`).join("")}</tbody></table><p class="sub">👤 = clube com técnico humano</p></div>
+ <div class="card"><b>⚽ Artilharia</b>${t.scorers.map(s=>`<p class="cgl">${esc(s.name)}${efbStarH(s.star)} (${esc(s.club)}) · ${s.g} gols · ${s.a} assist.</p>`).join("")||'<p class="sub">Sem gols ainda.</p>'}</div>`}
+async function rlCopas(){const C=await rlCall("rl_cups_get");if(!C.length)return'<div class="card"><p class="sub">Nenhuma copa nesta temporada.</p></div>';
+ return C.map(c=>`<details class="card"${c.mine?" open":""}><summary><b>${c.ic} ${esc(c.name)}</b>${c.mine?' <span class="rl-st g">seu clube</span>':""}${c.champ?` · 🏆 ${esc(c.champ)}`:""}</summary>
+  <div class="efbko" style="margin-top:8px">${(c.groups||[]).map((g,i)=>`<div class="card" style="overflow-x:auto"><b>Grupo ${"ABCD"[i]}</b><table class="cgtb"><tr><th>Clube</th><th>P</th><th>J</th><th>SG</th></tr>${(g||[]).map((t,k)=>`<tr class="${RL.st.club&&t.club===RL.st.club.id?"me":""}"><td style="white-space:nowrap">${k<2&&c.md>=6?"✅ ":""}${rlCr(t,16)} ${esc(t.short||t.name)}</td><td><b>${t.p}</b></td><td>${t.j}</td><td>${t.gp-t.gc}</td></tr>`).join("")}</table></div>`).join("")}</div>
+  ${c.ko.length?`<p><b>Mata-mata</b></p>${c.ko.map(m=>`<p class="cgl">${esc(m.stage)}: ${esc(m.h)} ${m.hg??"–"} × ${m.ag??"–"} ${esc(m.a)}${m.pen?" (pên. "+m.pen+")":""}</p>`).join("")}`:'<p class="sub">Mata-mata a partir do 6º dia de copa (dias 5, 10, 15, 20, 25, 30 · quartas 35, semi 40, final 45).</p>'}</details>`).join("")}
+async function rlMais(){const s=RL.sub||"notas";const T=[["notas","🔔 Notificações"],["obs","👀 Observação"],["tec","🧑‍💼 Técnicos"],["premios","🏅 Prêmios"],["fin","💰 Finanças"],["regras","📜 Regras"]];
+ let h=`<div class="mgtabs">${T.map(t=>rlB(t[1],"sub:"+t[0],"sm"+(s===t[0]?" on":""))).join("")}</div>`;
+ if(s==="notas"){if(!ME)return h+'<div class="card">Entre para ver suas notificações.</div>';const n=await rlCall("rl_notes_get");if(n.some(x=>!x.read))rlCall("rl_notes_read").then(()=>{if(RL.st)RL.st.unread=0}).catch(()=>{});
+  h+=`<div class="card">${n.map(x=>`<p class="cgl">${x.read?"":"🆕 "}${esc(x.ic||"")} ${esc(x.t)} <span class="sub">· ${rlT(x.at)}</span></p>`).join("")||'<p class="sub">Nada por aqui.</p>'}</div>`}
+ else if(s==="obs"){if(!ME)return h+'<div class="card">Entre para observar jogadores e times.</div>';const w=await rlCall("rl_watchlist");h+=`<div class="card"><b>Jogadores (${w.players.length}/30)</b>${w.players.map(p=>`<p class="cgl">${esc(p.name)}${efbStarH(p.star)} · ${esc(p.cname)}${p.human?" 👤":""} · OVR ${p.ovr} · ${rlMoney(p.value)}${p.listed?' <span class="rl-st y">à venda</span>':""} ${rlB("Ver","pl:"+p.id,"sm")}</p>`).join("")||'<p class="sub">Toque em ☆ Observar na ficha de um jogador.</p>'}</div><div class="card"><b>Times (${w.clubs.length}/10)</b>${w.clubs.map(c=>`<p class="cgl">${rlCr(c,18)} ${esc(c.name)} ${c.owner?"· técnico "+esc(c.owner):"· IA"} ${rlB("Ver","club:"+c.id,"sm")}</p>`).join("")||'<p class="sub">Nenhum time observado.</p>'}</div>`}
+ else if(s==="tec"){const r=await rlCall("rl_coaches_rank");h+=`<div class="card mgtw"><table class="mgtb"><thead><tr><th>#</th><th>Técnico</th><th>Clube</th><th>Reputação</th><th>Títulos</th><th>V-E-D</th></tr></thead><tbody>${r.map((k,i)=>`<tr class="${k.me?"me":""}"><td>${i+1}</td><td>${esc(k.nick)}</td><td>${esc(k.club||"—")}</td><td><b>${k.rep}</b></td><td>${k.titles}</td><td>${k.w}-${k.d}-${k.l}</td></tr>`).join("")||'<tr><td colspan="6">Nenhum técnico ainda.</td></tr>'}</tbody></table></div>`}
+ else if(s==="premios"){const a=await rlCall("rl_awards_get");h+=a.length?`<div class="efbaw">${a.map(x=>`<div><span class="sub">${esc(x.ic)} ${esc(x.k)} · temporada ${x.season}</span><b>${esc(x.name)}${efbStarH(efbStar(x.name,x.club))}</b><span class="sub">${esc(x.club)} · ${esc(x.val||"")}</span></div>`).join("")}</div>`:'<div class="card"><p class="sub">A premiação sai no fim da temporada (dia 47).</p></div>'}
+ else if(s==="fin"){if(!RL.st.club)return h+'<div class="card">Assuma um clube para ver as finanças.</div>';const f=await rlCall("rl_finance"),c=RL.st.club;h+=`<div class="mgk"><div><span class="sub">Caixa</span><b>${rlMoney(c.balance)}</b></div><div><span class="sub">TV e patrocínio / dia de liga</span><b>${rlMoney(c.rec)}</b></div><div><span class="sub">Folha / dia de liga</span><b>${rlMoney(c.wages)}</b></div><div><span class="sub">Bilheteria (em casa)</span><b>≈ ${rlMoney(c.rec*.45)}</b></div></div><div class="card">${f.map(x=>`<p class="cgl"><span class="${x.amount<0?"mgl":"mgw"}">${rlMoney(x.amount)}</span> · ${esc(x.reason||"")} <span class="sub">${rlT(x.at)}</span></p>`).join("")||'<p class="sub">Nenhuma movimentação extra ainda (salários e receitas entram todo dia de liga).</p>'}</div>`}
+ else h+=`<div class="card"><b>📜 Regras do Realista</b><p class="cgl">⏱ Uma rodada por dia às 20h (Brasília). A escalação e o mercado travam das 19h55 às 20h10. Os lances são revelados ao vivo em ~10 minutos.</p><p class="cgl">📅 Temporada de 47 dias: 38 de liga e 9 de copa (dias 5, 10, 15… 45). Janelas: dias 1–3, 20–28 e férias.</p><p class="cgl">💰 Preço de compra entre 50% e 250% do valor de mercado; taxa de empréstimo até 50%. O vendedor recebe 92% (8% de taxa). Prazo de 48h e até 3 contrapropostas.</p><p class="cgl">🛡️ Jogador comprado não pode ser revendido por 14 dias. Máx. 5 propostas abertas, 20 por dia, 8 entradas e 8 saídas por temporada, 3 emprestados, 2 negócios por temporada entre os mesmos técnicos. Contas com menos de 7 dias só negociam com a IA. Elenco de 18 a 35.</p><p class="cgl">⭐ Reputação libera clubes maiores: nível 3 (250), nível 4 (600), nível 5 (1000). Vitória +3, empate +1, título +200, copa +250, bater a meta dá bônus.</p><p class="cgl">😴 7 dias sem entrar: aviso. 14 dias: o clube volta para a IA.</p><p class="cgl">🏆 Copas: Champions, Liga Europa, Libertadores, Sul-Americana, Concacaf e AFC, com vaga pela posição na liga. Premiação no fim da temporada.</p></div>${RL.st.club?`<div class="card"><b>Deixar o clube</b><p class="sub">O clube volta para a IA e você só poderá assumir outro em 24h.</p>${rlB("Deixar o "+esc(RL.st.club.name),"leave","sm")}</div>`:""}`;
+ return h}
+
+/* ----- ações ----- */
+const RLA={
+ reload:async()=>{await rlLoad();rlDrawAsync()},
+ tab:async t=>{RL.v=t;if(t==="mais"&&!RL.sub)RL.sub="notas";rlDrawAsync();try{$("#rl").scrollIntoView({block:"start"})}catch(e){}},
+ sub:async s=>{RL.v="mais";RL.sub=s;rlDrawAsync()},
+ back:async()=>{RL.v=RL.prev||"mercado";rlDrawAsync()},
+ claim:async id=>{const c=RL.data.clubs.clubs.find(x=>String(x.id)===id);if(!confirm("Assumir o "+(c?c.name:"clube")+"? Você só pode ter 1 clube no Realista. Se ficar 14 dias sem entrar, ele volta para a IA."))return;RL.st=await rlCall("rl_claim",{p_club:+id});RL.data={};RL.v="clube";toast("Bem-vindo ao "+(RL.st.club&&RL.st.club.name)+"!");if(motionOk())confetti2(60);rlDrawAsync()},
+ club:async id=>{RL.prev=RL.v==="clubev"?RL.prev:RL.v;RL.selc=+id;RL.v="clubev";rlDrawAsync()},
+ pl:async id=>{RL.prev=RL.v==="jogador"?RL.prev:RL.v;RL.sel=+id;RL.of=null;RL.v="jogador";rlDrawAsync()},
+ xi:async id=>{id=+id;const i=RL.xi.indexOf(id);if(i>=0)RL.xi.splice(i,1);else{if(RL.xi.length>=11)return toast("Já há 11 titulares. Tire alguém antes.");RL.xi.push(id)}rlDrawAsync()},
+ xiauto:async()=>{const P=(RL.data.sq.players||[]).filter(p=>p.club===RL.st.club.id);RL.xi=rlAutoXI(P,RL.form);rlDrawAsync()},
+ xisave:async()=>{await rlCall("rl_lineup",{p_formation:RL.form,p_tactic:RL.tac,p_xi:RL.xi});toast("Escalação salva para a próxima rodada.");await rlLoad();rlDrawAsync()},
+ mkpg:async d=>{RL.mk.off=Math.max(0,(RL.mk.off||0)+ +d);rlDrawAsync()},
+ offer:async()=>{const f=RL.of,p=RL.data.pl,amt=f.kind==="buy"?+f.amount:+(f.fee||0);
+  if(!confirm("Enviar proposta de "+rlKind[f.kind].toLowerCase()+" pelo "+p.name+" ("+rlMoney(amt)+")?"))return;
+  const r=await rlCall("rl_offer",{p_player:p.id,p_kind:f.kind,p_amount:amt,p_wage_pct:+f.wage,p_option:f.kind==="loan_opt"||f.kind==="loan_obl"?+f.opt:null,p_half:!!f.half});
+  toast(r.result==="accept"?"✅ Negócio fechado!":r.result==="counter"?"🔁 A IA fez uma contraproposta. Veja em Propostas.":r.result==="reject"?"❌ A IA recusou.":"📨 Proposta enviada. O técnico tem 48h para responder.");
+  if(r.result==="accept"&&motionOk())confetti2(50);await rlLoad();RL.v=r.result==="accept"?"clube":"propostas";rlDrawAsync()},
+ acc:async id=>{if(!confirm("Aceitar? O negócio é definitivo."))return;const r=await rlCall("rl_accept",{p_offer:+id});toast("✅ "+r.deal);if(motionOk())confetti2(50);await rlLoad();rlDrawAsync()},
+ ctr:async id=>{const v=+(($("#ct"+id)||{}).value||0);if(!v)return toast("Informe o valor.");await rlCall("rl_counter",{p_offer:+id,p_amount:v,p_wage_pct:null,p_option:null});toast("🔁 Contraproposta enviada.");await rlLoad();rlDrawAsync()},
+ rej:async id=>{await rlCall("rl_reject",{p_offer:+id});toast("Feito.");await rlLoad();rlDrawAsync()},
+ exer:async id=>{if(!confirm("Exercer a opção de compra?"))return;await rlCall("rl_exercise",{p_loan:+id});toast("✅ Compra em definitivo concluída.");await rlLoad();rlDrawAsync()},
+ list:async s=>{const [id,on]=s.split(":");await rlCall("rl_list",{p_player:+id,p_on:on==="1"});toast(on==="1"?"Jogador colocado à venda.":"Jogador retirado da venda.");rlDrawAsync()},
+ watch:async s=>{const [k,id,on]=s.split(":");await rlCall("rl_watch_set",{p_kind:k,p_id:+id,p_on:on==="1"});toast(on==="1"?"Adicionado à observação.":"Removido da observação.");rlDrawAsync()},
+ chat:async()=>{const i=$("#rlmsg");if(!i||!i.value.trim())return;await rlCall("rl_chat_send",{p_text:i.value});i.value="";rlChatLoad()},
+ leave:async()=>{if(!confirm("Deixar o "+RL.st.club.name+"? Ele volta para a IA e você só poderá assumir outro amanhã."))return;RL.st=await rlCall("rl_leave");RL.data={};RL.xi=null;RL.v="clube";rlDrawAsync()}};
+A.rl=async id=>{const s=String(id||""),i=s.indexOf(":"),n=i<0?s:s.slice(0,i),a=i<0?"":s.slice(i+1),f=RLA[n];if(f)await f(a)};
+document.addEventListener("change",e=>{const t=e.target.closest&&e.target.closest("[data-rl]");if(!t)return;const k=t.dataset.rl,v=t.type==="checkbox"?t.checked:t.value;
+ if(k==="lg"){RL.lg=v;rlDrawAsync()}else if(k==="form"){RL.form=v;rlDrawAsync()}else if(k==="tac"){RL.tac=v}else if(k==="tlg"){RL.tlg=v;rlDrawAsync()}
+ else if(k.startsWith("mk:")){RL.mk[k.slice(3)]=v;RL.mk.off=0;rlDrawAsync()}
+ else if(k.startsWith("of:")){const f=RL.of,key=k.slice(3);if(key==="amount"){if(f.kind==="buy")f.amount=+String(v).replace(/\D/g,"");else f.fee=+String(v).replace(/\D/g,"")}else if(key==="half")f.half=v==="1";else f[key]=key==="kind"?v:+String(v).replace(/\D/g,"");rlDrawAsync()}});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target&&e.target.id==="rlmsg"){e.preventDefault();A.rl("chat")}});
+{const _pg=page;page=async function(){if(CUR==="realista")return pRealista();return _pg()}}
+NAV.splice(NAV.findIndex(n=>n[0]==="manager")+1,0,["realista","Realista","🌐"]);
+ATAL.push(["realista","🌐","Realista (online)","Técnicos do site num mundo só, jogo às 20h"]);
+if(render.n)render();
+</script>
 </body>
 </html>
